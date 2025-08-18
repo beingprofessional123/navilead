@@ -4,11 +4,11 @@ backend/node_modules/
 navilead
 
 # === Environment Files ===
-# frontend/.env
-# backend/.env
-# .env
-# .env.local
-# .env.*.local
+frontend/.env
+backend/.env
+.env
+.env.local
+.env.*.local
 
 # === Build & Output ===
 frontend/build/
