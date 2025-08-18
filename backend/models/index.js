@@ -1,0 +1,51 @@
+const Sequelize = require('sequelize');
+const sequelize = require('../config/database');
+const { DataTypes } = require('sequelize');
+
+const User = require('./user');
+const Lead = require('./lead');
+const Status = require('./status');
+const PricingTemplate = require('./pricingTemplate');
+const PricingTemplateService = require('./pricingTemplateService');
+const Currency = require('./currency');
+const Quote = require('./quote');
+const QuoteService = require('./quoteService');
+const EmailTemplate = require('./emailTemplate');
+const UserVariable = require('./userVariable');
+const SendEmail = require('./sendEmail');
+const AcceptedOffer = require('./acceptedOffer');
+const AskQuestion = require('./askQuestion');
+const SmsTemplate = require('./smsTemplate');
+const SendSms = require('./sendSms');
+
+
+const db = {};
+
+db.Sequelize = Sequelize;
+db.sequelize = sequelize;
+
+db.User = User(sequelize, DataTypes);
+db.Lead = Lead(sequelize, DataTypes);
+db.Status = Status(sequelize, DataTypes);
+db.PricingTemplate = PricingTemplate(sequelize, DataTypes);
+db.PricingTemplateService = PricingTemplateService(sequelize, DataTypes);
+db.Currency = Currency(sequelize, DataTypes);
+db.Quote = Quote(sequelize, DataTypes);
+db.QuoteService = QuoteService(sequelize, DataTypes);
+db.EmailTemplate = EmailTemplate(sequelize, DataTypes);
+db.UserVariable = UserVariable(sequelize, DataTypes); 
+db.SendEmail = SendEmail(sequelize, DataTypes);
+db.AcceptedOffer = AcceptedOffer(sequelize, DataTypes);
+db.AskQuestion = AskQuestion(sequelize, DataTypes);
+db.SmsTemplate = SmsTemplate(sequelize, DataTypes);
+db.SendSms = SendSms(sequelize, DataTypes);
+
+
+// Setup associations
+Object.keys(db).forEach(modelName => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
+});
+
+module.exports = db;

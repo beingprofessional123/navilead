@@ -1,0 +1,2652 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+
+body {
+   font-family: "Poppins", sans-serif;
+   background-color: var(--background);
+   color: var(--foreground);
+}
+.poppins-thin {
+  font-family: "Poppins", sans-serif;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.poppins-extralight {
+  font-family: "Poppins", sans-serif;
+  font-weight: 200;
+  font-style: normal;
+}
+
+.poppins-light {
+  font-family: "Poppins", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.poppins-regular {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.poppins-medium {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.poppins-semibold {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.poppins-bold {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.poppins-extrabold {
+  font-family: "Poppins", sans-serif;
+  font-weight: 800;
+  font-style: normal;
+}
+
+.poppins-black {
+  font-family: "Poppins", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+}
+
+.poppins-thin-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 100;
+  font-style: italic;
+}
+
+.poppins-extralight-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 200;
+  font-style: italic;
+}
+
+.poppins-light-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.poppins-regular-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.poppins-medium-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.poppins-semibold-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.poppins-bold-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.poppins-extrabold-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 800;
+  font-style: italic;
+}
+
+.poppins-black-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 900;
+  font-style: italic;
+}
+
+:root {
+    --font-size: 14px;
+    --background: #101418;
+    --foreground: #cff;
+    --card: #171f26;
+    --card-foreground: #cff;
+    --popover: #171f26;
+    --popover-foreground: #cff;
+    --primary: #0ff;
+    --primary-foreground: #101418;
+    --secondary: #1b2632;
+    --secondary-foreground: #cff;
+    --muted: #1b2632;
+    --muted-foreground: #8cd9d9;
+    --accent: #0ff;
+    --accent-foreground: #101418;
+    --destructive: #ef4444;
+    --destructive-foreground: #cff;
+    --border: #202e3c;
+    --input: #171f26;
+    --input-background: #1b2632;
+    --switch-background: #202e3c;
+    --ring: #0ff;
+    --font-weight-medium: 500;
+    --font-weight-normal: 400;
+    --chart-1: #0ff;
+    --chart-2: #47cfeb;
+    --chart-3: #47ebcf;
+    --chart-4: #47b4eb;
+    --chart-5: #47ebb4;
+    --radius: .625rem;
+    --sidebar: #171f26;
+    --sidebar-foreground: #cff;
+    --sidebar-primary: #0ff;
+    --sidebar-primary-foreground: #101418;
+    --sidebar-accent: #1b2632;
+    --sidebar-accent-foreground: #cff;
+    --sidebar-border: #202e3c;
+    --sidebar-ring: #0ff;
+    --primary: #00d4f0;
+    --color-blue-900: oklch(.379 .146 265.522);
+    --color-blue-700: oklch(.488 .243 264.376);
+}
+.aa {
+  background-color: var(--card);
+}
+a {
+    text-decoration: none !important;
+}
+.sidebar {
+    width: 250px;
+    background-color: var(--card);
+    position: fixed;
+    z-index: 5;
+    padding-bottom: 70px;
+    overflow-y: scroll;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    border-right: 1px solid var(--border);
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+.sidebar::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px #101418; 
+  border-radius: 10px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: #202e3c; 
+  border-radius: 10px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #8cd0d9; 
+}
+.sidebar-logo {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+}
+.sidebar-logo a {
+    display: block;
+    width: 148px;
+    margin: 0px auto;
+}
+ul.sidebar-menu {
+    margin: 0px;
+    padding: 15px;
+    list-style: none;
+}
+ul.sidebar-menu li.active a {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+}
+ul.sidebar-menu li a {
+    padding: 8px 15px;
+    display: flex;
+    border-radius: 8.7px;
+    color: var(--muted-foreground);
+    font-size: var(--font-size);
+    align-items: center;
+    margin-bottom: 5px;
+    font-weight: 300;
+}
+ul.sidebar-menu li a:hover {
+    background-color: color-mix(in oklab, var(--accent) 10%, transparent);
+    color: var(--foreground);
+}
+ul.sidebar-menu li a svg {
+    width: 14px;
+    margin-right: 8px;
+}
+.userinfo {
+    position: fixed;
+    bottom: 0px;
+    width: 250px;
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    background-color: var(--card);
+}
+ul.sidebar-menu li.adminpanel {
+    border-top: 1px solid var(--border);
+    margin-top: 15px;
+    padding-top: 15px;
+}
+
+
+.username {
+    position: relative;
+    padding-left: 40px;
+}
+.username span {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 30px;
+    height: 30px;
+    background-color: var(--muted);
+    border-radius: 100px;
+    color: #fff;
+    font-size: 12px;
+    text-align: center;
+    line-height: 30px;
+}
+.username h6 {
+    font-size: 11px;
+    margin: 0px;
+    font-weight: 300;
+    color: var(--muted-foreground);
+}
+.username h5 {
+    font-size: 12px;
+    margin: 0px;
+    font-weight: 400;
+    color: var(--foreground);
+}
+.mainbody {
+    padding: 25px 20px 30px 260px;
+}
+.top-row {
+    margin-bottom: 23px;
+}
+.dash-heading h2 {
+    font-size: 18px;
+    margin-bottom: 5px;
+    color: var(--foreground);
+}
+.dash-heading p {
+    font-size: 13px;
+    margin: 0px;
+    color: var(--muted-foreground);
+}
+.dashright {
+    text-align: right;
+}
+.btn.btn-add {
+    padding: 7px 14px;
+    color: var(--foreground) !important;
+    background-color: var(--background);
+    font-size: 12.25px;
+    border: 1px solid var(--border) !important;
+    border-radius: 8.7px;
+    outline: none !important; 
+    box-shadow: none !important; 
+}
+.btn.btn-add:hover {
+    color: var(--primary-foreground) !important;
+    background-color: var(--primary) !important;
+}
+.btn.btn-add svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 11px;
+    position: relative;
+    top: -1px;
+}
+.btn.btn-send {
+    padding: 7px 14px;
+    color: var(--primary-foreground) !important;
+    background-color: var(--primary);
+    font-size: 12.25px;
+    border: 1px solid var(--border) !important;
+    border-radius: 8.7px;
+    outline: none !important;
+    box-shadow: none !important;
+}
+.btn.btn-send:hover {
+    background-color: color-mix(in oklab, var(--primary) 90%, transparent);
+}
+.btn.btn-send svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 11px;
+    position: relative;
+    top: -1px;
+}
+.dashright .btn.btn-send {
+    margin-left: 10px;
+}
+.carddesign {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8.7px;
+    padding: 21px;
+    margin-bottom: 23px;
+    position: relative;
+}
+.card-icon {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+}
+.card-icon svg{
+    width: 14px;
+    height: 14px;
+}
+.cardinfo h3 {
+    color: var(--muted-foreground);
+    font-size: 13px;
+    margin-bottom: 0px;
+}
+.cardinfo h5 {
+    color: var(--foreground);
+    font-size: 22px;
+    margin: 25px 0px 0px 0px;
+}
+.cardinfo h6 {
+    color: var(--primary);
+    margin: 0px;
+    font-size: 11px;
+    font-weight: 400;
+}
+.cardinfo h6.activenot {
+    color: var(--muted-foreground);
+}
+h2.card-title {
+    color: var(--card-foreground);
+    font-size: 14px;
+    font-weight: 400;
+    margin-bottom: 20px;
+}
+h2.card-title svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 9px;
+}
+ul.activation-ul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.activation-list {
+    display: flex;
+    justify-content: space-between;
+}
+.activation-info {
+    position: relative;
+    padding-left: 16px;
+}
+.activation-info span.activation-dot {
+    position: absolute;
+    left: 0px;
+    top: 4px;
+    background-color: var(--primary);
+    width: 7px;
+    height: 7px;
+    border-radius: 100px;
+}
+.activation-info h3 {
+    color: var(--foreground);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+.activation-info h4 {
+    color: var(--muted-foreground);
+    font-weight: 400;
+    font-size: 12px;
+    margin-bottom: 0px;
+}
+.activation-time span {
+    color: var(--muted-foreground);
+    font-weight: 400;
+    vertical-align: top;
+    font-size: 12px;
+}
+ul.activation-ul li {
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+ul.activation-ul li:hover {
+    background-color: color-mix(in oklab, var(--accent) 5%, transparent);
+}
+ul.notification-ul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+ul.notification-ul li {
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+ul.notification-ul li h5 {
+    color: var(--foreground);
+    font-weight: 400;
+    font-size: 12px;
+    margin-bottom: 0px;
+}
+.btn.btn-leads {
+    color: var(--foreground);
+    background-color: var(--background);
+    font-size: 12px;
+    display: none;
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 6px 15px;
+    margin-top: 10px;
+}
+ul.notification-ul li:hover {
+    border: 1px solid var(--primary);
+}
+ul.notification-ul li:hover .btn.btn-leads{
+    display: inline-block;
+}
+.h-100 {
+    height: calc(100% - 23px) !important;
+}
+.handler {
+    margin: 0px;
+}
+.handler-card {
+    color: var(--foreground);
+    background-color: var(--background);
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 8.7px;
+    padding: 12px 12px 14px;
+    text-align: center;
+}
+.handler-card:hover {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+}
+.handler-card svg {
+    width: 14px;
+    height: 14px;
+}
+.handler-card h5 {
+    font-size: 12px;
+    font-weight: 500;
+    margin: 4px 0px 0px 0px;
+}
+
+/*leads*/
+.leads-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0px -10px;
+}
+.leads-col {
+    width: 20%;
+    padding: 0px 10px;
+}
+.leads-col .carddesign {
+    padding: 20px 15px;
+}
+.leads-card {
+    position: relative;
+    min-height: 42px;
+    padding-left: 41px;
+}
+.leads-card span {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    background-color: #dbeafe;
+    text-align: center;
+    line-height: 31px;
+}
+.leads-card.leads-card2 span {
+    background-color: #dcfce7;
+}
+.leads-card.leads-card2 span svg{
+    color: #00a63e;
+}
+.leads-card.leads-card3 span {
+    background-color: #ffedd4;
+}
+.leads-card.leads-card3 span svg{
+    color: #f54a00;
+}
+.leads-card.leads-card4 span {
+    background-color: #f3e8ff;
+}
+.leads-card.leads-card4 span svg{
+    color: #9810fa;
+}
+.leads-card.leads-card5 span {
+    background-color: #cefafe;
+}
+.leads-card.leads-card5 span svg{
+    color: #0ff;
+}
+.leads-card span svg {
+    color: #155dfc;
+    width: 17px;
+    height: 17px;
+}
+.leads-card h5 {
+    color: var(--muted-foreground);
+    font-size: 13px;
+    margin-bottom: 0px;
+    font-weight: 400;
+}
+.inputsearch {
+    position: relative;
+}
+.inputsearch svg {
+    position: absolute;
+    left: 15px;
+    top: 13px;
+    width: 14px;
+    height: 14px;
+}
+.leads-card h4 {
+    color: var(--card-foreground);
+    font-size: 20px;
+    margin: 3px 0px 0px 0px;
+}
+.inputsearch .form-control {
+    background-color: var(--input-background);
+    outline: none !important;
+    box-shadow: none !important;
+    border: 1px solid var(--input);
+    color: var(--card-foreground);
+    font-size: 12px;
+    padding: 10px 15px 10px 38px;
+    min-width: 335px;
+}
+.inputsearch .form-control::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: var(--muted-foreground);
+}
+.inputsearch .form-control::-moz-placeholder { /* Firefox 19+ */
+    color: var(--muted-foreground);
+}
+.inputsearch .form-control:-ms-input-placeholder { /* IE 10+ */
+    color: var(--muted-foreground);
+}
+.inputsearch .form-control:-moz-placeholder { /* Firefox 18- */
+    color: var(--muted-foreground);
+}
+.inputselect select.form-select {
+    background-color: var(--input-background);
+    outline: none !important;
+    box-shadow: none !important;
+    border: 1px solid var(--input);
+    color: var(--card-foreground);
+    font-size: 12px;
+    padding: 10px 15px;
+    min-width: 180px;
+    background-image: none;
+}
+.inputicon {
+    position: relative;
+}
+.inputicon .form-control {
+    padding-left: 35px !important;
+}
+.inputicon svg {
+    position: absolute;
+    left: 12px;
+    top: 10px;
+    width: 14px;
+    height: 14px;
+}
+.bordermid {
+    border-top: 1px solid var(--border);
+    margin-bottom: 18px;
+}
+.inputadd {
+    display: flex;
+    gap: 0px 10px;
+}
+/*file-drag-and-drop*/
+.form-container {
+  width: 100vw;
+  height: 100vh;
+  background-color: #7b2cbf;
+  display: flex;
+    justify-content: center;
+  align-items: center;
+}
+.upload-files-container {
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+.drag-file-area {
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    text-align: center;
+    width: 100%;
+    padding: 18px 42px;
+}
+.drag-file-area h3 {
+    font-size: 12px;
+    color: var(--muted-foreground);
+    font-weight: 300;
+    margin: 1px 0px 0px 0px;
+}
+.drag-file-area label.label {
+    margin: 0px;
+}
+.drag-file-area label .browse-files-text {
+    cursor: pointer;
+    color: var(--foreground);
+}
+.default-file-input {
+  opacity: 0;
+}
+.cannot-upload-message {
+  background-color: #ffc6c4;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+  padding: 5px 10px 5px 30px;
+  border-radius: 5px;
+  color: #BB0000;
+  display: none;
+}
+@keyframes fadeIn {
+  0% {opacity: 0;}
+  100% {opacity: 1;}
+}
+.cannot-upload-message span, .upload-button-icon {
+  padding-right: 10px;
+}
+.cannot-upload-message span:last-child {
+  padding-left: 20px;
+  cursor: pointer;
+}
+.file-block {
+    color: #f7fff7;
+    transition: all 1s;
+    position: relative;
+    display: none;
+    flex-direction: row;
+    justify-content: space-between;
+    cursor: pointer;
+    align-items: center;
+    margin-top: 10px;
+}
+.file-info {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted-foreground);
+}
+.file-icon {
+  margin-right: 10px;
+}
+.file-name, .file-size {
+  padding: 0 3px;
+}
+.remove-file-icon {
+  cursor: pointer;
+}
+.progress-bar {
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  left: 4.5%;
+  width: 0;
+  height: 5px;
+  border-radius: 25px;
+  background-color: #4BB543;
+}
+.upload-button {
+  font-family: 'Montserrat';
+  background-color: #7b2cbf;
+  color: #f7fff7;
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  border: none;
+  border-radius: 20px;
+  margin: 10px;
+  padding: 7.5px 50px;
+  cursor: pointer;
+}
+.drag-file-area label input.default-file-input {
+    width: 0px;
+}
+/*drag-drup*/
+.automatically {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    align-items: center;
+}
+.automatically-text h4 {
+    color: var(--foreground);
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+.automatically-text p {
+    font-size: 13px;
+    margin: 0px;
+    color: var(--muted-foreground);
+}
+.leadsaddmodal h2.card-title svg {
+    color: #0ff;
+}
+.leadstable h2.card-title {
+    padding: 21px;
+}
+.carddesign.leadstable {
+    padding: 0px;
+}
+.tabledesign .table thead tr th {
+    color: var(--card-foreground);
+    font-weight: 500;
+    background: none;
+    font-size: 13px;
+    padding: 12px 14px;
+    vertical-align: middle;
+    border-bottom: 1px solid #202e3c;
+}
+.tabledesign .table tbody tr td {
+    color: var(--muted-foreground);
+    font-weight: 300;
+    background: none;
+    font-size: 12px;
+    padding: 14px 14px;
+    vertical-align: middle;
+    border-bottom: 1px solid #202e3c;
+}
+.tabledesign .table tbody tr td strong {
+    font-weight: 500;
+    color: var(--card-foreground);
+}
+.tabledesign .table tbody tr td .leadlink {
+    color: var(--primary);
+    font-weight: 500;
+}
+.tabledesign .table tbody tr td .leadlink:hover {
+    text-decoration: underline !important;
+}
+.leaddropdown .btn.btn-primary {
+    background-color: var(--input-background);
+    border: none;
+    font-size: 12px;
+    color: var(--foreground);
+    font-weight: 300;
+    border-radius: 5px;
+    padding: 6px 6px;
+}
+.leaddropdown ul.dropdown-menu {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8.7px;
+    padding: 5px;
+}
+.leaddropdown ul.dropdown-menu a.dropdown-item:hover {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    border-radius: 7px;
+}
+.leaddropdown ul.dropdown-menu a.dropdown-item:focus {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    border-radius: 7px;
+}
+.leaddropdown ul.dropdown-menu a.dropdown-item {
+    color: var(--foreground);
+    font-weight: 300;
+    font-size: 13px;
+    padding: 4px 11px;
+}
+.leaddropdown .btn.btn-primary span.badge {
+    background-color: #ad46ff;
+    font-weight: 400;
+    padding: 5px 10px;
+    margin-right: 8px;
+}
+.leaddropdown .btn.btn-primary span.badge.badge2 {
+    background-color: #6a7282;
+}
+.leaddropdown .btn.btn-primary span.badge.badge3 {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+}
+.leaddropdown .btn.btn-primary span.badge.badge4 {
+    background-color: #00c951;
+}
+.leaddropdown .btn.btn-primary span.badge.badge5 {
+    background-color: #00a63e;
+}
+.leaddropdown .btn.btn-primary span.badge.badge6 {
+    background-color: #fb2c36;
+}
+td.actionbtn .btn.btn-add {
+    /*white-space: nowrap;
+    border: none !important;
+    background: none !important;*/
+}
+td.actionbtn .btn.btn-add:hover {
+   /* background-color: var(--primary) !important;
+    color: var(--primary-foreground) !important;*/
+}
+.actionbtn .leaddropdown .btn.btn-add:after {
+  display: none;
+}
+.actionbtn .leaddropdown .btn.btn-add {
+    padding: 7px 10px;
+    border: none !important;
+    background: none;
+}
+.actionbtn .leaddropdown ul.dropdown-menu {
+    padding: 0px;
+}
+.actionbtn .leaddropdown ul.dropdown-menu a.dropdown-item svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 10px;
+}
+.actionbtn .leaddropdown ul.dropdown-menu a.dropdown-item {
+    font-size: 12px;
+    margin: 5px;
+    display: flex;
+    align-items: center;
+}
+.actionbtn .leaddropdown ul.dropdown-menu a.dropdown-item:hover {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+}
+.actionbtn .leaddropdown ul.dropdown-menu li.sletborder {
+    border-top: 1px solid #202e3c;
+}
+.actionbtn .leaddropdown ul.dropdown-menu li.sletborder a.dropdown-item {
+    color: var(--destructive);
+}
+.talechebox .form-check-input {
+    background-color: var(--input-background);
+    border: 1px solid var(--border);
+}
+.talechebox .form-check-input:checked {
+    background-color: #00d4f0;
+    border: 1px solid var(--border);
+}
+.inputselect svg.lucide-chevron-down {
+    position: absolute;
+    top: 7px;
+    right: 13px;
+    width: 16px;
+    z-index: 0;
+    pointer-events: none;
+}
+.inputselect {
+    position: relative;
+}
+.filterbtn .btn.btn-add {
+    padding: 10px 14px;
+    width: 100%;
+}
+/*.filterbtn .btn.btn-add svg {
+    margin: 0px;
+}*/
+.lead-search .input-group {
+    gap: 0px 15px;
+    flex-wrap: nowrap;
+    margin-top: 12px;
+}
+.lead-search .input-group .inputselect {
+    width: 100%;
+}
+.lead-search .input-group .filterbtn {
+    width: 100%;
+}
+
+ul.leadlistul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.leadlist-box {
+    display: flex;
+    justify-content: space-between;
+
+}
+ul.leadlistul li {
+    border: 1px solid var(--border);
+    padding: 15px;
+    border-radius: 8.7px;
+    margin-bottom: 12px;
+}
+ul.leadlistul li:hover {
+   background-color: color-mix(in oklab, var(--accent) 5%, transparent);
+}           
+.leadlist-info .leadlist-name {
+    background-color: var(--muted);
+    width: 35px;
+    height: 35px;
+    color: var(--card-foreground);
+    font-size: 13px;
+    border-radius: 100px;
+    line-height: 35px;
+    text-align: center;
+    text-transform: uppercase;
+    position: absolute;
+    left: 0px;
+    top: 50%;
+    transform: translateX(-0%) translateY(-50%);
+}
+.leadlist-info {
+    min-height: 35px;
+    position: relative;
+    padding-left: 50px;
+}
+.leadlist-info h4 {
+    color: var(--foreground);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+.leadlist-info h5 {
+    color: var(--muted-foreground);
+    font-weight: 400;
+    font-size: 12px;
+    margin-bottom: 7px;
+}
+.leadlist-info h5 span {
+    margin-right: 13px;
+}
+.leadlist-action {
+    display: flex;
+    gap: 0px 13px;
+    align-items: center;
+}
+.status {
+    background-color: #dbeafe;
+    color: #193cb8;
+    padding: 2px 8px;
+    font-size: 11px;
+    border-radius: 7px;
+    display: inline-block;
+}
+.status.status1 {
+    color: #894b00;
+    background-color: #fef9c2;
+}
+.status.status2 {
+    color: #6e11b0;
+    background-color: #f3e8ff;
+}
+.status.status3 {
+    color: #016630;
+    background-color: #dcfce7;
+}
+.status.status4 {
+    color: #1e2939;
+    background-color: #f6f3f4;
+}
+.status.status5 {
+    color: #1e2939;
+    background-color: var(--primary);
+}
+.leadlist-price h4 {
+    color: var(--foreground);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+.leadlist-price h5 {
+    color: var(--muted-foreground);
+    font-weight: 400;
+    font-size: 12px;
+    margin-bottom: 0px;
+}
+.action-icon {
+    color: var(--foreground);
+    background-color: var(--background);
+    padding: 7px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+}
+.action-icon svg {
+    width: 14px;
+    height: 14px;
+}
+.action-icon:hover {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+}
+/*leads*/
+.modaldesign .modal-dialog {
+    max-width: 480px;
+}
+.modaldesign .modal-content {
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 8.7px;
+}
+.modaldesign .modal-header h4.modal-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--foreground);
+}
+.modaldesign .modal-body {
+    padding: 20px;
+}
+.modaldesign .modal-header {
+    padding: 20px 20px 0px 20px;
+    border: none;
+}
+.modaldesign .modal-header button.btn-close svg {
+    width: 14px;
+    height: 14px;
+    color: var(--foreground);
+}
+.modaldesign .modal-header button.btn-close {
+    background-image: none !important;
+    padding: 0px;
+    top: 24px;
+    opacity: 1;
+    position: absolute;
+    outline: none !important;
+    box-shadow: none !important;
+    right: 24px;
+}
+.lead-details-info {
+    display: flex;
+}
+.lead-details-contact {
+    width: 50%;
+    padding-right: 20px;
+}
+.lead-details-other {
+    width: 50%;
+}
+.lead-details-contact ul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.lead-details-contact ul li {
+    color: var(--foreground);
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+.lead-details-contact ul li svg{
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+}
+.lead-details-other ul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.lead-details-other ul li {
+    margin-bottom: 12px;
+}
+.lead-details-other ul li h5 {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    font-weight: 400;
+    margin-bottom: 2px;
+}
+.lead-details-other ul li h4 {
+    color: var(--foreground);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+.lead-details-note h4 {
+    color: var(--foreground);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+.lead-details-note ul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.lead-details-note ul li {
+    background-color: var(--muted);
+    padding: 10px 15px;
+    border-radius: 8.7px;
+    color: var(--foreground);
+    font-size: 12px;
+    margin-bottom: 8px;
+    font-weight: 400;
+}
+.modalfooter {
+    display: flex;
+    gap: 0px 9px;
+    justify-content: space-between;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    margin-top: 20px;
+}
+.emailcard p {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin-bottom: 10px;
+    line-height: 16px;
+}
+.emailcard .btn.btn-send {
+    width: 100%;
+}
+.emailcard .badge {
+    color: #9f2d00;
+    background-color: #ffedd4;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    position: absolute;
+    right: 20px;
+    top: 19px;
+}
+.comingsoon {
+    opacity: .75;
+    pointer-events: none;
+}
+.emailcard .badge svg {
+    margin-right: 8px;
+    width: 14px;
+    height: 14px;
+}
+.emailcard h2.card-title {
+    margin-bottom: 25px;
+}
+.modaldesign .modal-header h4.modal-title svg {
+    width: 17px;
+    height: 17px;
+    margin-right: 8px;
+}
+.modaldesign .modal-header h4.modal-title p {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin: 4px 0px 0px 0px;
+    font-weight: 400;
+}
+.modaldesign.emailmodal .modal-dialog {
+    max-width: 1120px;
+}
+.formdesign .form-group {
+    margin-bottom: 20px;
+}
+.formdesign .form-group label {
+    display: block;
+    color: var(--foreground);
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+.formdesign .form-group .form-control {
+    background-color: var(--input-background);
+    outline: none !important;
+    box-shadow: none !important;
+    border: 1px solid var(--input);
+    color: var(--card-foreground);
+    font-size: 12px;
+    border-radius: 8.7px;
+    padding: 8px 15px;
+}
+.formdesign .form-group .form-control::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: var(--muted-foreground);
+}
+.formdesign .form-group .form-control::-moz-placeholder { /* Firefox 19+ */
+    color: var(--muted-foreground);
+}
+.formdesign .form-group .form-control:-ms-input-placeholder { /* IE 10+ */
+    color: var(--muted-foreground);
+}
+.formdesign .form-group .form-control:-moz-placeholder { /* Firefox 18- */
+    color: var(--muted-foreground);
+}
+.formdesign .form-group .form-select::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: var(--muted-foreground);
+}
+.formdesign .form-group .form-select::-moz-placeholder { /* Firefox 19+ */
+    color: var(--muted-foreground);
+}
+.formdesign .form-group .form-select:-ms-input-placeholder { /* IE 10+ */
+    color: var(--muted-foreground);
+}
+.formdesign .form-group .form-select:-moz-placeholder { /* Firefox 18- */
+    color: var(--muted-foreground);
+}
+.formdesign .form-group .inputselect select.form-select {
+    font-size: 12px;
+    padding: 8px 15px;
+}
+span.inputnote {
+    color: var(--muted-foreground);
+    font-size: 10px;
+    line-height: 14px;
+    display: block;
+    margin-top: 6px;
+}
+.addoption {
+    margin-top: 8px;
+}
+.addoption .btn {
+    margin-right: 6px;
+}
+.emailmodaltab-heading {
+    margin-bottom: 32px;
+}
+.emailmodaltab-heading h3 {
+    color: var(--foreground);
+    font-size: 12px;
+    font-weight: 400;
+    margin-bottom: 7px;
+}
+.emailmodaltab-heading p {
+    color: var(--muted-foreground);
+    font-size: 10px;
+    line-height: 14px;
+    display: block;
+    margin: 0px;
+}
+.emailmodaltab ul.nav.nav-tabs {
+    border: none;
+    background-color: var(--muted);
+    border-radius: 40px;
+    padding: 4px;
+    margin-bottom: 20px;
+}
+.emailmodaltab ul.nav.nav-tabs li.nav-item {
+    width: 33.33%;
+}
+.emailmodaltab ul.nav.nav-tabs a.nav-link.active {
+    background-color: var(--card);
+}
+.emailmodaltab ul.nav.nav-tabs a.nav-link {
+    color: var(--foreground);
+    font-size: 12px;
+    padding: 4px 10px;
+    text-align: center;
+    border-radius: 100px;
+    border: none;
+}
+ul.emailmodal-tab-ul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.emailmodal-tab-list {
+    position: relative;
+    padding-left: 27px;
+    min-height: 30px;
+}
+.emailmodal-tab-list-icon {
+    position: absolute;
+    background-color: color-mix(in oklab, var(--primary) 10%, transparent);
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    left: 0px;
+    top: 0px;
+}
+.emailmodal-tab-list-icon svg {
+    width: 11px;
+    height: 11px;
+}
+.emailmodal-tab-list-desc h4 {
+    color: var(--foreground);
+    font-size: 12px;
+    font-weight: 400;
+    margin: 0px;
+}
+.copybtn.btn.btn-add {
+    padding: 0px;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    margin-left: 4px;
+    background: none;
+    border: none !important;
+}
+.copybtn.btn.btn-add svg {
+    margin: 0px;
+}
+.emailmodal-tab-list-desc p {
+    color: var(--muted-foreground);
+    font-size: 10px;
+    line-height: 14px;
+    display: block;
+    margin: 2px 0px 3px 0px;
+}
+.emailmodal-tab-list-desc .badge {
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 5px 9px;
+}
+ul.emailmodal-tab-ul li {
+    padding: 8px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+}
+ul.emailmodal-tab-ul li:hover {
+    background-color: var(--muted);
+}
+.emailmodal .modalfooter {
+    justify-content: end;
+}
+.texttypelimit {
+    display: flex;
+    justify-content: space-between;
+}
+.texttype-besked {
+    color: var(--muted-foreground);
+    font-size: 10px;
+    line-height: 14px;
+    display: block;
+    margin-top: 6px;
+}
+.switchbtn .switch {
+  position: relative;
+  display: inline-block;
+  width: 31px;
+  height: 18px;
+  vertical-align: middle;
+}
+.switchbtn .switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switchbtn .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--switch-background);
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+.switchbtn .slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 2px;
+  background-color: var(--card);
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+.switchbtn input:checked + .slider {
+  background-color: var(--primary);
+}
+.switchbtn input:checked + .slider:before {
+  -webkit-transform: translateX(11px);
+  -ms-transform: translateX(11px);
+  transform: translateX(11px);
+}
+.switchbtn .slider.round {
+  border-radius: 34px;
+}
+.switchbtn .slider.round:before {
+  border-radius: 50%;
+}
+.leadlist-info h4 .badge {
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 5px 9px;
+    margin: 0px 9px;
+}
+.workflows .leadlist-info .leadlist-name {
+    background-color: color-mix(in oklab, var(--primary) 10%, transparent);
+    border-radius: 7px;
+}
+.workflows .leadlist-info .leadlist-name svg {
+    width: 17px;
+    height: 17px;
+    color: var(--primary);
+}
+.modalfooter.btn-right {
+    justify-content: right;
+}
+.workflowmodal .modal-header {
+    flex-wrap: wrap;
+}
+.modaldesign.workflowmodal .modal-header h4.modal-title span {
+    width: 31px;
+    height: 31px;
+    display: inline-block;
+    background-color: color-mix(in oklab, var(--primary) 10%, transparent);
+    border-radius: 7px;
+    text-align: center;
+    line-height: 31px;
+    margin-right: 13px;
+}
+.modaldesign.workflowmodal .modal-header h4.modal-title span svg {
+    margin: 0px;
+    color: var(--primary);
+}
+.workflowmodal .modal-header p {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin: 7px 0px 0px 0px;
+    font-weight: 400;
+}
+.workflowmodal .switchbtn .status {
+    margin-left: 10px;
+}
+.addstep-heading {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    align-items: center;
+}
+.addstep-heading .form-group {
+    margin: 0px;
+}
+.addstep-heading h2.card-title {
+    margin: 0px;
+}
+.addstep-heading .btn.btn-primary {
+    width: 170px;
+    text-align: left;
+    padding: 9px 15px;
+}
+.addstep-heading .btn.btn-primary svg {
+    margin-right: 7px;
+    width: 14px;
+    height: 14px;
+    margin-top: -1px;
+}
+.addstep-heading .btn.btn-primary:after {
+    display: none;
+}
+.addstep-heading .leaddropdown ul.dropdown-menu a.dropdown-item {
+    display: flex;
+    align-items: center;
+}
+.addstep-svg svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 9px;
+}
+.addstep-heading .leaddropdown ul.dropdown-menu a.dropdown-item label {
+    margin: 0px;
+    font-size: 12px;
+}
+.addstep-heading .leaddropdown ul.dropdown-menu a.dropdown-item label span {
+    display: block;
+    font-weight: 300;
+    font-size: 11px;
+    color: var(--muted-foreground);
+    line-height: 11px;
+}
+.addstep-heading .leaddropdown ul.dropdown-menu a.dropdown-item:hover label{
+    color: var(--primary-foreground);
+} 
+.addstep-heading .leaddropdown ul.dropdown-menu a.dropdown-item:hover label span {
+    color: var(--primary-foreground);
+}
+.addstepbox {
+    text-align: center;
+    border-style: dashed;
+    border-width: 2px;
+    border-color: var(--border);
+    border-radius: 10px;
+    padding: 35px;
+    margin-bottom: 23px;
+}
+.addstepbox svg.lucide.lucide-plus.mx-auto {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 14px;
+    color: var(--muted-foreground);
+}
+.addstepbox h4 {
+    color: var(--card-foreground);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+.addstepbox p {
+    color: var(--muted-foreground);
+    font-weight: 400;
+    font-size: 12px;
+    margin-bottom: 15px;
+}
+
+
+
+.workflowmodal .switchbtn .switchbtntext {
+    color: var(--card-foreground);
+    font-size: 14px;
+    font-weight: 400;
+    margin-left: 10px;
+}
+.workflowmodal .switchbtn {
+    margin-bottom: 14px;
+}
+.workflowsadd {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+.workflowsadd h2.card-title {
+    margin: 0px;
+}
+.workflows-showbox-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 0px 11px;
+}
+.workflowsadd-icon {
+    text-align: center;
+}
+.workflowsadd-icon span {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    border: 1px solid #b9f8cf;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.workflowsadd-icon span svg {
+    width: 21px;
+    height: 21px;
+}
+.statusupdate .workflowsadd-icon span {
+    border: 1px solid #ffd7a8;
+}
+.statusupdate .workflowsadd-icon span .lucide-target {
+    color: #f54a00;
+}
+.workflowsadd-icon span .lucide-mail {
+    color: #155dfc;
+}
+.workflowsadd-icon span .lucide-message-square {
+    color: #00a63e;
+}
+.assignuser .workflowsadd-icon span {
+    border: 1px solid #202e3c;
+}
+.assignuser .workflowsadd-icon span .lucide-user-plus {
+    color: #9810fa;
+}
+.assignuser .workflowsadd-icon span .lucide.lucide-tag {
+    color: #e60076;
+}
+.waitdelay .workflowsadd-icon span .lucide-clock {
+    color: #4a5565;
+}
+.condition .workflowsadd-icon span {
+    border: 1px solid #202e3c;
+}
+.condition .workflowsadd-icon span .lucide-circle-alert {
+    color: #d08700;
+}
+h2.card-title.conditioncard-title2 {
+    margin-top: 20px;
+}
+h2.card-title.conditioncard-title2 .lucide-circle-alert {
+    color: #d08700;
+}
+.workflowsadd-icondesc .inputselect select.form-select {
+    min-width: auto;
+}
+.condition .col-md-4 {
+    padding: 0px 3px;
+}
+.condition .col-md-6 {
+    padding: 0px 3px;
+}
+.condition .row{
+    margin: 0px -3px;
+}
+.carddesign.cardhandling1 {
+    padding: 15px;
+    background: #838f8e;
+    border: 1px solid #b9f8cf;
+    margin-bottom: 0px;
+}
+.cardhandling1 h4 {
+    color: #008236 !important;
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 14px !important;
+}
+.cardhandling1 h4 span {
+    background-color: #00c951;
+    width: 10px;
+    height: 10px;
+    position: absolute;
+    left: 0px;
+    top: 4px;
+    border-radius: 11px;
+}
+.carddesign.cardhandling2 {
+    padding: 15px;
+    background: #8a898d;
+    border: 1px solid #ffc9c9;
+    margin-bottom: 0px;
+}
+.cardhandling2 h4 {
+    color: #c10007 !important;
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 14px !important;
+}
+.cardhandling2 h4 span {
+    background-color: #fb2c36;
+    width: 10px;
+    height: 10px;
+    position: absolute;
+    left: 0px;
+    top: 4px;
+    border-radius: 11px;
+}
+.opretworkflowleft {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin: 0px;
+    font-weight: 400;
+}
+.modalfooter.btn-right.opretworkflow {
+    justify-content: space-between;
+    align-items: center;
+}
+.alertbox {
+    background-color: 
+ color-mix(in oklab, var(--primary) 5%, transparent);
+    border: 1px solid var(--primary);
+    padding: 14px;
+    border-color: 
+ color-mix(in oklab, var(--primary) 20%, transparent);
+    border-radius: 8px;
+}
+.workflowsadd-icon span .lucide.lucide-zap {
+    color: #4a5565;
+}
+.alertbox h2.card-title {
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+.alertbox p {
+    color: var(--muted-foreground);
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 400;
+    margin: 0px;
+}
+.alertbox p strong {
+    font-weight: 600;
+}
+.statusupdate a.dropdown-item .dot {
+    position: absolute;
+    left: 4px;
+    width: 7px;
+    height: 7px;
+    border-radius: 100px;
+    top: 50%;
+    margin-top: -3.5px;
+}
+.purpledot {
+    background-color: #ad46ff;
+}
+.greendot {
+    background-color: #00c951;
+}
+.reddot {
+    background-color: #fb2c36;
+}
+.statusupdate a.dropdown-item {
+    font-weight: 400 !important;
+    font-size: 12px !important;
+    position: relative;
+    padding: 4px 11px 4px 20px !important;
+}
+.workflowsadd-icon .badge {
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 3px 7px;
+    margin-top: 9px;
+}
+.workflowsadd-icondesc {
+    width: 100%;
+}
+.workflowsadd-headingsec {
+    display: flex;
+    gap: 0px 9px;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+.workflowsadd-heading-action {
+    display: flex;
+    align-items: center;
+}
+.carddesign.workflowsaddcarddesign {
+    border: 2px solid var(--border);
+}
+.carddesign.workflowsaddcarddesign:hover {
+    border: 2px solid #105562;
+}
+/*.workflows-showbox-title {
+    position: relative;
+    padding-left: 38px;
+    margin-bottom: 17px;
+    min-height: 28px;
+}*/
+/*.workflows-showbox-title span {
+    background-color: color-mix(in oklab, var(--primary) 10%, transparent);
+    width: 28px;
+    height: 28px;
+    display: inline-block;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    border-radius: 6px;
+    text-align: center;
+}*/
+/*.workflows-showbox-title span svg {
+    width: 14px;
+    height: 14px;
+}*/
+.workflows-showbox-title h4 {
+    color: var(--card-foreground);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+.workflows-showbox-title .workflows-status {
+    color: var(--muted-foreground);
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 400;
+}
+.workflowsadd-heading span {
+    color: var(--card-foreground);
+    background-color: var(--secondary);
+    font-size: 10px;
+    padding: 3px 8px;
+    margin-left: 10px;
+}
+.workflows-showbox-title .btn.btn-add {
+  /*  position: absolute;
+    top: 0px;
+    right: 0px;*/
+    background: none;
+    border: none !important;
+    padding: 6px 9px;
+}
+.workflows-showbox-title .btn.btn-add svg {
+    margin-right: 0px;
+}
+.integrations-top span svg.lucide {
+    color: var(--primary);
+}
+.integrations-top span {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    background-color: 
+ color-mix(in oklab, var(--primary) 10%, transparent);
+    color: var(--primary);
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    text-align: center;
+    line-height: 42px;
+}
+.integrations-top {
+    position: relative;
+    min-height: 42px;
+    padding-left: 53px;
+        margin-bottom: 25px;
+}
+.integrations-top h4 {
+    font-size: 13px;
+    margin: 0px;
+    font-weight: 400;
+    padding: 4px 0px 0px 0px;
+}
+.integrations-top h5 {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin: 4px 0px 0px 0px;
+    font-weight: 400;
+}
+.integrationsbox p {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin: 0px 0px 11px 0px;
+    font-weight: 400;
+}
+.integrationsbox .btn.btn-send {
+    width: 100%;
+}
+p.connectbox-note {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin: 0px 0px 10px 0px;
+    font-weight: 400;
+}
+/*integrations*/
+
+
+/*leads-view*/
+.carddesign.leads-header {
+    margin: 0px;
+    border-radius: 0px;
+}
+.leads-headerbox {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.leads-headerbox-left {
+    display: flex;
+    align-items: center;
+    gap: 0px 14px;
+}
+.leads-headerbox-left h4 {
+    font-size: 21px;
+    margin: 0px;
+}
+.leads-headerbox-left h4 span {
+    display: block;
+    font-weight: 300;
+    font-size: 12px;
+    color: var(--muted-foreground);
+    margin-top: 5px;
+}
+.leadsleft-bar {
+        width: 430px;
+    min-width: 430px;
+    padding: 14px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background-color: color-mix(in oklab, var(--card) 50%, transparent);
+}
+h3.leads-subheading {
+    color: var(--muted-foreground);
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 400;
+    margin: 13px 0px 13px;
+}
+.leads-contact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.leads-info {
+    display: flex;
+    gap: 0px 8px;
+}
+.leads-info svg {
+    width: 10px;
+    height: 10px;
+}
+.leads-info h4 {
+    color: var(--card-foreground);
+    font-size: 11px;
+    font-weight: 400;
+    margin: 0px;
+}
+.leadsleft-bar h2.card-title {
+    margin-bottom: 30px;
+}
+.leads-info-edit {
+    min-width: 51px;
+    opacity: 0;
+    pointer-events: none;
+}
+.leads-contact:hover .leads-info-edit {
+    opacity: 1;
+    pointer-events: visible;
+}
+.leads-info-text {
+    width: 270px;
+}
+.leads-view-action .btn.btn-add {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 7px;
+}
+.textareaview {
+    background-color:  color-mix(in oklab, var(--primary) 10%, transparent);
+    border: 1px solid #105d62;
+    padding: 8px;
+    border-width: 1px;
+    color: var(--foreground);
+    font-size: 11px;
+    border-radius: 4px;
+}
+.lead-message .form-group label {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+.leads-infocol {
+    border-bottom: 1px solid #202e3c;
+    margin-bottom: 15px;
+    padding-bottom: 11px;
+}
+.leads-firma-text {
+    width: 130px;
+}
+.leads-firma .form-group {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    align-items: end;
+}
+.formdesign .form-group .leads-firmacol label {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+.leads-firma-text h5 {
+    color: var(--card-foreground);
+    font-size: 12px;
+    font-weight: 400;
+    margin: 0px;
+}
+.leads-firma .form-group:hover .leads-info-edit{
+    opacity: 1;
+    pointer-events: visible;
+}
+h3.leads-subheading svg {
+    width: 10px;
+    height: 10px;
+    margin-right: 7px;
+}
+ul.leads-timeline {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+    height: 296px;
+    overflow-y: scroll;
+}
+ul.leads-timeline::-webkit-scrollbar {
+  width: 5px;
+}
+ul.leads-timeline::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px #101418; 
+  border-radius: 10px;
+}
+ul.leads-timeline::-webkit-scrollbar-thumb {
+  background: #202e3c; 
+  border-radius: 10px;
+}
+ul.leads-timeline::-webkit-scrollbar-thumb:hover {
+  background: #0ff; 
+}
+.leads-timeline-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.leads-timeline-profile svg {
+    width: 10px;
+    height: 10px;
+}
+.leads-timeline-profile h5 {
+    color: var(--card-foreground);
+    font-size: 12px;
+    font-weight: 400;
+    margin: 0px;
+   /* width: 76px;*/
+    padding-right: 8px;
+}
+.leads-timeline-date {
+    color: var(--muted-foreground);
+    font-size: 11px;
+    width: 108px;
+    text-align: right;
+}
+.leads-timeline-profile {
+    display: flex;
+    align-items: center;
+    gap: 0px 8px;
+}
+.leads-timeline-details {
+    padding-left: 18px;
+    padding-top: 7px;
+    line-height: 12px;
+}
+.leads-timeline-details span {
+    font-size: 11px;
+    line-height: 12px;
+    display: inline-block;
+    font-weight: 300;
+}
+.leads-timeline-box {
+    background-color:  color-mix(in oklab, var(--muted) 30%, transparent);
+    border: 1px solid #1c2632;
+    padding: 10px;
+    border-radius: 8px;
+}
+.leads-timeline-profile h5 svg {
+    margin-right: 5px;
+}
+.formdesign.timelinecomment {
+    margin-top: 13px;
+}
+.formdesign.timelinecomment .form-group {
+    margin-bottom: 10px;
+}
+.timelinecomment .btn.btn-send {
+    padding: 6px 9px;
+}
+.leadsviewrow {
+    display: flex;
+    gap: 0px 20px;
+}
+.leadscenter-bar {
+    width: 100%;
+    margin-top: 20px;
+}
+.leadsright-bar {
+    width: 430px;
+    min-width: 430px;
+    padding: 14px;
+    border-left: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background-color: color-mix(in oklab, var(--card) 50%, transparent);
+}
+.location-map .input-group {
+    gap: 0px 14px;
+}
+.location-map .input-group input.form-control {
+    border-radius: 8.7px !important;
+}
+.location-map .input-group .btn.btn-send {
+    border-radius: 8.7px !important;
+}
+.location-mapview iframe {
+    width: 100%;
+    border: 1px solid var(--border)!important;
+    height: 600px;
+}
+.location-mapview p {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin: 6px 0px 0px 0px;
+    font-weight: 400;
+}
+.carddesign.leadssliderbox {
+    padding: 15px;
+    margin-bottom: 17px;
+}
+.leadsslider span {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    font-weight: 400;
+}
+.leadsslider {
+    text-align: center;
+    position: relative;
+    min-height: 32px;
+}
+.leadsslider .btn.btn-add {
+    padding: 6px 8px;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+.leadsslider .btn.btn-add.leadssliderright-icon {
+    left: 40px;
+}
+.leadsright-bar .emailmodaltab ul.nav.nav-tabs li.nav-item {
+    width: 50%;
+}
+.leadsright-bar .dropdown.leaddropdown .btn.btn-primary {
+    width: 100%;
+    text-align: left;
+    padding: 9px 15px;
+    border-radius: 8px;
+}
+.leadsright-bar .dropdown.leaddropdown .btn.btn-primary:after {
+  display: none;
+}
+.leadsright-bar .dropdown.leaddropdown ul.dropdown-menu {
+    width: 100%;
+}
+.leadsright-bar .dropdown.leaddropdown ul.dropdown-menu a.dropdown-item span {
+    display: block;
+    font-weight: 300;
+    font-size: 12px;
+    color: var(--muted-foreground);
+}
+.leadsright-bar .dropdown.leaddropdown ul.dropdown-menu a.dropdown-item:hover span{
+    color: var(--primary-foreground);
+}
+.leadsright-bar .dropdown.leaddropdown ul.dropdown-menu a.dropdown-item {
+    font-weight: 500;
+}
+.tags .badge {
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 5px 9px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+.displayadbox-icon {
+    position: relative;
+    padding-right: 55px;
+}
+.displayadbox-icon .btn.btn-add {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+}
+.displayadbox-group {
+    display: flex;
+    gap: 0px 10px;
+}
+.displayadbox-result {
+    display: flex;
+    justify-content: space-between;
+}
+.displayadbox-resultleft h6 {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin: 6px 0px 0px 0px;
+    font-weight: 400;
+}
+.displayadbox-resultleft span {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin: 6px 0px 0px 0px;
+    font-weight: 400;
+    display: block;
+}
+.displayadbox-resultright {
+    color: var(--card-foreground);
+    font-size: 14px;
+    font-weight: 500;
+}
+.displayadbox {
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 8px;
+}
+.result-calculat {
+    background-color: var(--muted);
+    padding: 15px;
+    border-radius: 8px;
+}
+.result-calculattop h5 {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 300;
+    margin-bottom: 8px;
+}
+.result-calculatbottom {
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+    padding-top: 10px;
+}
+.result-calculatbottom h5 {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 500;
+    margin: 0px;
+}
+h5.resultrabat {
+    color: #00a63e;
+}
+.leads-previousoffers-box {
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 8px;
+}
+.leads-previousoffers-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: self-start;
+}
+.leads-previousoffers-left h4 {
+    font-size: 13px;
+    margin-bottom: 2px;
+    font-weight: 500;
+}
+.leads-previousoffers-left h6 {
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--muted-foreground);
+    margin: 0px;
+}
+.leads-previousoffers-box h5 {
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--muted-foreground);
+    margin: 10px 0px 0px 0px;
+    display: flex;
+    justify-content: space-between;
+}
+.leads-previousoffers-box h3 {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 500;
+    margin: 10px 0px 0px 0px;
+    align-items: center;
+}
+.leads-previousoffers-btn .btn.btn-add {
+    padding: 7px 11px;
+}
+.modaldesign.sendoffer .modal-dialog {
+    max-width: 1160px;
+}
+.modaldesign.sendoffer .modal-header {
+    padding: 15px 20px;
+    background-color: #155dfc;
+}
+.modaldesign.sendoffer .modal-header h4.modal-title {
+    color: #ffffff;
+}
+.sendoffer-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+}
+.sendoffer-action .form-group {
+    display: flex;
+    gap: 0px 30px;
+    align-items: center;
+    margin: 0px;
+}
+.sendoffer-action .form-group label {
+    margin: 0px;
+}
+.sendoffer-status span {
+    color: var(--muted-foreground);
+    font-size: 11px;
+    line-height: 14px;
+    display: block;
+    margin: 7px 0px 0px 0px;
+    font-style: italic;
+}
+.sendoffer-action .modalfooter.btn-right {
+    border: none;
+    margin: 0px;
+    padding: 0px;
+}
+.sendoffer-action .btn.btn-send {
+    background: #155dfc;
+}
+.sendoffercheck-row {
+    margin-top: 20px;
+}
+.sendoffer-sms h2.card-title input {
+    margin: 1px 8px 0px 0px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+}
+.sendoffer-sms h2.card-title input:checked {
+    margin: 1px 8px 0px 0px;
+    background-color: #00d4f0;
+    border: 1px solid var(--border);
+}
+.sendoffer-info {
+    background-color: #00a63e;
+    border-radius: 6px;
+    padding: 11px 16px;
+    display: flex;
+    font-size: 14px;
+    color: #fff;
+    align-items: center;
+    font-weight: 400;
+    margin-bottom: 15px;
+}
+.sendoffer-info svg{
+    width: 14px;
+    height: 14px;
+    margin-right: 10px;
+}
+.carddesign.smspreview {
+    background-color: var(--input-background);
+    padding: 15px;
+}
+.smspreviewbox {
+    background: #fff;
+    border-radius: 8px;
+    display: inline-block;
+    padding: 13px;
+    max-width: 300px;
+}
+.smspreviewbox h5 {
+    font-size: 12px;
+    font-weight: 300;
+    color: #6a7282;
+    margin: 0px 0px 3px 0px;
+}
+.smspreviewbox p {
+    margin: 0px;
+    font-size: 12px;
+    color: #000;
+    font-weight: 400;
+}
+.emailpreviewbox {
+    background: #fff;
+    border-radius: 8px;
+    display: inline-block;
+    padding: 13px;
+}
+.emailpreview-from div {
+    color: #000;
+    font-size: 12px;
+    font-weight: 400;
+}
+.emailpreview-from div strong {
+    font-weight: 600;
+}
+.emailpreview-from {
+    border-bottom: 1px solid #000;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+.emailpreview-body {
+    font-size: 13px;
+    color: #000;
+    font-weight: 300;
+}
+.emailpreview-body pre.pre-wrap {
+    white-space: break-spaces;
+}
+.modaldesign.sendemailmodal .modal-dialog {
+    max-width: 1010px;
+}
+.sendemaiinfo {
+    background-color: 
+ color-mix(in oklab, var(--primary) 5%, transparent);
+    border: 1px solid #0c414b;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 0px 15px;
+    font-size: 13px;
+    font-weight: 300;
+}
+.sendemaiinfo svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+    color: var(--primary);
+}
+.dropdown.leaddropdown.sendemaidropdown .btn.btn-primary {
+    width: 100%;
+    text-align: left;
+    padding: 9px 15px;
+    border-radius: 8px;
+}
+.dropdown.leaddropdown.sendemaidropdown ul.dropdown-menu {
+    width: 100%;
+}
+.dropdown.leaddropdown.sendemaidropdown ul.dropdown-menu a.dropdown-item {
+    font-weight: 500;
+}
+.dropdown.leaddropdown.sendemaidropdown ul.dropdown-menu a.dropdown-item span {
+    display: block;
+    font-weight: 300;
+    font-size: 12px;
+    color: var(--muted-foreground);
+}
+.dropdown.leaddropdown.sendemaidropdown ul.dropdown-menu a.dropdown-item:hover span {
+    color: var(--primary-foreground);
+}
+.dropdown.leaddropdown.sendemaidropdown .btn.btn-primary::after {
+  display: none;
+}
+.badgelist {
+  margin: 0px;
+  padding: 0px;
+  list-style: none; 
+}
+.badgelist li .badge {
+    margin: 0px 3px 3px 0px;
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 5px 9px;
+}
+.eksempler {
+    color: var(--muted-foreground);
+    font-size: 10px;
+    line-height: 14px;
+    margin: 0px;
+}
+.eksempler span {
+    display: block;
+    margin-bottom: 2px;
+}
+.formdesign .sendemailform-preview .form-group label {
+    color: var(--muted-foreground);
+}
+.sendemailform-preview h5 {
+    color: var(--card-foreground);
+    font-size: 12px;
+    font-weight: 400;
+    margin: 0px;
+}
+.sendemailform-preview .carddesign {
+    color: var(--card-foreground);
+    font-size: 12px;
+    font-weight: 400;
+    margin: 0px;
+    padding: 14px 19px;
+}
+/*pricing*/
+.emailcard h4 {
+    color: var(--card-foreground);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+.pricing-cardbtn {
+    display: flex;
+    gap: 0px 8px;
+}
+.workflowsadd h2.card-title p {
+    margin: 3px 0px 0px 0px;
+    color: var(--muted-foreground);
+    font-size: 11px;
+    line-height: 16px;
+}
+.pricingmodal .workflowsadd .btn.btn-add {
+    white-space: nowrap;
+}
+.carddesign.lineitemsbox {
+    padding: 15px;
+}
+.lineitemsbox h2.card-title span.status {
+    margin-left: 7px;
+    padding: 4px 8px;
+}
+.lineitemsbox h2.card-title span.status svg {
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+}
+.lineitemsinputs {
+    margin: 0px -6px;
+}
+.lineitemsinputs .col-md-3 {
+    padding: 0px 6px;
+}
+.formdesign .lineitemsinputs .form-group label {
+    font-size: 12px;
+}
+.itemswitch .itemswitchtaxt {
+    margin: 0px;
+    color: var(--muted-foreground);
+    font-size: 11px;
+    line-height: 16px;
+}
+.itemswitch {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.itemswitchbtn span.itemtype {
+    color: var(--foreground);
+    font-size: 13px;
+}
+.itemswitchbtn label.switch {
+    margin: 0px 8px;
+}
+.itemswitchbtn span.switchbtntext {
+    color: var(--foreground);
+    font-size: 11px;
+}
+.switchbtn.itemswitch {
+    margin-bottom: 15px;
+}
+.itemrequiredrow .carddesign.itemrequired {
+    border: none;
+    background-color: #eff6ff;
+}
+.itemrequiredrow .itemrequired h4 {
+    color: var(--color-blue-900);
+}
+.itemrequiredrow .carddesign.itemrequired p {
+    color: var(--color-blue-700);
+}
+.itemrequiredrow h4 {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 21px;
+}
+.itemrequiredrow h4 span {
+    text-align: right;
+    font-weight: 500;
+}
+.itemrequiredrow p {
+    margin: 0px;
+    font-size: 11px;
+    color: var(--muted-foreground);
+}
+.itemrequiredrow .carddesign {
+    padding: 15px;
+    margin: 0px;
+}
+.lineitemsbox h2.card-title {
+    position: relative;
+}
+.lineitemsbox h2.card-title .btn.btn-add {
+    position: absolute;
+    right: 0px;
+    top: -3px;
+    padding: 5px 8px;
+    border: none !important;
+    background: none;
+}
+/*pricing*/
+
+
+/*login*/
+.loginmain {
+    max-width: 500px;
+    margin: 90px auto;
+}
+.logo a {
+    display: block;
+    width: 200px;
+    margin: 0px auto 30px;
+}
+.loginmain h1 {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 30px;
+}
+.forgotpassword {
+    text-align: right;
+}
+.forgotpassword a {
+    color: var(--primary);
+    font-size: 14px;
+    font-weight: 400;
+}
+.loginmain h5 {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+    margin: 14px 0px 0px 0px;
+}
+.loginmain h5 a{
+    color: var(--primary);
+    font-weight: 500;
+}
+.login-btn .btn.btn-send {
+    width: 100%;
+    padding: 10px 18px;
+}
+.loginmain .carddesign {
+    padding: 35px;
+}
+.loginmain .formdesign .form-group .form-control {
+    padding: 10px 18px;
+}
+
+
+
+
+
+
+
+
+
+
+

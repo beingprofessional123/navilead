@@ -1,0 +1,40 @@
+# === Node Modules ===
+frontend/node_modules/
+backend/node_modules/
+navilead
+
+# === Environment Files ===
+frontend/.env
+backend/.env
+.env
+.env.local
+.env.*.local
+
+# === Build & Output ===
+frontend/build/
+frontend/dist/
+backend/build/
+backend/dist/
+
+# === Logs ===
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# === Coverage & Cache ===
+coverage/
+.cache/
+.next/
+out/
+
+# === Editor & System Files ===
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
