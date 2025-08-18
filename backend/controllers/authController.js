@@ -26,7 +26,7 @@ exports.register = async (req, res) => {
       { variableName: 'last_name', variableValue: lastName },
       { variableName: 'full_name', variableValue: name },
       { variableName: 'email', variableValue: email },
-      { variableName: 'offer_link', variableValue: `https://navilead.com/offer/:quoteId` },
+      { variableName: "offer_link", variableValue: `${process.env.FRONTEND_URL}/offer/:quoteId`}
     ];
 
     await UserVariable.bulkCreate(

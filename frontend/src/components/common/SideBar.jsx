@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
 const SideBar = () => {
-    const { user } = useContext(AuthContext);
+    const { user, logout } = useContext(AuthContext);
     const location = useLocation();
 
     const isActive = (path) => {
@@ -141,6 +141,23 @@ const SideBar = () => {
                         Admin Panel
                     </Link>
                 </li>
+                <li className="adminpanel">
+                    <Link to="#" onClick={logout} >
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                                className="lucide lucide-log-out w-4 h-4" aria-hidden="true">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 
+                                        2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                        </span>
+                        Logout
+                    </Link>
+                </li>
+
             </ul>
             {/* User Information Section */}
             <div className="userinfo">

@@ -477,7 +477,7 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
                 </div>
 
                 <div className="modal-footer btn-right">
-                  <button type="button" className="btn btn-add" onClick={onHide}>Cancel</button>
+                  <button type="button" className="btn btn-add" data-bs-dismiss="modal" onClick={onHide}>Cancel</button>
                   <button type="submit" className="btn btn-send" disabled={loading}>
                     {loading ? 'Submitting...' : leadData ? 'Edit Lead' : 'Create Lead'}
                   </button>

@@ -94,11 +94,21 @@ const OfferPage = () => {
 
 
   const formatCurrency = (value) => {
-    return new Intl.NumberFormat('da-DK', {
+    if (!offer?.pricingTemplate?.currency) {
+      return value; // fallback if currency not available
+    }
+
+    const currencyCode = offer.pricingTemplate.currency.code || 'DKK'; // fallback to DKK
+    const locale = currencyCode === 'USD' ? 'en-US'
+                  : currencyCode === 'EUR' ? 'de-DE'
+                  : 'da-DK'; // pick locale based on currency (extendable)
+
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: 'DKK',
+      currency: currencyCode,
     }).format(value);
   };
+
 
   const handleItemToggle = (serviceId) => {
     setSelectedServiceIds(prev => {
@@ -280,7 +290,15 @@ const OfferPage = () => {
         <section className="card" aria-labelledby="tilbud-title">
           <div className="offer-title">
             <h1 id="tilbud-title">{offer.title}</h1>
-            {offer.status && <div className="badge">{offer.status.name}</div>}
+            {offer.status && (
+              <div className="badge">
+                {offer.status.name === "Viewed by customer"
+                  ? "Offer is viewed by you"
+                  : offer.status.name === "Accepted"
+                  ? "This offer is accepted by you"
+                  : offer.status.name}
+              </div>
+            )}
           </div>
 
           {/* Intro */}

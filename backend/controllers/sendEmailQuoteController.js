@@ -72,7 +72,6 @@ exports.storeSendEmailQuote = async (req, res) => {
     });
 
     if (offerSentStatus) {
-      // 3. Update the Lead's statusId
       await Lead.update(
         { statusId: offerSentStatus.id },
         { where: { id: quote.leadId } }
