@@ -608,6 +608,7 @@ const EmailSMSPage = () => {
             </div>
 
             {/* Email Modal for Add/Edit */}
+            <div className={`${showEmailModal ? 'modal-backdrop fade show' : ''}`}></div>
             <div className={`modal fade modaldesign emailmodal ${showEmailModal ? 'show d-block' : ''}`} tabIndex="-1" role="dialog" style={{ display: showEmailModal ? 'block' : 'none' }}>
                 <div className="modal-dialog modal-lg" role="document">
                     <div className="modal-content">
@@ -712,6 +713,7 @@ const EmailSMSPage = () => {
             </div>
 
             {/* SMS Modal for Add/Edit (Updated with new design) */}
+             <div className={`${showSmsModal ? 'modal-backdrop fade show' : ''}`}></div>
             <div className={`modal fade modaldesign emailmodal ${showSmsModal ? 'show d-block' : ''}`} tabIndex="-1" role="dialog" style={{ display: showSmsModal ? 'block' : 'none' }}>
                 <div className="modal-dialog modal-lg" role="document"> {/* Changed to modal-lg for wider content */}
                     <div className="modal-content">

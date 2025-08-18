@@ -5,47 +5,32 @@ import { AuthContext } from '../../context/AuthContext';
 import api from '../../utils/api'; // Ensure this path is correct
 
 const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }) => {
-  const { authToken } = useContext(AuthContext);
+  const { authToken,user } = useContext(AuthContext);
 
   const [currentStatusId, setCurrentStatusId] = useState(quoteData?.statusId || '');
   const [sendSmsChecked, setSendSmsChecked] = useState(false);
-  const [smsFromName, setSmsFromName] = useState('Kasper West'); // Default from name
-  const [smsMessage, setSmsMessage] = useState(`Hej ${lead?.attName || lead?.fullName || 'kunde'}! Jeg har sendt dig et tilbud på mail. Ring hvis du har spørgsmål. Mvh Kasper West`); // Default message
+  const [smsFromName, setSmsFromName] = useState(user.name); // Default from name
+  const [smsMessage, setSmsMessage] = useState(""); // Default message
   const [loadingSMS, setLoadingSMS] = useState(false);
   const [smsTemplates, setSmsTemplates] = useState([]);
   const [selectedSmsTemplateId, setSelectedSmsTemplateId] = useState('');
 
   const [sendEmailChecked, setSendEmailChecked] = useState(true); // Email checked by default
-  const [emailFromName, setEmailFromName] = useState('Kasper West'); // Default from name
-  const [emailFromEmail, setEmailFromEmail] = useState('kontakt@kasperwest.dk'); // Default from email
-  const [emailSubject, setEmailSubject] = useState(`Ang. tilbud fra Kasperwest.dk`); // Default subject
-  const [emailContent, setEmailContent] = useState(`Hej ${lead?.attName || lead?.fullName || 'kunde'} 👋
-
-Jeg har lige sendt dig en sms, men du får lige tilbuddet her også!
-
-Jeg håber, du vil tage et kig på det og fortælle mig, hvad du synes om tilbuddet.
-
-Tryk her for at åbne tilbud
-
-Du kan acceptere tilbuddet på en af flg. måder:
-• Trykke på accept knappen inden på tilbudssiden.
-• Ringe til mig på telefon nr.: 30143060
-• Besvare denne mail
-
-Jeg håber, at tilbuddet lever op til dine forventninger.
-
-Bedste hilsner
-Kasper West
-+45 30143060 (kun opkald)
-Kontakt@kasperwest.dk`); // Default content
+  const [emailFromName, setEmailFromName] = useState(user.name); // Default from name
+  const [emailFromEmail, setEmailFromEmail] = useState(user.email); // Default from email
+  const [emailSubject, setEmailSubject] = useState(""); // Default subject
+  const [emailContent, setEmailContent] = useState(""); // Default content
   const [loadingEmails, setLoadingEmails] = useState(false);
   const [emailTemplates, setEmailTemplates] = useState([]);
   const [selectedEmailTemplateId, setSelectedEmailTemplateId] = useState('');
   const [selectedAttachment, setSelectedAttachment] = useState('None'); // For email attachments
+  const [variables, setVariables] = useState([]);
+  const [loadingVariables, setLoadingVariables] = useState(false);
+
 
   // Character count for SMS
   const smsCharCount = smsMessage.length;
-  const smsType = smsCharCount <= 160 ? 'Single SMS' : `Multi-part SMS (${Math.ceil(smsCharCount / 153)} parts)`;
+  const smsType = smsCharCount <= 99 ? 'Single SMS' : `Multi-part SMS (${Math.ceil(smsCharCount / 99)} parts)`;
 
 
   // Update state when quoteData or lead changes (e.g., when a new quote is created)
@@ -54,33 +39,37 @@ Kontakt@kasperwest.dk`); // Default content
       setCurrentStatusId(quoteData.statusId || quoteStatuses.find(s => s.name === 'Not sent')?.id || '');
     }
     if (lead) {
-        // Update default SMS/Email messages with lead's name if available
-        setSmsMessage(`Hej ${lead?.attName || lead?.fullName || 'kunde'}! Jeg har sendt dig et tilbud på mail. Ring hvis du har spørgsmål. Mvh Kasper West`);
-        setEmailContent(`Hej ${lead?.attName || lead?.fullName || 'kunde'} 👋
-
-Jeg har lige sendt dig en sms, men du får lige tilbuddet her også!
-
-Jeg håber, du vil tage et kig på det og fortælle me, hvad du synes om tilbuddet.
-
-Tryk her for at åbne tilbud
-
-Du kan acceptere tilbuddet på en af flg. måder:
-• Trykke på accept knappen inden på tilbudssiden.
-• Ringe til mig på telefon nr.: 30143060
-• Besvare denne mail
-
-Jeg håber, at tilbuddet lever op til dine forventninger.
-
-Bedste hilsner
-Kasper West
-+45 30143060 (kun opkald)
-Kontakt@kasperwest.dk`);
-        setEmailSubject(`Ang. tilbud fra Kasperwest.dk for ${lead?.companyName || lead?.fullName}`);
+      // Update default SMS/Email messages with lead's name if available
+      setSmsMessage("");
+      setEmailContent("");
+      setEmailSubject("");
     }
   }, [quoteData, lead, quoteStatuses]);
 
+  const fetchVariables = async () => {
+    if (!authToken) {
+      toast.error("Authentication token not found.");
+      return;
+    }
+
+    setLoadingVariables(true);
+    try {
+      const response = await api.get("/variables", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      setVariables(response.data); // save directly
+    } catch (error) {
+      console.error("Error fetching variables:", error);
+      toast.error("Failed to fetch variables.");
+    } finally {
+      setLoadingVariables(false);
+    }
+  };
+
 
   useEffect(() => {
+    fetchVariables();
     if (show && authToken) {
       fetchEmailTemplates();
       fetchSmsTemplates();
@@ -158,32 +147,14 @@ Kontakt@kasperwest.dk`);
     if (selectedTemplate) {
       setEmailSubject(selectedTemplate.subject);
       setEmailContent(selectedTemplate.body);
-      setEmailFromName(selectedTemplate.fromName || 'Kasper West');
-      setEmailFromEmail(selectedTemplate.fromEmail || 'kontakt@kasperwest.dk');
+      setEmailFromName(user.name);
+      setEmailFromEmail(user.email);
     } else {
-        // If "Select a template" is chosen, reset to default content/subject
-        setEmailSubject(`Ang. tilbud fra Kasperwest.dk for ${lead?.companyName || lead?.fullName}`);
-        setEmailContent(`Hej ${lead?.attName || lead?.fullName || 'kunde'} 👋
-
-Jeg har lige sendt dig en sms, men du får lige tilbuddet her også!
-
-Jeg håber, du vil tage et kig på det og fortælle mig, hvad du synes om tilbuddet.
-
-Tryk her for at åbne tilbud
-
-Du kan acceptere tilbuddet på en af flg. måder:
-• Trykke på accept knappen inden på tilbudssiden.
-• Ringe til mig på telefon nr.: 30143060
-• Besvare denne mail
-
-Jeg håber, at tilbuddet lever op til dine forventninger.
-
-Bedste hilsner
-Kasper West
-+45 30143060 (kun opkald)
-Kontakt@kasperwest.dk`);
-        setEmailFromName('Kasper West');
-        setEmailFromEmail('kontakt@kasperwest.dk');
+      // If "Select a template" is chosen, reset to default content/subject
+      setEmailSubject("");
+      setEmailContent("");
+      setEmailFromName(user.name);
+      setEmailFromEmail(user.email);
     }
   };
 
@@ -193,11 +164,11 @@ Kontakt@kasperwest.dk`);
     const selectedTemplate = smsTemplates.find(t => t.id === Number(templateId));
     if (selectedTemplate) {
       setSmsMessage(selectedTemplate.smsContent);
-      setSmsFromName(selectedTemplate.fromName || 'Kasper West');
+      setSmsFromName(selectedTemplate.fromName || user.name);
     } else {
-        // If "Select a template" is chosen, reset to default message
-        setSmsMessage(`Hej ${lead?.attName || lead?.fullName || 'kunde'}! Jeg har sendt dig et tilbud på mail. Ring hvis du har spørgsmål. Mvh Kasper West`);
-        setSmsFromName('Kasper West');
+      // If "Select a template" is chosen, reset to default message
+      setSmsMessage("");
+      setSmsFromName(user.name);
     }
   };
 
@@ -226,9 +197,30 @@ Kontakt@kasperwest.dk`);
     // onHide(); // Don't call onHide here, let parent component handle closing after onSend completes
   };
 
+  const replaceVariables = (message, variables, extra = {}) => {
+    if (!message) return "";
+
+    let replaced = message;
+
+    // Replace database variables first
+    variables.forEach(v => {
+      const regex = new RegExp(`{{${v.variableName}}}`, "g");
+      replaced = replaced.replace(regex, v.variableValue || "");
+    });
+
+    // Handle special dynamic placeholders like :quoteId
+    if (extra.quoteId) {
+      replaced = replaced.replace(/:quoteId/g, extra.quoteId);
+    }
+
+    return replaced;
+  };
   return (
-    <div className={`modal fade modaldesign sendoffer ${show ? 'show d-block' : ''}`} id="myModal3" tabIndex="-1" role="dialog" aria-labelledby="myModal3Label" aria-hidden={!show}>
-      <div className="modal-dialog modal-dialog-centered" role="document"> {/* Added modal-dialog-centered */}
+    <>
+    <div className={`${show ? 'modal-backdrop fade show' : ''}`}></div>
+   
+      <div className={`modal modaldesign sendoffer ${show ? 'd-block' : ''}`} id="SendQuote" tabIndex="-1" role="dialog" aria-labelledby="SendQuoteLabel" aria-hidden={!show}>
+      <div className="modal-dialog modal-dialog-centered" role="document">
         <div className="modal-content">
           <div className="modal-header">
             <h4 className="modal-title">Actions for: {quoteData?.title || 'New Quote'}</h4>
@@ -301,11 +293,11 @@ Kontakt@kasperwest.dk`);
                     </div>
                     <div className="form-group">
                       <label>From name</label>
-                      <input type="text" className="form-control" placeholder="Kasper West" value={smsFromName} onChange={(e) => setSmsFromName(e.target.value)} />
+                      <input type="text" className="form-control" placeholder="" value={smsFromName} onChange={(e) => setSmsFromName(e.target.value)} />
                     </div>
                     <div className="form-group">
                       <label>SMS Message</label>
-                      <textarea className="form-control" rows="5" placeholder="Your SMS message..." value={smsMessage} onChange={(e) => setSmsMessage(e.target.value)}></textarea>
+                      <textarea className="form-control" rows="5" placeholder="Your SMS message..." maxLength={99} value={smsMessage} onChange={(e) => setSmsMessage(e.target.value)}></textarea>
                       <div className="texttypelimit">
                         <span className="inputnote">Character count: {smsCharCount}</span>
                         <span className="texttype-besked">{smsType}</span>
@@ -316,10 +308,19 @@ Kontakt@kasperwest.dk`);
                       <div className="carddesign smspreview">
                         <div className="smspreviewbox">
                           <h5>SMS from {smsFromName}</h5>
-                          <p>{smsMessage}</p>
+                          <p>{replaceVariables(smsMessage, variables, { quoteId: quoteData.id })}</p>
+                        </div>
+                        <div className="texttypelimit">
+                          <span
+                            className={`inputnote ${replaceVariables(smsMessage, variables).length > 99 ? "text-danger" : ""
+                              }`}
+                          >
+                            Character count: {replaceVariables(smsMessage, variables).length}/99
+                          </span>
                         </div>
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>
@@ -358,7 +359,7 @@ Kontakt@kasperwest.dk`);
                       <div className="col-md-6">
                         <div className="form-group">
                           <label>From name</label>
-                          <input type="text" className="form-control" placeholder="Kasper West" value={emailFromName} onChange={(e) => setEmailFromName(e.target.value)} />
+                          <input type="text" className="form-control" placeholder="" value={emailFromName} onChange={(e) => setEmailFromName(e.target.value)} />
                         </div>
                       </div>
                       <div className="col-md-6">
@@ -383,7 +384,7 @@ Kontakt@kasperwest.dk`);
                           <option value="None">None</option>
                           {/* You'd dynamically populate these based on quote attachments or predefined files */}
                           {quoteData?.attachments?.map((attachment, index) => (
-                             <option key={index} value={attachment.url}>{attachment.originalname}</option>
+                            <option key={index} value={attachment.url}>{attachment.originalname}</option>
                           ))}
                         </select>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
@@ -412,6 +413,8 @@ Kontakt@kasperwest.dk`);
         </div>
       </div>
     </div>
+    </>
+
   );
 };
 

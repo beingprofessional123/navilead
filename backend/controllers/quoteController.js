@@ -127,12 +127,9 @@ exports.updateQuote = async (req, res) => {
 
     const cleanOverallDiscount = overallDiscount && overallDiscount < 0 ? 0 : overallDiscount;
     const cleanSendSection = ['sms', 'email', 'both'].includes(sendSection) ? sendSection : 'both';
-    const cleanPricingTemplateId = pricingTemplateId ? Number(pricingTemplateId) : null;
-    // Remove emailTemplateId processing if no longer used
-    // const cleanEmailTemplateId = emailTemplateId ? Number(emailTemplateId) : null;
 
-    await quote.update({
-      pricingTemplateId: cleanPricingTemplateId,
+    // updateData object banayenge
+    const updateData = {
       title,
       description,
       validDays,
@@ -141,7 +138,14 @@ exports.updateQuote = async (req, res) => {
       total,
       statusId,
       sendSection: cleanSendSection,
-    });
+    };
+
+    // 👇 Sirf tab add kare jab pricingTemplateId bheja gaya ho
+    if (pricingTemplateId !== undefined && pricingTemplateId !== '') {
+      updateData.pricingTemplateId = Number(pricingTemplateId);
+    }
+
+    await quote.update(updateData);
 
     if (Array.isArray(services)) {
       await QuoteService.destroy({ where: { quoteId } });
@@ -164,6 +168,7 @@ exports.updateQuote = async (req, res) => {
     res.status(500).json({ message: 'Error updating quote', error: err.message });
   }
 };
+
 
 // Delete a quote and its services
 exports.deleteQuote = async (req, res) => {

@@ -5,13 +5,14 @@ import Swal from 'sweetalert2';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../utils/api';
 import AddEditLeadModal from './AddEditLeadModal';
-import SendQuoteModal from './SendQuoteModal'; // Import the new modal component
+import SendQuoteModal from './SendQuoteModal';
+import FullPageLoader from '../../components/common/FullPageLoader';
 
 const LeadViewPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { authToken } = useContext(AuthContext);
-
+  const [activeTab, setActiveTab] = useState("create");
   const [lead, setLead] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -218,8 +219,8 @@ const LeadViewPage = () => {
       const updatedFormData = {
         ...prev,
         [name]: name === 'overallDiscount' ? Number(value) :
-                name === 'validDays' ? parseInt(value) :
-                value,
+          name === 'validDays' ? parseInt(value) :
+            value,
       };
       if (name === 'overallDiscount' || name === 'services') {
         updatedFormData.total = calculateQuoteTotal(updatedFormData.services, updatedFormData.overallDiscount);
@@ -374,16 +375,9 @@ const LeadViewPage = () => {
     }
   };
 
-  const handleViewQuote = (quoteId) => {
-    toast.info(`Viewing quote ${quoteId}`);
-  };
-
-  const handleEditQuote = (quoteId) => {
-    toast.info(`Editing quote ${quoteId}`);
-  };
 
   if (loading && !lead) {
-    return <p>Loading lead details...</p>;
+    return <FullPageLoader />;
   }
 
   if (error) {
@@ -407,25 +401,25 @@ const LeadViewPage = () => {
   }
 
   return (
-   <>
-        {/* Header Section */}
-        <div className="carddesign leads-header">
-          <div className="leads-headerbox">
-            <div className="leads-headerbox-left">
-              <Link to="/leads" className="btn btn-add">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>
-                Back to Leads
-              </Link>
-              <h4>{lead.fullName} <span>{lead.companyName} {lead.leadNumber && `(${lead.leadNumber})`}</span></h4>
-            </div>
-            <div className="status">{lead.status?.name || 'N/A'}</div>
+    <>
+      {/* Header Section */}
+      <div className="carddesign leads-header">
+        <div className="leads-headerbox">
+          <div className="leads-headerbox-left">
+            <Link to="/leads" className="btn btn-add">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>
+              Back to Leads
+            </Link>
+            <h4>{lead.fullName} <span>{lead.companyName} {lead.leadNumber && `(${lead.leadNumber})`}</span></h4>
           </div>
+          <div className="status">{lead.status?.name || 'N/A'}</div>
         </div>
+      </div>
 
-        {/* Main Content Area: Leads Left Bar, Leads Center Bar, Leads Right Bar */}
-        <div className="leadsviewrow">
-          {/* Leads Left Bar */}
-          <div className="leadsleft-bar">
+      {/* Main Content Area: Leads Left Bar, Leads Center Bar, Leads Right Bar */}
+      <div className="leadsviewrow">
+        {/* Leads Left Bar */}
+        <div className="leadsleft-bar">
           <div className="carddesign">
             <h2 className="card-title">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -479,18 +473,18 @@ const LeadViewPage = () => {
             <div className="leads-infocol">
               <h3 className="leads-subheading">Communication</h3>
               <div className="leads-view-action">
-                <a href="#" className="btn btn-add" data-bs-toggle="modal" data-bs-target="#myModal1">
+                <Link to="#" className="btn btn-add">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail w-3 h-3 mr-2" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg>
                   Send Email
-                </a>
-                <a href="#" className="btn btn-add" data-bs-toggle="modal" data-bs-target="#myModal2">
+                </Link>
+                <Link to="#" className="btn btn-add">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square w-3 h-3 mr-2" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg>
                   Send SMS
-                </a>
-                <a href={`tel:${lead.phone}`} className="btn btn-add">
+                </Link>
+                <Link href={`tel:${lead.phone}`} className="btn btn-add">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone w-3 h-3 mr-2" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg>
                   Call Up
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -716,351 +710,365 @@ const LeadViewPage = () => {
               )}
             </div>
           </div>
-          </div>
+        </div>
 
-          {/* Leads Center Bar */}
-          <div className="leadscenter-bar">
-            <div className="carddesign">
-              <h2 className="card-title">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                Search Oblique Photo via Address
-              </h2>
+        {/* Leads Center Bar */}
+        <div className="leadscenter-bar">
+          <div className="carddesign">
+            <h2 className="card-title">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              Search Oblique Photo via Address
+            </h2>
 
-              <div className="formdesign location-map">
-                <div className="form-group ">
-                  <div className="input-group">
-                    <input type="text" className="form-control" placeholder={lead.address || 'Enter address'} readOnly />
-                    <button className="btn btn-send" type="button">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search h-4 w-4" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
-                      Find Oblique Photo
-                    </button>
-                  </div>
-                </div>
-                <div className="location-mapview">
-                  <iframe src="https://skraafoto.dataforsyningen.dk/?lon=9.354415&amp;lat=55.550372&amp;zoom=19" className="w-full h-[600px] border border-border rounded-md" allowFullScreen="" title="Oblique Photo"></iframe>
-                  <p>Oblique photo provided by Dataforsyningen.dk <br />Coordinates: 55.550372, 9.354415</p>
+            <div className="formdesign location-map">
+              <div className="form-group ">
+                <div className="input-group">
+                  <input type="text" className="form-control" placeholder={lead.address || 'Enter address'} readOnly />
+                  <button className="btn btn-send" type="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search h-4 w-4" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
+                    Find Oblique Photo
+                  </button>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Leads Right Bar */}
-          <div className="leadsright-bar">
-            <div className="carddesign leadssliderbox">
-              <div className="leadsslider">
-                <button className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left m-0" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
-                <button className="btn btn-add leadssliderright-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right m-0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
-                <span>0 of 5 leads</span>
-              </div>
-            </div>
-
-            <div className="emailmodaltab">
-              <ul className="nav nav-tabs" role="tablist">
-                <li className="nav-item" role="presentation">
-                  <a className="nav-link active" data-bs-toggle="tab" href="#create-quote-tab" aria-selected="true" role="tab">Create Quote</a>
-                </li>
-                <li className="nav-item" role="presentation">
-                  <a className="nav-link" data-bs-toggle="tab" href="#quote-history-tab" aria-selected="false" tabIndex="-1" role="tab">Quote History</a>
-                </li>
-              </ul>
-            </div>
-            <div className="tab-content">
-              {/* Create Quote Tab Content */}
-              <div id="create-quote-tab" className="tab-pane active">
-                <div className="carddesign">
-                  <h2 className="card-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text w-4 h-4" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
-                    New Quote
-                  </h2>
-                  <form onSubmit={handleSaveQuote}> {/* Changed onSubmit to handleSaveQuote */}
-                    <div className="leads-infocol">
-                      <div className="formdesign">
-                        <div className="form-group mb-2">
-                          <label>Start with Template (Optional)</label>
-                          <div className="inputselect">
-                            <div className="dropdown leaddropdown">
-                              <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
-                                <span>{newQuoteFormData.pricingTemplateId ? pricingTemplates.find(t => t.id === newQuoteFormData.pricingTemplateId)?.name : 'Select a quote template'}</span>
-                              </button>
-                              <ul className="dropdown-menu">
-                                {pricingTemplates.map(template => (
-                                  <li key={template.id}>
-                                    <a className="dropdown-item" href="#" onClick={(e) => {
-                                      e.preventDefault();
-                                      const selectedTemplate = pricingTemplates.find(t => t.id === template.id);
-                                      if (selectedTemplate) {
-                                        const servicesToLoad = selectedTemplate.services.map(s => ({
-                                          ...s,
-                                          pricePerUnit: Number(s.pricePerUnit) || 0,
-                                          quantity: Number(s.quantity) || 1,
-                                          discountPercent: Number(s.discountPercent) || 0,
-                                          total: (Number(s.pricePerUnit) || 0) * (Number(s.quantity) || 1) * (1 - (Number(s.discountPercent) || 0) / 100)
-                                        }));
-                                        setNewQuoteFormData(prev => {
-                                          const newTotal = calculateQuoteTotal(servicesToLoad, prev.overallDiscount);
-                                          return {
-                                            ...prev,
-                                            pricingTemplateId: selectedTemplate.id,
-                                            title: selectedTemplate.title || selectedTemplate.name,
-                                            description: selectedTemplate.description,
-                                            terms: selectedTemplate.terms,
-                                            services: servicesToLoad,
-                                            total: newTotal,
-                                          };
-                                        });
-                                      }
-                                    }}>
-                                      {template.name} <span>{formatCurrency(calculateServicesSubtotal(template.services))}</span>
-                                    </a>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="leads-infocol">
-                      <div className="formdesign">
-                        <div className="form-group">
-                          <label>Quote Title</label>
-                          <input type="text" className="form-control" name="title" value={newQuoteFormData.title} onChange={handleNewQuoteChange} placeholder="e.g., Website development for..." required />
-                        </div>
-                        <div className="form-group">
-                          <label>Description</label>
-                          <textarea className="form-control" rows="3" name="description" value={newQuoteFormData.description} onChange={handleNewQuoteChange} placeholder="Brief description of what the quote includes..."></textarea>
-                        </div>
-                        <div className="form-group mb-2">
-                          <label>Validity Period</label>
-                          <div className="inputselect">
-                            <select className="form-select" name="validDays" value={newQuoteFormData.validDays} onChange={handleNewQuoteChange}>
-                              <option value={7}>7 days</option>
-                              <option value={14}>14 days</option>
-                              <option value={30}>30 days</option>
-                              <option value={60}>60 days</option>
-                              <option value={90}>90 days</option>
-                            </select>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
-                          </div>
-                        </div>
-
-                        {/* Services Section */}
-                        <div className="leads-infocol">
-                          <div className="formdesign">
-                            <div className="workflowsadd displayadd">
-                              <h2 className="card-title">Services</h2>
-                              <button type="button" className="btn btn-add" onClick={handleAddQuoteService}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-                                Add Service
-                              </button>
-                            </div>
-
-                            {newQuoteFormData.services.map((service, index) => (
-                              <div className="displayadbox" key={index}>
-                                <div className="displayadbox-icon">
-                                  <div className="form-group mb-1">
-                                    <input type="text" className="form-control" value={service.name} onChange={(e) => {
-                                      const newServices = [...newQuoteFormData.services];
-                                      newServices[index].name = e.target.value;
-                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
-                                    }} placeholder="Service Name" />
-                                  </div>
-                                  <div className="form-group mb-2">
-                                    <textarea className="form-control" rows="3" value={service.description || ''} onChange={(e) => {
-                                      const newServices = [...newQuoteFormData.services];
-                                      newServices[index].description = e.target.value;
-                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices }));
-                                    }} placeholder="Description of the service"></textarea>
-                                  </div>
-                                  <button type="button" className="btn btn-add" style={{ color: '#ef4444 !important' }} onClick={(e) => { e.preventDefault(); handleRemoveQuoteService(index); }}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x m-0" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
-                                  </button>
-                                </div>
-                                <div className="displayadbox-group">
-                                  <div className="form-group mb-1">
-                                    <label>Price</label>
-                                    <input type="number" className="form-control" value={service.pricePerUnit} onChange={(e) => {
-                                      const newServices = [...newQuoteFormData.services];
-                                      newServices[index].pricePerUnit = Number(e.target.value);
-                                      const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
-                                      newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
-                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
-                                    }} placeholder="0" min="0" />
-                                  </div>
-                                  <div className="form-group mb-1">
-                                    <label>Quantity</label>
-                                    <input type="number" className="form-control" value={service.quantity} onChange={(e) => {
-                                      const newServices = [...newQuoteFormData.services];
-                                      newServices[index].quantity = Number(e.target.value);
-                                      const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
-                                      newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
-                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
-                                    }} placeholder="1" min="1" />
-                                  </div>
-                                  <div className="form-group mb-1">
-                                    <label>Unit</label>
-                                    <input type="text" className="form-control" value={service.unit} onChange={(e) => {
-                                      const newServices = [...newQuoteFormData.services];
-                                      newServices[index].unit = e.target.value;
-                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices }));
-                                    }} placeholder="pcs" />
-                                  </div>
-                                  <div className="form-group mb-1">
-                                    <label>Discount (%)</label>
-                                    <input type="number" className="form-control" value={service.discountPercent} onChange={(e) => {
-                                      const newServices = [...newQuoteFormData.services];
-                                      newServices[index].discountPercent = Number(e.target.value);
-                                      const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
-                                      newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
-                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
-                                    }} placeholder="0" min="0" max="100" />
-                                  </div>
-                                </div>
-                                <div className="displayadbox-result">
-                                  <div className="displayadbox-resultleft">
-                                    <h6>{service.quantity} × {formatCurrency(service.pricePerUnit)}</h6>
-                                    {service.discountPercent > 0 && <span>-{service.discountPercent}% Discount</span>}
-                                  </div>
-                                  <div className="displayadbox-resultright">
-                                    {formatCurrency(service.total)}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-
-                            <div className="displayadbox">
-                              <div className="displayadbox-icon">
-                                <div className="form-group mb-1">
-                                  <input type="text" className="form-control" name="name" value={currentQuoteService.name} onChange={handleCurrentQuoteServiceChange} placeholder="New service name" />
-                                </div>
-                                <div className="form-group mb-2">
-                                  <textarea className="form-control" rows="3" name="description" value={currentQuoteService.description} onChange={handleCurrentQuoteServiceChange} placeholder="Description of the service"></textarea>
-                                </div>
-                              </div>
-                              <div className="displayadbox-group">
-                                <div className="form-group mb-1">
-                                  <label>Price</label>
-                                  <input type="number" className="form-control" name="pricePerUnit" value={currentQuoteService.pricePerUnit} onChange={handleCurrentQuoteServiceChange} placeholder="0" min="0" />
-                                </div>
-                                <div className="form-group mb-1">
-                                  <label>Quantity</label>
-                                  <input type="number" className="form-control" name="quantity" value={currentQuoteService.quantity} onChange={handleCurrentQuoteServiceChange} placeholder="1" min="1" />
-                                </div>
-                                <div className="form-group mb-1">
-                                  <label>Unit</label>
-                                  <input type="text" className="form-control" name="unit" value={currentQuoteService.unit} onChange={handleCurrentQuoteServiceChange} placeholder="pcs" />
-                                </div>
-                                <div className="form-group mb-1">
-                                  <label>Discount (%)</label>
-                                  <input type="number" className="form-control" name="discountPercent" value={currentQuoteService.discountPercent} onChange={handleCurrentQuoteServiceChange} placeholder="0" min="0" max="100" />
-                                </div>
-                              </div>
-                              <div className="displayadbox-result">
-                                <div className="displayadbox-resultleft">
-                                  <h6>{currentQuoteService.quantity} × {formatCurrency(currentQuoteService.pricePerUnit)}</h6>
-                                  {currentQuoteService.discountPercent > 0 && <span>-{currentQuoteService.discountPercent}% Discount</span>}
-                                </div>
-                                <div className="displayadbox-resultright">
-                                  {formatCurrency(currentQuoteService.total)}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Overall Discount and Total Calculation */}
-                        <div className="leads-infocol">
-                          <div className="formdesign">
-                            <div className="form-group">
-                              <label>Overall Discount (%)</label>
-                              <input type="number" className="form-control" name="overallDiscount" value={newQuoteFormData.overallDiscount} onChange={handleNewQuoteChange} placeholder="0" style={{ width: '95px' }} min="0" max="100" />
-                            </div>
-                            <div className="result-calculat">
-                              <div className="result-calculattop">
-                                <h5><span className="result-calculatlabel">Subtotal:</span><span className="result-calculatresult">{formatCurrency(calculateServicesSubtotal(newQuoteFormData.services))}</span></h5>
-                                {newQuoteFormData.overallDiscount > 0 && (
-                                  <h5 className="resultrabat">
-                                    <span className="result-calculatlabel">Discount ({newQuoteFormData.overallDiscount}%):</span>
-                                    <span className="result-calculatresult">- {formatCurrency(calculateServicesSubtotal(newQuoteFormData.services) * (newQuoteFormData.overallDiscount / 100))}</span>
-                                  </h5>
-                                )}
-                              </div>
-                              <div className="result-calculatbottom">
-                                <h5><span className="result-calculat-total">Total:</span><span className="result-calculatfinal">{formatCurrency(newQuoteFormData.total)}</span></h5>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Terms and Conditions */}
-                        <div className="leads-infocol">
-                          <div className="formdesign">
-                            <div className="form-group mb-1">
-                              <label>Terms and Conditions</label>
-                              <textarea className="form-control" rows="3" name="terms" value={newQuoteFormData.terms} onChange={handleNewQuoteChange} placeholder="Terms, reservations, or special conditions for this offer..."></textarea>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Action Buttons for Quote Creation */}
-                        <button type="submit" className="btn btn-send w-100 mb-2" disabled={loading}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
-                          {loading ? 'Saving...' : `Save Quote to ${lead.fullName}`} {/* Changed text to 'Save Quote' */}
-                        </button>
-                        <a href="#" className="btn btn-add w-100">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                          Preview
-                        </a>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-              </div>
-
-              {/* Quote History Tab Content */}
-              <div id="quote-history-tab" className="tab-pane fade">
-                <div className="carddesign">
-                  <h2 className="card-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-4 h-4" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>
-                    Previous Quotes
-                  </h2>
-                  {quotesHistory.length > 0 ? (
-                    quotesHistory.map(quote => (
-                      <div className="leads-previousoffers-box mb-3" key={quote.id}>
-                        <div className="leads-previousoffers-top">
-                          <div className="leads-previousoffers-left">
-                            <h4>{quote.title || 'No Title'}</h4>
-                            <h6>{quote.description || 'No description'}</h6>
-                          </div>
-                          <div className="status">{quote.status?.name || 'N/A'}</div>
-                        </div>
-                        <h5>
-                          <span>Created: {quote.createdAt ? new Date(quote.createdAt).toLocaleDateString() : 'N/A'}</span>
-                          <span>Last Updated: {quote.updatedAt ? new Date(quote.updatedAt).toLocaleDateString() : 'N/A'}</span>
-                        </h5>
-                        <h3>{formatCurrency(quote.total)}
-                          <div className="leads-previousoffers-btn">
-                            <button type="button" className="btn btn-add"  onClick={() => { setQuoteToActOn(quote); setShowSendQuoteModal(true); }}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye m-0" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
-                            </button>
-                            <button type="button" className="btn btn-add" onClick={() => handleViewQuote(quote.id)}>
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye m-0" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            </button>
-                            <button type="button" className="btn btn-add" onClick={() => handleEditQuote(quote.id)}>
-                               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen m-0" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>
-                            </button>
-                          </div>
-                        </h3>
-                      </div>
-                    ))
-                  ) : (
-                    <p>No quotes found for this lead.</p>
-                  )}
-                </div>
+              <div className="location-mapview">
+                <iframe src="https://skraafoto.dataforsyningen.dk/?lon=9.354415&amp;lat=55.550372&amp;zoom=19" className="w-full h-[600px] border border-border rounded-md" allowFullScreen="" title="Oblique Photo"></iframe>
+                <p>Oblique photo provided by Dataforsyningen.dk <br />Coordinates: 55.550372, 9.354415</p>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Leads Right Bar */}
+        <div className="leadsright-bar">
+          <div className="carddesign leadssliderbox">
+            <div className="leadsslider">
+              <button className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left m-0" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+              <button className="btn btn-add leadssliderright-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right m-0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+              <span>0 of 5 leads</span>
+            </div>
+          </div>
+
+          <div className="emailmodaltab">
+            <ul className="nav nav-tabs" role="tablist">
+              <li className="nav-item" role="presentation">
+                <Link className={`nav-link ${activeTab === "create" ? "active" : ""}`} onClick={() => setActiveTab("create")} data-bs-toggle="tab" href="#create-quote-tab" aria-selected="true" role="tab">Create Quote</Link>
+              </li>
+              <li className="nav-item" role="presentation">
+                <Link className={`nav-link ${activeTab === "history" ? "active" : ""}`} onClick={() => setActiveTab("history")} data-bs-toggle="tab" href="#quote-history-tab" aria-selected="false" tabIndex="-1" role="tab">Quote History</Link>
+              </li>
+            </ul>
+          </div>
+          <div className="tab-content">
+            {/* Create Quote Tab Content */}
+            <div id="create-quote-tab" className={`tab-pane ${activeTab === "create" ? "active" : ""}`}>
+              <div className="carddesign">
+                <h2 className="card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text w-4 h-4" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+                  New Quote
+                </h2>
+                <form onSubmit={handleSaveQuote}> {/* Changed onSubmit to handleSaveQuote */}
+                  <div className="leads-infocol">
+                    <div className="formdesign">
+                      <div className="form-group mb-2">
+                        <label>Start with Template (Optional)</label>
+                        <div className="inputselect">
+                          <div className="dropdown leaddropdown">
+                            <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                              <span>{newQuoteFormData.pricingTemplateId ? pricingTemplates.find(t => t.id === newQuoteFormData.pricingTemplateId)?.name : 'Select a quote template'}</span>
+                            </button>
+                            <ul className="dropdown-menu">
+                              {pricingTemplates.map(template => (
+                                <li key={template.id}>
+                                  <Link className="dropdown-item" to="#" onClick={(e) => {
+                                    e.preventDefault();
+                                    const selectedTemplate = pricingTemplates.find(t => t.id === template.id);
+                                    if (selectedTemplate) {
+                                      const servicesToLoad = selectedTemplate.services.map(s => ({
+                                        ...s,
+                                        pricePerUnit: Number(s.pricePerUnit) || 0,
+                                        quantity: Number(s.quantity) || 1,
+                                        discountPercent: Number(s.discountPercent) || 0,
+                                        total: (Number(s.pricePerUnit) || 0) * (Number(s.quantity) || 1) * (1 - (Number(s.discountPercent) || 0) / 100)
+                                      }));
+                                      setNewQuoteFormData(prev => {
+                                        const newTotal = calculateQuoteTotal(servicesToLoad, prev.overallDiscount);
+                                        return {
+                                          ...prev,
+                                          pricingTemplateId: selectedTemplate.id,
+                                          title: selectedTemplate.title || selectedTemplate.name,
+                                          description: selectedTemplate.description,
+                                          terms: selectedTemplate.terms,
+                                          services: servicesToLoad,
+                                          total: newTotal,
+                                        };
+                                      });
+                                    }
+                                  }}>
+                                    {template.name} <span>{formatCurrency(calculateServicesSubtotal(template.services))}</span>
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="leads-infocol">
+                    <div className="formdesign">
+                      <div className="form-group">
+                        <label>Quote Title</label>
+                        <input type="text" className="form-control" name="title" value={newQuoteFormData.title} onChange={handleNewQuoteChange} placeholder="e.g., Website development for..." required />
+                      </div>
+                      <div className="form-group">
+                        <label>Description</label>
+                        <textarea className="form-control" rows="3" name="description" value={newQuoteFormData.description} onChange={handleNewQuoteChange} placeholder="Brief description of what the quote includes..."></textarea>
+                      </div>
+                      <div className="form-group mb-2">
+                        <label>Validity Period</label>
+                        <div className="inputselect">
+                          <select className="form-select" name="validDays" value={newQuoteFormData.validDays} onChange={handleNewQuoteChange}>
+                            <option value={7}>7 days</option>
+                            <option value={14}>14 days</option>
+                            <option value={30}>30 days</option>
+                            <option value={60}>60 days</option>
+                            <option value={90}>90 days</option>
+                          </select>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                        </div>
+                      </div>
+
+                      {/* Services Section */}
+                      <div className="leads-infocol">
+                        <div className="formdesign">
+                          <div className="workflowsadd displayadd">
+                            <h2 className="card-title">Services</h2>
+                            <button type="button" className="btn btn-add" onClick={handleAddQuoteService}>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                              Add Service
+                            </button>
+                          </div>
+
+                          {newQuoteFormData.services.map((service, index) => (
+                            <div className="displayadbox" key={index}>
+                              <div className="displayadbox-icon">
+                                <div className="form-group mb-1">
+                                  <input type="text" className="form-control" value={service.name} onChange={(e) => {
+                                    const newServices = [...newQuoteFormData.services];
+                                    newServices[index].name = e.target.value;
+                                    setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
+                                  }} placeholder="Service Name" />
+                                </div>
+                                <div className="form-group mb-2">
+                                  <textarea className="form-control" rows="3" value={service.description || ''} onChange={(e) => {
+                                    const newServices = [...newQuoteFormData.services];
+                                    newServices[index].description = e.target.value;
+                                    setNewQuoteFormData(prev => ({ ...prev, services: newServices }));
+                                  }} placeholder="Description of the service"></textarea>
+                                </div>
+                                <button type="button" className="btn btn-add" style={{ color: '#ef4444 !important' }} onClick={(e) => { e.preventDefault(); handleRemoveQuoteService(index); }}>
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x m-0" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                                </button>
+                              </div>
+                              <div className="displayadbox-group">
+                                <div className="form-group mb-1">
+                                  <label>Price</label>
+                                  <input type="number" className="form-control" value={service.pricePerUnit} onChange={(e) => {
+                                    const newServices = [...newQuoteFormData.services];
+                                    newServices[index].pricePerUnit = Number(e.target.value);
+                                    const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
+                                    newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
+                                    setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
+                                  }} placeholder="0" min="0" />
+                                </div>
+                                <div className="form-group mb-1">
+                                  <label>Quantity</label>
+                                  <input type="number" className="form-control" value={service.quantity} onChange={(e) => {
+                                    const newServices = [...newQuoteFormData.services];
+                                    newServices[index].quantity = Number(e.target.value);
+                                    const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
+                                    newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
+                                    setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
+                                  }} placeholder="1" min="1" />
+                                </div>
+                                <div className="form-group mb-1">
+                                  <label>Unit</label>
+                                  <input type="text" className="form-control" value={service.unit} onChange={(e) => {
+                                    const newServices = [...newQuoteFormData.services];
+                                    newServices[index].unit = e.target.value;
+                                    setNewQuoteFormData(prev => ({ ...prev, services: newServices }));
+                                  }} placeholder="pcs" />
+                                </div>
+                                <div className="form-group mb-1">
+                                  <label>Discount (%)</label>
+                                  <input type="number" className="form-control" value={service.discountPercent} onChange={(e) => {
+                                    const newServices = [...newQuoteFormData.services];
+                                    newServices[index].discountPercent = Number(e.target.value);
+                                    const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
+                                    newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
+                                    setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
+                                  }} placeholder="0" min="0" max="100" />
+                                </div>
+                              </div>
+                              <div className="displayadbox-result">
+                                <div className="displayadbox-resultleft">
+                                  <h6>{service.quantity} × {formatCurrency(service.pricePerUnit)}</h6>
+                                  {service.discountPercent > 0 && <span>-{service.discountPercent}% Discount</span>}
+                                </div>
+                                <div className="displayadbox-resultright">
+                                  {formatCurrency(service.total)}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+
+                          <div className="displayadbox">
+                            <div className="displayadbox-icon">
+                              <div className="form-group mb-1">
+                                <input type="text" className="form-control" name="name" value={currentQuoteService.name} onChange={handleCurrentQuoteServiceChange} placeholder="New service name" />
+                              </div>
+                              <div className="form-group mb-2">
+                                <textarea className="form-control" rows="3" name="description" value={currentQuoteService.description} onChange={handleCurrentQuoteServiceChange} placeholder="Description of the service"></textarea>
+                              </div>
+                            </div>
+                            <div className="displayadbox-group">
+                              <div className="form-group mb-1">
+                                <label>Price</label>
+                                <input type="number" className="form-control" name="pricePerUnit" value={currentQuoteService.pricePerUnit} onChange={handleCurrentQuoteServiceChange} placeholder="0" min="0" />
+                              </div>
+                              <div className="form-group mb-1">
+                                <label>Quantity</label>
+                                <input type="number" className="form-control" name="quantity" value={currentQuoteService.quantity} onChange={handleCurrentQuoteServiceChange} placeholder="1" min="1" />
+                              </div>
+                              <div className="form-group mb-1">
+                                <label>Unit</label>
+                                <input type="text" className="form-control" name="unit" value={currentQuoteService.unit} onChange={handleCurrentQuoteServiceChange} placeholder="pcs" />
+                              </div>
+                              <div className="form-group mb-1">
+                                <label>Discount (%)</label>
+                                <input type="number" className="form-control" name="discountPercent" value={currentQuoteService.discountPercent} onChange={handleCurrentQuoteServiceChange} placeholder="0" min="0" max="100" />
+                              </div>
+                            </div>
+                            <div className="displayadbox-result">
+                              <div className="displayadbox-resultleft">
+                                <h6>{currentQuoteService.quantity} × {formatCurrency(currentQuoteService.pricePerUnit)}</h6>
+                                {currentQuoteService.discountPercent > 0 && <span>-{currentQuoteService.discountPercent}% Discount</span>}
+                              </div>
+                              <div className="displayadbox-resultright">
+                                {formatCurrency(currentQuoteService.total)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Overall Discount and Total Calculation */}
+                      <div className="leads-infocol">
+                        <div className="formdesign">
+                          <div className="form-group">
+                            <label>Overall Discount (%)</label>
+                            <input type="number" className="form-control" name="overallDiscount" value={newQuoteFormData.overallDiscount} onChange={handleNewQuoteChange} placeholder="0" style={{ width: '95px' }} min="0" max="100" />
+                          </div>
+                          <div className="result-calculat">
+                            <div className="result-calculattop">
+                              <h5><span className="result-calculatlabel">Subtotal:</span><span className="result-calculatresult">{formatCurrency(calculateServicesSubtotal(newQuoteFormData.services))}</span></h5>
+                              {newQuoteFormData.overallDiscount > 0 && (
+                                <h5 className="resultrabat">
+                                  <span className="result-calculatlabel">Discount ({newQuoteFormData.overallDiscount}%):</span>
+                                  <span className="result-calculatresult">- {formatCurrency(calculateServicesSubtotal(newQuoteFormData.services) * (newQuoteFormData.overallDiscount / 100))}</span>
+                                </h5>
+                              )}
+                            </div>
+                            <div className="result-calculatbottom">
+                              <h5><span className="result-calculat-total">Total:</span><span className="result-calculatfinal">{formatCurrency(newQuoteFormData.total)}</span></h5>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Terms and Conditions */}
+                      <div className="leads-infocol">
+                        <div className="formdesign">
+                          <div className="form-group mb-1">
+                            <label>Terms and Conditions</label>
+                            <textarea className="form-control" rows="3" name="terms" value={newQuoteFormData.terms} onChange={handleNewQuoteChange} placeholder="Terms, reservations, or special conditions for this offer..."></textarea>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons for Quote Creation */}
+                      <button type="submit" className="btn btn-send w-100 mb-2" disabled={loading}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
+                        {loading ? 'Saving...' : `Save Quote to ${lead.fullName}`} {/* Changed text to 'Save Quote' */}
+                      </button>
+                      <Link to="#" className="btn btn-add w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        Preview
+                      </Link>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            {/* Quote History Tab Content */}
+            <div id="quote-history-tab" className={`tab-pane ${activeTab === "history" ? "active" : ""}`}>
+              <div className="carddesign">
+                <h2 className="card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-4 h-4" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>
+                  Previous Quotes
+                </h2>
+                {quotesHistory.length > 0 ? (
+                  quotesHistory.map(quote => (
+                    <div className="leads-previousoffers-box mb-3" key={quote.id}>
+                      <div className="leads-previousoffers-top">
+                        <div className="leads-previousoffers-left">
+                          <h4>{quote.title || 'No Title'}</h4>
+                          <h6>{quote.description || 'No description'}</h6>
+                        </div>
+                        <div className="status">{quote.status?.name || 'N/A'}</div>
+                      </div>
+                      <h5>
+                        <span>Created: {quote.createdAt ? new Date(quote.createdAt).toLocaleDateString() : 'N/A'}</span>
+                        <span>Last Updated: {quote.updatedAt ? new Date(quote.updatedAt).toLocaleDateString() : 'N/A'}</span>
+                      </h5>
+                      <h3>{formatCurrency(quote.total)}
+                        <div className="leads-previousoffers-btn">
+                          <button type="button" className="btn btn-add" onClick={() => { setQuoteToActOn(quote); setShowSendQuoteModal(true); }}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye m-0" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg></button>
+                          <button
+                            type="button"
+                            className="btn btn-add"
+                            onClick={() => {
+                              const qualifiedStatus = statuses.find(s => s.name === "Qualified");
+                              if (qualifiedStatus) {
+                                handleStatusChange(qualifiedStatus.id);
+                              } else {
+                                toast.error("Qualified status not found");
+                              }
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                              viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                              className="lucide lucide-check-circle m-0" aria-hidden="true">
+                              <path d="M9 12l2 2 4-4"></path>
+                              <circle cx="12" cy="12" r="10"></circle>
+                            </svg>
+                          </button>
+
+                        </div>
+                      </h3>
+                    </div>
+                  ))
+                ) : (
+                  <p>No quotes found for this lead.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       {lead && (
         <AddEditLeadModal
           show={isEditModalOpen}
