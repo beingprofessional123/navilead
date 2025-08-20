@@ -20,6 +20,29 @@ const LeadViewPage = () => {
   const [statuses, setStatuses] = useState([]);
   const [quoteStatuses, setQuoteStatuses] = useState([]);
   const [pricingTemplates, setPricingTemplates] = useState([]);
+  const [isEditing, setIsEditing] = useState({
+    fullName: false,
+    email: false,
+    phone: false,
+    address: false,
+    customerComment: false,
+    internalNote: false,
+    companyName: false,
+    cvrNumber: false,
+  });
+
+  const [editedData, setEditedData] = useState({
+    fullName: "",
+    company: "",
+    email: "",
+    phone: "",
+    address: "",
+    customerComment: "",
+    internalNote: "",
+    companyName: "",
+    cvrNumber: "",
+  });
+
 
   // State for the new quote form (right bar)
   const [newQuoteFormData, setNewQuoteFormData] = useState({
@@ -50,6 +73,43 @@ const LeadViewPage = () => {
   const [quoteToActOn, setQuoteToActOn] = useState(null); // Stores the quote after creation/update
 
 
+
+  const handleEditLead = (fieldOrEvent) => {
+    // Case 1: Called with string field name -> enable editing
+    if (typeof fieldOrEvent === "string") {
+      setIsEditing((prev) => ({ ...prev, [fieldOrEvent]: true }));
+    }
+    // Case 2: Called from textarea onChange event -> update editedData
+    else if (fieldOrEvent?.target) {
+      const { name, value } = fieldOrEvent.target;
+      setEditedData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+
+  const handleSave = async (field) => {
+    try {
+      await api.put(
+        `/leads/${id}`,
+        { [field]: editedData[field] }, // <-- dynamic field (e.g., internalNote or fullName)
+        {
+          headers: { Authorization: `Bearer ${authToken}` },
+        }
+      );
+      toast.success(`${field} updated successfully!`);
+      fetchLeadDetails();
+      setIsEditing((prev) => ({ ...prev, [field]: false }));
+    } catch (err) {
+      console.error(`Error saving ${field}:`, err);
+      toast.error(`Failed to update ${field}`);
+    }
+  };
+
+
+
   useEffect(() => {
     fetchLeadDetails();
     fetchStatuses();
@@ -65,7 +125,21 @@ const LeadViewPage = () => {
       const response = await api.get(`/leads/${id}`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      setLead(response.data);
+      const leadData = response.data;
+      setLead(leadData);
+
+      setEditedData({
+        fullName: leadData.fullName || "",
+        company: leadData.company || "",
+        email: leadData.email || "",
+        phone: leadData.phone || "",
+        address: leadData.address || "",
+        customerComment: leadData.customerComment || "",
+        internalNote: leadData.internalNote || "",
+        companyName: leadData.companyName || "",
+        cvrNumber: leadData.cvrNumber || "",
+      });
+
     } catch (err) {
       console.error('Error fetching lead details:', err);
       setError('Failed to load lead details. Lead not found or unauthorized.');
@@ -431,40 +505,80 @@ const LeadViewPage = () => {
               <div className="leads-contact">
                 <div className="leads-info">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                  <div className="leads-info-text"><h4>{lead.fullName || 'N/A'}</h4></div>
+                  <div className="leads-info-text">
+                    {isEditing.fullName ? (
+                      <input className="form-control editcontrol" placeholder="Enter full name" required="" type="text" value={editedData.fullName} name="fullName" onChange={handleEditLead} />
+                    ) : (
+                      <h4>{lead.fullName || 'N/A'}</h4>
+                    )}
+                  </div>
                 </div>
                 <div className="leads-info-edit">
-                  <button className="copybtn btn btn-add" onClick={handleEdit}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                  {isEditing.fullName ? (
+                    <button className="copybtn btn btn-add" onClick={() => handleSave("fullName")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-square" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
+                  ) : (
+                    <button className="copybtn btn btn-add" onClick={() => handleEditLead("fullName")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                  )}
                   <button className="copybtn btn btn-add" onClick={() => handleCopyText(lead.fullName)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy w-3 h-3" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button>
                 </div>
               </div>
               <div className="leads-contact">
                 <div className="leads-info">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg>
-                  <div className="leads-info-text"><h4>{lead.email || 'N/A'}</h4> </div>
+                  <div className="leads-info-text">
+                    {isEditing.email ? (
+                      <input className="form-control editcontrol" placeholder="Enter full name" required="" type="text" value={editedData.email} name="email" onChange={handleEditLead} />
+                    ) : (
+                      <h4>{lead.email || 'N/A'}</h4>
+                    )}
+                  </div>
                 </div>
                 <div className="leads-info-edit">
-                  <button className="copybtn btn btn-add" onClick={handleEdit}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                  {isEditing.email ? (
+                    <button className="copybtn btn btn-add" onClick={() => handleSave("email")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-square" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
+                  ) : (
+                    <button className="copybtn btn btn-add" onClick={() => handleEditLead("email")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                  )}
                   <button className="copybtn btn btn-add" onClick={() => handleCopyText(lead.email)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy w-3 h-3" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button>
                 </div>
               </div>
               <div className="leads-contact">
                 <div className="leads-info">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg>
-                  <div className="leads-info-text"><h4>{lead.phone || 'N/A'}</h4> </div>
+                  <div className="leads-info-text">
+                    {isEditing.phone ? (
+                      <input className="form-control editcontrol" placeholder="Enter phone" required="" type="text" value={editedData.phone} name="phone" onChange={handleEditLead} />
+                    ) : (
+                      <h4>{lead.phone || 'N/A'}</h4>
+                    )}
+                  </div>
                 </div>
                 <div className="leads-info-edit">
-                  <button className="copybtn btn btn-add" onClick={handleEdit}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                  {isEditing.phone ? (
+                    <button className="copybtn btn btn-add" onClick={() => handleSave("phone")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-square" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
+                  ) : (
+                    <button className="copybtn btn btn-add" onClick={() => handleEditLead("phone")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                  )}
                   <button className="copybtn btn btn-add" onClick={() => handleCopyText(lead.phone)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy w-3 h-3" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button>
                 </div>
               </div>
               <div className="leads-contact">
                 <div className="leads-info">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  <div className="leads-info-text"><h4>{lead.address || 'N/A'}</h4> </div>
+                  <div className="leads-info-text">
+                    {isEditing.address ? (
+                      <input className="form-control editcontrol" placeholder="Enter address" required="" type="text" value={editedData.address} name="address" onChange={handleEditLead} />
+                    ) : (
+                      <h4>{lead.address || 'N/A'}</h4>
+                    )}
+                  </div>
                 </div>
                 <div className="leads-info-edit">
-                  <button className="copybtn btn btn-add" onClick={handleEdit}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                  {isEditing.address ? (
+                    <button className="copybtn btn btn-add" onClick={() => handleSave("address")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-square" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
+                  ) : (
+                    <button className="copybtn btn btn-add" onClick={() => handleEditLead("address")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                  )}
                   <button className="copybtn btn btn-add" onClick={() => handleCopyText(lead.address)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy w-3 h-3" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button>
                 </div>
               </div>
@@ -491,10 +605,20 @@ const LeadViewPage = () => {
             <div className="leads-infocol">
               <div className="formdesign lead-message">
                 <div className="form-group">
-                  <label>Lead Message <button className="copybtn btn btn-add" onClick={handleEdit}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button></label>
-                  <div className="textareaview">
-                    {lead.customerComment || 'N/A'}
-                  </div>
+                  <label>Lead Message
+                    {isEditing.customerComment ? (
+                      <button className="copybtn btn btn-add" onClick={() => handleSave("customerComment")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-square" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
+                    ) : (
+                      <button className="copybtn btn btn-add" onClick={() => handleEditLead("customerComment")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                    )}
+                  </label>
+                  {isEditing.customerComment ? (
+                    <textarea className="form-control editcontrol" placeholder="Enter Lead Message" required value={editedData.customerComment} name="customerComment" onChange={handleEditLead} />
+                  ) : (
+                    <div className="textareaview">
+                      {lead.customerComment || 'N/A'}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -502,13 +626,25 @@ const LeadViewPage = () => {
             <div className="leads-infocol">
               <div className="formdesign lead-message">
                 <div className="form-group">
-                  <label>Internal Note <button className="copybtn btn btn-add" onClick={handleEdit}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button></label>
-                  <div className="textareaview">
-                    {lead.internalNote || 'N/A'}
-                  </div>
+                  <label>Internal Note
+                    {isEditing.internalNote ? (
+                      <button className="copybtn btn btn-add" onClick={() => handleSave("internalNote")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-square" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
+                    ) : (
+                      <button className="copybtn btn btn-add" onClick={() => handleEditLead("internalNote")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                    )}
+                  </label>
+                  {isEditing.internalNote ? (
+                    <textarea className="form-control editcontrol" placeholder="Enter Internal Note" required value={editedData.internalNote} name="internalNote" onChange={handleEditLead} />
+                  ) : (
+                    <div className="textareaview">
+                      {lead.internalNote || 'N/A'}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
+
+
 
             <div className="leads-infocol">
               <h3 className="leads-subheading">Company</h3>
@@ -516,24 +652,44 @@ const LeadViewPage = () => {
                 <div className="form-group">
                   <div className="leads-firmacol">
                     <label>Company Name</label>
-                    <div className="leads-firma-text">
-                      <h5>{lead.companyName || 'N/A'}</h5>
-                    </div>
+
+                    {isEditing.companyName ? (
+                      <input className="form-control editcontrol" placeholder="Enter company name" required="" type="text" value={editedData.companyName} name="companyName" onChange={handleEditLead} />
+                    ) : (
+                      <div className="leads-firma-text">
+                        <h5>{lead.companyName || 'N/A'}</h5>
+                      </div>
+                    )}
+
                   </div>
                   <div className="leads-info-edit">
-                    <button className="copybtn btn btn-add" onClick={handleEdit}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                    {isEditing.companyName ? (
+                      <button className="copybtn btn btn-add" onClick={() => handleSave("companyName")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-square" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
+                    ) : (
+                      <button className="copybtn btn btn-add" onClick={() => handleEditLead("companyName")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                    )}
                     <button className="copybtn btn btn-add" onClick={() => handleCopyText(lead.companyName)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy w-3 h-3" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button>
                   </div>
                 </div>
                 <div className="form-group">
                   <div className="leads-firmacol">
                     <label>CVR Number</label>
-                    <div className="leads-firma-text">
-                      <h5>{lead.cvrNumber || 'N/A'}</h5>
-                    </div>
+
+                    {isEditing.cvrNumber ? (
+                      <input className="form-control editcontrol" placeholder="Enter company number" required="" type="text" value={editedData.cvrNumber} name="cvrNumber" onChange={handleEditLead} />
+                    ) : (
+                      <div className="leads-firma-text">
+                        <h5>{lead.cvrNumber || 'N/A'}</h5>
+                      </div>
+                    )}
+
                   </div>
                   <div className="leads-info-edit">
-                    <button className="copybtn btn btn-add" onClick={handleEdit}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                    {isEditing.cvrNumber ? (
+                      <button className="copybtn btn btn-add" onClick={() => handleSave("cvrNumber")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-square" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
+                    ) : (
+                      <button className="copybtn btn btn-add" onClick={() => handleEditLead("cvrNumber")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+                    )}
                     <button className="copybtn btn btn-add" onClick={() => handleCopyText(lead.cvrNumber)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy w-3 h-3" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button>
                   </div>
                 </div>
@@ -697,13 +853,11 @@ const LeadViewPage = () => {
                 </div>
               </div>
             </div>
-
-
             <div className="tags">
               <h3 className="leads-subheading">Tags</h3>
               {displayTags.length > 0 ? (
                 displayTags.map((tag, index) => (
-                  <span key={index} className="badge bg-secondary me-1">{tag}</span>
+                  <span key={index} className="badge">{tag}</span>
                 ))
               ) : (
                 <p>No tags</p>
