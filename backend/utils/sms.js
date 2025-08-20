@@ -12,6 +12,8 @@ async function sendSms({ to, message, from }) {
       recipients: formattedRecipients,
     };
 
+    console.log("📤 Sending SMS with payload:", JSON.stringify(payload, null, 2));
+
     const response = await fetch('https://gatewayapi.com/rest/mtsms', {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -21,17 +23,25 @@ async function sendSms({ to, message, from }) {
       },
     });
 
+    console.log("📥 Raw response status:", response.status, response.statusText);
+
     const data = await response.json();
 
-    console.log('Response data:', JSON.stringify(data, null, 2));
+    console.log("📥 Parsed response data:", JSON.stringify(data, null, 2));
+
+    // Log the message IDs (useful for fetching DLR later)
+    if (data.ids) {
+      console.log("✅ Message IDs:", data.ids.join(", "));
+    }
+
     // Check if any of the messages failed
     if (!response.ok || data.error || data.status === 'failed') {
-      throw new Error(`SMS sending failed: ${JSON.stringify(data)}`);
+      throw new Error(`❌ SMS sending failed: ${JSON.stringify(data)}`);
     }
 
     return data;
   } catch (error) {
-    console.error('GatewayAPI SMS send error:', error);
+    console.error('🚨 GatewayAPI SMS send error:', error);
     throw error;
   }
 }
