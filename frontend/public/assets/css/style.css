@@ -156,6 +156,9 @@ body {
     --primary: #00d4f0;
     --color-blue-900: oklch(.379 .146 265.522);
     --color-blue-700: oklch(.488 .243 264.376);
+    --color-green-500: oklch(.723 .219 149.579);
+    --color-green-600: oklch(.627 .194 149.214);
+    --color-yellow-500: oklch(.795 .184 86.047);
 }
 .aa {
   background-color: var(--card);
@@ -712,7 +715,7 @@ ul.notification-ul li:hover .btn.btn-leads{
 .remove-file-icon {
   cursor: pointer;
 }
-.progress-bar {
+.file-block .progress-bar {
   display: flex;
   position: absolute;
   bottom: 0;
@@ -773,6 +776,16 @@ ul.notification-ul li:hover .btn.btn-leads{
     vertical-align: middle;
     border-bottom: 1px solid #202e3c;
 }
+/*.tabledesign table.table tbody {
+    display: block;
+    overflow-y: auto;
+    height: 260px;
+}
+.tabledesign thead, .tabledesign tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}*/
 .tabledesign .table tbody tr td {
     color: var(--muted-foreground);
     font-weight: 300;
@@ -1011,6 +1024,16 @@ ul.leadlistul li:hover {
 .status.status5 {
     color: #1e2939;
     background-color: var(--primary);
+}
+.status.status6 {
+    color: #00c951;
+            background-color: color-mix(in oklab, var(--color-green-500) 10%, transparent);
+ border: 1px solid color-mix(in oklab, var(--color-green-500) 20%, transparent);
+}
+.status.status7 {
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    background-color: var(--card);
 }
 .leadlist-price h4 {
     color: var(--foreground);
@@ -2640,13 +2663,656 @@ h5.resultrabat {
     padding: 10px 18px;
 }
 
+/*billing*/
+.dashright .badge {
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 5px 9px;
+}
+.dashright .badge svg {
+    width: 11px;
+    height: 11px;
+    margin-right: 4px;
+}
+.emailmodaltab.billing ul.nav.nav-tabs li.nav-item {
+    width: 25%;
+}
+.emailmodaltab.billing ul.nav.nav-tabs a.nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.emailmodaltab.billing ul.nav.nav-tabs a.nav-link svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 7px;
+}
+.dash-heading h2 svg {
+    width: 21px;
+    height: 21px;
+    margin-right: 9px;
+    display: inline-block;
+    vertical-align: bottom;
+}
+.dash-heading h2 svg.lucide-credit-card {
+    color: var(--primary);
+}
+.text-primary {
+    color: var(--primary) !important;
+}
+.planactive-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+.planactive-heading h2.card-title {
+    margin-bottom: 3px;
+}
+.planactive-heading p {
+    font-size: 13px;
+    margin: 0px;
+    color: var(--muted-foreground);
+}
+.planactive-details {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+.planactive-details h4 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+.planactive-details h5 {
+    font-size: 13px;
+    margin: 0px;
+    color: var(--muted-foreground);
+    font-weight: 400;
+}
+.planactive-details h4 span {
+    font-size: 13px;
+    color: var(--muted-foreground);
+    font-weight: 400;
+}
+.planactive-list h4 {
+    color: var(--card-foreground);
+    font-size: 14px;
+    font-weight: 400;
+    margin-bottom: 11px;
+}
+.planactive-list ul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+}
+.planactive-list ul li {
+    width: 50%;
+    font-size: 12px;
+    margin: 0px;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    gap: 0px 8px;
+    margin-bottom: 6px;
+}
+.planactive-list ul li svg {
+    width: 14px;
+    color: #00c951;
+    height: 14px;
+}
+.planactiveoverview ul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.planactiveoverviewlist {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+}
+.planactiveoverviewlist span {
+    font-size: 13px;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+}
+.planactiveoverviewlist span svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 7px;
+}
+.planactiveoverviewlist span.planactiveoverviewlist-data {
+    font-weight: 400;
+}
+.planactiveoverview ul li {
+    margin-bottom: 18px;
+}
+.planactiveoverview ul li p {
+    font-size: 12px;
+    margin: 0px;
+    color: var(--muted-foreground);
+    font-weight: 300;
+}
+.planactiveoverview ul li p svg {
+    width: 11px;
+    height: 11px;
+    margin-right: 7px;
+}
+.progressoverview .progress {
+    height: 7px;
+    margin: 6px 0px;
+    background-color: 
+ color-mix(in oklab, var(--primary) 20%, transparent);
+}
+.progressoverview .progress-bar {
+    background-color: var(--primary);
+}
+.progressoverview p {
+    color: #d08700 !important;
+}
+.text-green-600 {
+    color: var(--color-green-600) !important;
+}
+.storagespace h4 {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 38px 0px 10px 0px;
+    line-height: 24px;
+}
+.storagespace h4 span {
+    display: block;
+    font-weight: 300;
+    font-size: 12px;
+    color: var(--muted-foreground);
+}
+.storagespace .progress {
+    height: 10px;
+    background-color: 
+ color-mix(in oklab, var(--primary) 20%, transparent);
+    margin-bottom: 10px;
+}
+.storagespace .progress .progress-bar {
+    background-color: var(--primary);
+}
+.storagespacetotal {
+    display: flex;
+    flex-wrap: wrap;
+}
+.storagespacetotal span {
+    width: 50%;
+    position: relative;
+    font-size: 12px;
+    font-weight: 300;
+    padding-left: 18px;
+}
+.storagespacetotal span::after {
+    content: "";
+    position: absolute;
+    left: 0px;
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 100px;
+    background-color: var(--primary);
+}
+.storagespacetotal span.storagespacetotal-right::after {
+    background-color: var(--muted);
+}
+.carddesign.planactiveoverview {
+    height: calc(100% - 23px);
+}
+.quickactions .btn.btn-add {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    padding: 13px 15px;
+}
+.quickactions-info h5 {
+    font-size: 13px;
+    margin: 0px 0px 0px 0px;
+    font-weight: 400;
+}
+.quickactions-info p {
+    font-size: 12px;
+    margin: 0px;
+    color: var(--muted-foreground);
+    font-weight: 300;
+}
+.quickactions .btn.btn-add:hover svg{
+    color: #000 !important;
+}
+.quickactions .btn.btn-add:hover p{
+    color: #000;
+}
+.ugradeplanmodal-body h2 {
+    font-size: 23px;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.ugradeplanmodal-body h3 {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 0px;
+}
+.ugradeplanmodal-body h3 span {
+    font-size: 12px;
+    font-weight: 300;
+}
+.ugradeplanmodal-eur {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--muted-foreground);
+}
+.ugradeplanmodal-body p {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--muted-foreground);
+    margin: 8px 0px;
+}
+.ugradeplanmodal-body ul {
+    margin: 0px;
+    padding: 10px 0px;
+    list-style: none;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+.ugradeplanmodal-body ul li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 300;
+    padding: 3px 0px;
+}
+.ugradeplanmodal-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 400;
+    margin: 10px 0px 15px;
+    font-size: 15px;
+}
+.ugradeplanmodal-alart {
+    background-color: 
+ color-mix(in oklab, var(--muted) 50%, transparent);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 300;
+    display: flex;    
+}
+.ugradeplanmodal-alart svg {
+    width: 14px;
+    height: 14px;
+    color: var(--color-yellow-500);
+    margin-right: 7px;
+}
+.addpaymentmethod-modal .switchbtn span.switchbtntext {
+    font-weight: 400;
+    font-size: 14px;
+    margin-left: 10px;
+}
+.plans-heading {
+    text-align: center;
+}
+.plans-heading h3 {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+.plans-heading p {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin: 9px 0px 15px 0px;
+    font-weight: 400;
+}
+.planscheck {
+    display: inline-flex;
+    justify-content: center;
+    margin-bottom: 30px;
+    align-items: center;
+    background-color: var(--muted);
+    padding: 2px 4px;
+    border-radius: 8px;
+}
+.planscheck .form-check {
+    padding: 0px;
+    margin: 0px;
+    min-height: auto;
+}
+.planscheck .form-check-label {
+    position: relative;
+}
+.planscheck .form-check-label .form-check-input {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    opacity: 0;
+}
+.planscheck .form-check-label div {
+    color: var(--muted-foreground);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 7px 14px;
+    border-radius: 8px;
+    color: var(--foreground);
+}
+.planscheck .form-check-label .form-check-input:checked~div {
+    background-color: var(--background);
+    color: var(--muted-foreground);
+}
+.planscheck .form-check-label div span {
+    color: #00c951;
+    background-color: color-mix(in oklab, var(--color-green-500) 10%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-green-500) 20%, transparent);
+    padding: 2px 7px;
+    font-size: 10px;
+    border-radius: 7px;
+    display: inline-block;
+    margin-left: 6px;
+}
+.plancard-heading {
+    text-align: center;
+}
+.plancard-heading h4 {
+    font-weight: 600;
+    font-size: 25px;
+    margin-bottom: 0px;
+    line-height: 20px;
+}
+.plancard-heading h4 span {
+    color: var(--muted-foreground);
+    font-weight: 400;
+    font-size: 12px;
+}
+.plancard-heading h3 {
+    font-weight: 300;
+    font-size: 20px;
+    margin-bottom: 16px;
+}
+.plancard-heading .save {
+    color: var(--color-green-600);
+    font-size: 14px;
+    margin-bottom: 7px;
+}
+.plancard-heading p {
+    color: var(--muted-foreground);
+    font-weight: 400;
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+.plancard-body ul {
+    margin: 16px 0px 12px 0px;
+    padding: 0px 0px 8px 0px;
+    list-style: none;
+    border-bottom: 1px solid var(--border);
+}
+.plancard-body ul li {
+    font-size: 12px;
+    margin: 0px;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    gap: 0px 8px;
+    margin-bottom: 6px;
+}
+.plancard-body ul li svg {
+    width: 14px;
+    color: #00c951;
+    height: 14px;
+}
+.plancard-body p {
+    color: var(--muted-foreground);
+    font-weight: 400;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+.plancard-body .btn.btn-send {
+    display: block;
+    margin-top: 11px;
+}
+.mostplan {
+    background-color: var(--primary);
+    position: absolute;
+    left: 50%;
+    top: -10px;
+    font-size: 11px;
+    color: #000;
+    border-radius: 20px;
+    padding: 2px 10px;
+    transform: translateX(-50%) translateY(0%);
+    display: flex;
+    align-items: center;
+}
+.mostplan svg {
+    width: 11px;
+    height: 11px;
+    margin-right: 6px;
+}
+.carddesign.mostplancard {
+    border: 2px solid #00d4f0;
+}
+.plancard-body .btn.btn-add {
+    width: 100%;
+    margin-top: 11px;
+}
+.plancard-body p span {
+    display: flex;
+    align-items: center;
+}
+.plancard-body p span svg {
+    width: 11px;
+    height: 11px;
+    margin-right: 5px;
+}
+.plancard {
+    height: calc(100% - 23px);
+}
+.smsprices h4 {
+    text-align: center;
+    font-size: 23px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+.smsprices p {
+    text-align: center;
+    margin: 0px;
+    color: var(--muted-foreground);
+    font-weight: 400;
+    font-size: 12px;
+}
+.smsprices-a {
+    color: #155dfc;
+}
+.smsprices .col-md-4 {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.smsprices-b {
+    color: #00a63e;
+}
+.smsprices-c {
+    color: #00d4f0;
+}
+.paymentmethodsbg {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.paymentmethodscard {
+    display: flex;
+    align-items: center;
+    gap: 0px 10px;
+}
+.paymentmethodscard span svg {
+    width: 14px;
+    height: 14px;
+}
+.paymentmethodscard-desc h4 {
+    font-size: 14px;
+    margin: 0px;
+}
+.paymentmethodscard-desc p {
+    font-size: 13px;
+    margin: 0px;
+    color: var(--muted-foreground);
+}
+.paymentmethods-action .btn.btn-add {
+    border: none !important;
+    background: none;
+    padding: 6px 8px;
+}
+.btn.btn-add.downloadbtn {
+    border: none !important;
+    background: none;
+    padding: 6px 8px;
+}
+.smsprices h4 svg {
+    width: 21px;
+    height: 21px;
+    margin-right: 5px;
+}
+.text-green-500 {
+    color: var(--color-green-500);
+}
+.invoicehistory .tabledesign .table tbody tr:hover {
+    background-color: var(--muted);
+}
+.invoicehistory .tabledesign .table tbody tr td {
+    padding: 8px 14px;
+    color: var(--card-foreground);
+}
+.invoicehistory .tabledesign .table tbody tr th {
+    padding: 8px 14px;
+    color: var(--card-foreground);
+}
+/*billing*/
+
+/*settings */
+ul.notification-settings {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.notification-settings li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0px;
+    border-bottom: 1px solid var(--border);
+}
+.notification-settings-left h4 {
+    color: var(--foreground);
+    font-size: 13px;
+    font-weight: 400;
+    margin-bottom: 4px;
+}
+.notification-settings-left h6 {
+    color: var(--muted-foreground);
+    font-weight: 400;
+    font-size: 11px;
+    margin: 0px;
+}
+.notification-settings li:last-child {
+  border-bottom: none;
+  padding-bottom: 0px;
+}
+.notification-settings li:first-child {
+  padding-top: 0px;
+}
+.emailsignature .modalfooter {
+    justify-content: left;
+}
+.usersul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.usersul li {
+    border: 1px solid var(--border);
+    padding: 15px;
+    border-radius: 8.7px;
+    margin-bottom: 12px;
+}
+.usersul-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.usersul-right .btn.btn-add {
+    border: none !important;
+    background: none;
+}
+.usersul-right {
+    display: flex;
+    align-items: center;
+    gap: 0px 10px;
+}
+.usersul-left {
+    display: flex;
+    align-items: center;
+    gap: 0px 13px;
+}
+.usersul-left span {
+    background-color: color-mix(in oklab, var(--primary) 10%, transparent);
+    width: 28px;
+    height: 28px;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.usersul-left span svg {
+    width: 14px;
+    height: 14px;
+}
+.usersul-name h4 {
+    color: var(--foreground);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+.usersul-name h6 {
+    color: var(--muted-foreground);
+    font-weight: 400;
+    font-size: 12px;
+    margin-bottom: 0px;
+}
+.status svg {
+    width: 11px;
+    height: 11px;
+    margin-right: 5px;
+}
+.cserscard .modalfooter span.inputnote {
+    margin: 0px;
+}
+/*settings */
 
 
 
 
 
-
-
-
-
-
+.form-control.editcontrol {
+    background-color: var(--input-background);
+    outline: none !important;
+    box-shadow: none !important;
+    border: 1px solid var(--input);
+    color: var(--card-foreground);
+    font-size: 10px;
+    border-radius: 5px;
+    padding: 6px 15px;
+}
+ 
+.leads-info {   
+    align-items: center;
+}

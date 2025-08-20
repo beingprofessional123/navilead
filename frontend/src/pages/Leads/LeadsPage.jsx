@@ -109,12 +109,10 @@ const LeadsPage = () => {
 
   // Helper to format currency (assuming Danish Krone DKK)
   const formatCurrency = (value) => {
-    if (value === null || value === undefined) return '0 DKK';
-    return new Intl.NumberFormat('en-DK', {
-      style: 'currency',
-      currency: 'DKK',
-    }).format(value);
+    if (value === null || value === undefined) return '0';
+    return String(value); // ensures you get "1000", "0", "599999"
   };
+
 
   // Function to determine badge class based on status name
   const getStatusBadgeClass = (statusName) => {
@@ -176,7 +174,8 @@ const LeadsPage = () => {
   const qualifiedLeads = filteredAndSortedLeads.filter(lead => lead.status?.name === 'Qualified').length;
   const wonLeads = filteredAndSortedLeads.filter(lead => lead.status?.name === 'Won').length;
   const totalValue = filteredAndSortedLeads.reduce((sum, lead) => sum + (lead.value || 0), 0);
-  const avgValue = totalLeads > 0 ? totalValue / totalLeads : 0;
+  const avgValue = totalLeads > 0 ? Math.round(totalValue / totalLeads) : 0;
+
 
 
   return (
@@ -196,7 +195,7 @@ const LeadsPage = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download w-4 h-4 mr-2" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>
                 Export
               </a>
-              <a href="#" className="btn btn-send" onClick={handleCreateNew} data-bs-toggle="modal" data-bs-target="#myModal">
+              <a href="#" className="btn btn-send" onClick={handleCreateNew}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
                 New Lead
               </a>
@@ -333,92 +332,98 @@ const LeadsPage = () => {
           <div className="col-md-12">
             <div className="carddesign leadstable">
               <h2 className="card-title">All Leads</h2>
-              {loading ? (
-                <p>Loading leads...</p>
-              ) : error ? (
-                <p className="text-danger">{error}</p>
-              ) : (
-                <div className="tabledesign">
-                  <div className="table-responsive">
-                    <table className="table">
-                      <thead>
+              <div className="tabledesign">
+                <div className="table-responsive">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th className="talechebox"><input className="form-check-input" type="checkbox" id="checkAll" /></th>
+                        <th>Lead ID</th>
+                        <th>Name</th>
+                        <th>Company</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Value</th>
+                        <th>Source</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+
+                     {loading ? (
                         <tr>
-                          <th className="talechebox"><input className="form-check-input" type="checkbox" id="checkAll" /></th>
-                          <th>Lead ID</th>
-                          <th>Name</th>
-                          <th>Company</th>
-                          <th>Email</th>
-                          <th>Phone</th>
-                          <th>Status</th>
-                          <th>Value</th>
-                          <th>Source</th>
-                          <th>Actions</th>
+                          <td colSpan="10" className="text-center">Loading leads...</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {filteredAndSortedLeads.length > 0 ? (
-                          filteredAndSortedLeads.map((lead) => (
-                            <tr key={lead.id}>
-                              <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
-                              <td><Link to={`/leads/${lead.id}`} className="leadlink">{lead.leadNumber}</Link></td>
-                              <td><strong>{lead.fullName}</strong></td>
-                              <td>{lead.companyName}</td>
-                              <td>{lead.email}</td>
-                              <td>{lead.phone}</td>
-                              <td>
-                                <div className="dropdown leaddropdown">
-                                  <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
-                                    <span className={getStatusBadgeClass(lead.status?.name)}>{lead.status?.name}</span>
-                                  </button>
-                                  <ul className="dropdown-menu">
-                                    {/* Dynamically render status options */}
-                                    {statuses.map(status => (
-                                      <li key={status.id}>
-                                        <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleStatusChange(lead.id, status.id); }}>
-                                          {status.name}
-                                        </a>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              </td>
-                              <td><strong>{formatCurrency(lead.value)}</strong></td>
-                              <td>{lead.leadSource}</td>
-                              <td className="actionbtn">
-                                <div className="dropdown leaddropdown">
-                                  <button type="button" className="btn btn-add dropdown-toggle" data-bs-toggle="dropdown">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                  </button>
-                                  <ul className="dropdown-menu">
-                                    <li><Link className="dropdown-item" to={`/leads/${lead.id}`}>
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                      View Details
-                                    </Link></li>
-                                    <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleEdit(lead); }} data-bs-toggle="modal" data-bs-target="#myModal">
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>
-                                      Edit
-                                    </a></li>
-                                    <li><a className="dropdown-item" href="#">
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
-                                      Send Message
-                                    </a></li>
-                                    <li className="sletborder"><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleDelete(lead.id); }}>
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                      Delete
-                                    </a></li>
-                                  </ul>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr><td colSpan="10" className="text-center">No leads found.</td></tr>
+                      ) : error ? (
+                        <tr>
+                          <td colSpan="10" className="text-danger text-center">{error}</td>
+                        </tr>
+                      ) : filteredAndSortedLeads.length > 0 ? (
+                        filteredAndSortedLeads.map((lead) => (
+                          <tr key={lead.id}>
+                            <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
+                            <td><Link to={`/leads/${lead.id}`} className="leadlink">{lead.leadNumber}</Link></td>
+                            <td><strong>{lead.fullName}</strong></td>
+                            <td>{lead.companyName}</td>
+                            <td>{lead.email}</td>
+                            <td>{lead.phone}</td>
+                            <td>
+                              <div className="dropdown leaddropdown">
+                                <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                  <span className={getStatusBadgeClass(lead.status?.name)}>{lead.status?.name}</span>
+                                </button>
+                                <ul className="dropdown-menu">
+                                  {/* Dynamically render status options */}
+                                  {statuses.map(status => (
+                                    <li key={status.id}>
+                                      <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleStatusChange(lead.id, status.id); }}>
+                                        {status.name}
+                                      </a>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </td>
+                            <td><strong>{formatCurrency(lead.value)}</strong></td>
+                            <td>{lead.leadSource}</td>
+                            <td className="actionbtn">
+                              <div className="dropdown leaddropdown">
+                                <button type="button" className="btn btn-add dropdown-toggle" data-bs-toggle="dropdown">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                                </button>
+                                <ul className="dropdown-menu">
+                                  <li><Link className="dropdown-item" to={`/leads/${lead.id}`}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    View Details
+                                  </Link></li>
+                                  <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleEdit(lead); }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>
+                                    Edit
+                                  </a></li>
+                                  <li><a className="dropdown-item" href="#">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
+                                    Send Message
+                                  </a></li>
+                                  <li className="sletborder"><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleDelete(lead.id); }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    Delete
+                                  </a></li>
+                                </ul>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                       ) : (
+                          <tr>
+                            <td colSpan="10" className="text-center">No leads found.</td>
+                          </tr>
                         )}
-                      </tbody>
-                    </table>
-                  </div>
+                    </tbody>
+                  </table>
                 </div>
-              )}
+              </div>
+
             </div>
           </div>
         </div>
