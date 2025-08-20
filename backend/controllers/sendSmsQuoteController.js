@@ -37,12 +37,14 @@ exports.storeSendSmsQuote = async (req, res) => {
     variablesMap.offer_link = `${frontendUrl}/offer/${quoteId}`;
 
     // Determine final message
-    let finalMessage = smsMessage;
-    if (smsTemplateId) {
+    let finalMessage = smsMessage && smsMessage.trim() !== "" ? smsMessage : null;
+
+    if (!finalMessage && smsTemplateId) {
       const template = await SmsTemplate.findOne({ where: { id: smsTemplateId, userId } });
       if (!template) return res.status(404).json({ message: 'SMS template not found' });
       finalMessage = template.smsContent;
     }
+
 
     // Replace variables in the message
     const replacedMessage = replaceVariables(finalMessage, variablesMap);
