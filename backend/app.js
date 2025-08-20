@@ -5,8 +5,8 @@ const path = require('path');
 
 
 // Import routes
-const authRoutes = require('./routes/authRoutes'); // General user auth
-const leadRoutes = require('./routes/leadRoutes'); // <-- Add this line
+const authRoutes = require('./routes/authRoutes');
+const leadRoutes = require('./routes/leadRoutes');
 const statusRoutes = require('./routes/statusRoutes');
 const pricingTemplateRoutes = require('./routes/pricingTemplateRoutes'); 
 const currencyRoutes = require('./routes/currencyRoutes');
@@ -17,6 +17,7 @@ const sendEmailQuoteRoutes = require('./routes/sendEmailQuoteRoutes');
 const offerRoutes = require('./routes/offerRoutes'); 
 const smsTemplateRoutes = require('./routes/smsTemplateRoutes');
 const sendSmsQuoteRoutes = require('./routes/sendSmsQuoteRoutes');
+const publicLeadRoutes = require('./routes/publicLeadRoutes');
 
 
 const app = express();
@@ -30,18 +31,20 @@ app.get('/', (req, res) => {
 // General user authentication routes
 app.use('/api/auth', authRoutes);
 
-// Leads routes
-app.use('/api/leads', leadRoutes); // <-- Add this line
+app.use('/api/leads', leadRoutes);
 app.use('/api/statuses', statusRoutes);
-app.use('/api/pricing-templates', pricingTemplateRoutes); // ✅ Add this line
+app.use('/api/pricing-templates', pricingTemplateRoutes);
 app.use('/api/currencies', currencyRoutes); 
-app.use('/api/quotes', quoteRoutes); // ✅ Add this
+app.use('/api/quotes', quoteRoutes);
 app.use('/api/email-templates', emailTemplateRoutes);
 app.use('/api/variables', userVariableRoutes);
 app.use('/api/send-email-quotes', sendEmailQuoteRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/sms-templates', smsTemplateRoutes);
 app.use('/api/send-sms-quotes', sendSmsQuoteRoutes);
+
+// Public leads route (no auth required)
+app.use('/api/public-leads', publicLeadRoutes);
 
 
 
