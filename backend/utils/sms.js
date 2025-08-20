@@ -23,6 +23,7 @@ async function sendSms({ to, message, from }) {
 
     const data = await response.json();
 
+    console.log('Response data:', JSON.stringify(data, null, 2));
     // Check if any of the messages failed
     if (!response.ok || data.error || data.status === 'failed') {
       throw new Error(`SMS sending failed: ${JSON.stringify(data)}`);
