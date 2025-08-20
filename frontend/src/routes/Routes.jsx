@@ -12,6 +12,7 @@ import EmailSMSPage from '../pages/Template/EmailSMSPage';
 import PricingTemplatesPage from '../pages/pricingTempate/PricingTemplatesPage';
 import LeadsPage from '../pages/Leads/LeadsPage';
 import LeadViewPage from '../pages/Leads/LeadViewPage'; 
+import IntegrationsPage from '../pages/Integrations/IntegrationsPage'; 
 
 const RouterSetup = () => {
   return (
@@ -77,7 +78,7 @@ const RouterSetup = () => {
         element={
           <ProtectedRoute>
             <PublicLayout>
-              <Dashboard /> {/* Placeholder, replace with actual IntegrationsPage if available */}
+              <IntegrationsPage /> {/* Placeholder, replace with actual IntegrationsPage if available */}
             </PublicLayout>
           </ProtectedRoute>
         }
