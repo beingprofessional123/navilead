@@ -7,8 +7,10 @@ import api from '../../utils/api';
 import AddEditLeadModal from './AddEditLeadModal';
 import SendQuoteModal from './SendQuoteModal';
 import FullPageLoader from '../../components/common/FullPageLoader';
+import { useTranslation } from "react-i18next";
 
 const LeadViewPage = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { authToken } = useContext(AuthContext);
@@ -73,6 +75,35 @@ const LeadViewPage = () => {
   const [quoteToActOn, setQuoteToActOn] = useState(null); // Stores the quote after creation/update
 
 
+  // --- NEW STATE for map coordinates ---
+  const [coords, setCoords] = useState(null);
+
+  // 🔎 Helper: Geocode address into lat/lon
+   const geocodeAddress = async (address) => {
+    try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
+      {
+        headers: {
+          "User-Agent": "MyApp/1.0 (myemail@example.com)"
+        }
+      }
+    );
+
+
+      const data = await res.json();
+      if (data.length > 0) {
+        setCoords({ lat: data[0].lat, lon: data[0].lon });
+      }
+      
+    } catch (err) {
+      console.error("Error fetching coordinates:", err);
+      toast.error(t('leadViewPage.failedToFetchCoordinates'));
+    }
+  };
+
+
+
 
   const handleEditLead = (fieldOrEvent) => {
     // Case 1: Called with string field name -> enable editing
@@ -99,12 +130,12 @@ const LeadViewPage = () => {
           headers: { Authorization: `Bearer ${authToken}` },
         }
       );
-      toast.success(`${field} updated successfully!`);
+      toast.success(t('leadViewPage.fieldUpdateSuccess', { field: field }));
       fetchLeadDetails();
       setIsEditing((prev) => ({ ...prev, [field]: false }));
     } catch (err) {
       console.error(`Error saving ${field}:`, err);
-      toast.error(`Failed to update ${field}`);
+      toast.error(t('leadViewPage.fieldUpdateError', { field: field }));
     }
   };
 
@@ -140,10 +171,14 @@ const LeadViewPage = () => {
         cvrNumber: leadData.cvrNumber || "",
       });
 
+      // Auto-geocode address if present
+      if (leadData.address) {
+        geocodeAddress(leadData.address);
+      }
     } catch (err) {
       console.error('Error fetching lead details:', err);
-      setError('Failed to load lead details. Lead not found or unauthorized.');
-      toast.error('Failed to load lead details.');
+      setError(t('api.leads.fetchError')); // td error message
+      toast.error(t('api.leads.fetchError')); 
     } finally {
       setLoading(false);
     }
@@ -157,7 +192,7 @@ const LeadViewPage = () => {
       setStatuses(response.data.filter(s => s.statusFor === 'Lead'));
     } catch (err) {
       console.error('Error fetching lead statuses:', err);
-      toast.error('Failed to load lead statuses.');
+      toast.error(t('api.leads.statusLoadError'));
     }
   };
 
@@ -169,7 +204,7 @@ const LeadViewPage = () => {
       setQuoteStatuses(response.data.filter(s => s.statusFor === 'Quote'));
     } catch (err) {
       console.error('Error fetching quote statuses:', err);
-      toast.error('Failed to load quote statuses.');
+      toast.error(t('api.quotes.statusLoadError'));
     }
   };
 
@@ -190,7 +225,7 @@ const LeadViewPage = () => {
       setPricingTemplates(processedTemplates);
     } catch (err) {
       console.error('Error fetching pricing templates:', err);
-      toast.error('Failed to load pricing templates.');
+      toast.error(t('api.pricingTemplates.fetchError'));
     }
   };
 
@@ -202,7 +237,7 @@ const LeadViewPage = () => {
       setQuotesHistory(response.data);
     } catch (err) {
       console.error('Error fetching quotes history:', err);
-      toast.error('Failed to load quote history.');
+      toast.error(t('api.quotes.historyFetchError'));
     }
   };
 
@@ -237,14 +272,15 @@ const LeadViewPage = () => {
 
   const handleStatusChange = async (newStatusId) => {
     try {
-      await api.put(`/leads/${id}`, { statusId: newStatusId }, {
+      const response = await api.put(`/leads/${id}`, { statusId: newStatusId }, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      toast.success('Status updated successfully!');
+      toast.success(t(response.data.message || 'api.leads.statusUpdateSuccess')); // td toast message
       fetchLeadDetails();
     } catch (err) {
       console.error('Error updating status:', err);
-      toast.error('Failed to update status.');
+      const errorMessage = err.response?.data?.message || 'api.leads.statusUpdateError';
+      toast.error(t(errorMessage)); // td toast message
     }
   };
 
@@ -256,20 +292,23 @@ const LeadViewPage = () => {
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      toast.info('Copied to clipboard!');
+      toast.info(t('leadViewPage.copiedToClipboard')); // td message
     } catch (err) {
       console.error('Failed to copy text: ', err);
-      toast.error('Failed to copy text.');
+      toast.error(t('leadViewPage.failedToCopyText')); // td message
     }
   };
 
-  const formatCurrency = (value) => {
-    if (value === null || value === undefined || isNaN(value) || value === '') return 'N/A';
+  const formatCurrency = (value, currencyCode = 'DKK') => {
+    if (value === null || value === undefined || isNaN(value) || value === '') return t('leadViewPage.na');
     return new Intl.NumberFormat('en-DK', {
       style: 'currency',
-      currency: 'DKK',
+      currency: currencyCode,
+      minimumFractionDigits: 0, // Optional: remove decimals if you want
+      maximumFractionDigits: 2,
     }).format(value);
   };
+
 
   const calculateServicesSubtotal = (services) => {
     return (services || []).reduce((sum, service) => {
@@ -329,7 +368,7 @@ const LeadViewPage = () => {
       });
       setCurrentQuoteService({ name: '', description: '', quantity: 1, unit: '', pricePerUnit: 0, discountPercent: 0, total: 0 });
     } else {
-      toast.error("Please fill in all service fields correctly.");
+      toast.error(t('leadViewPage.fillServiceFieldsError'));
     }
   };
 
@@ -345,10 +384,76 @@ const LeadViewPage = () => {
     });
   };
 
+ const handleCopyQuote = async (quote) => {
+  setLoading(true);
+  try {
+    // Deep copy services and ensure numerical values for calculations
+    const copiedServices = quote.services.map(service => {
+      const pricePerUnit = Number(service.pricePerUnit ?? service.price ?? 0);
+      const quantity = Number(service.quantity ?? 1);
+      const discountPercent = Number(service.discountPercent ?? 0);
+
+      return {
+        ...service,
+        quantity,
+        pricePerUnit,
+        discountPercent,
+        total: quantity * pricePerUnit * (1 - discountPercent / 100),
+      };
+    });
+
+    // Find "Not sent" status for new quote
+    const notSentStatus = quoteStatuses.find(s => s.name === 'Not sent');
+    if (!notSentStatus) {
+      toast.error(t('api.quotes.statusLoadError')); // td error message
+      setLoading(false);
+      return;
+    }
+
+    // Construct payload for new quote
+    const payload = {
+      userId: lead.userId,
+      leadId: lead.id,
+      pricingTemplateId: quote.pricingTemplateId || null,
+      title: `(Copy) ${quote.title}`,
+      description: quote.description,
+      validDays: quote.validDays,
+      overallDiscount: quote.overallDiscount ?? 0,
+      terms: quote.terms,
+      total: calculateQuoteTotal(copiedServices, quote.overallDiscount),
+      services: copiedServices.map(({ total, ...service }) => service), // remove total for API
+      statusId: quoteStatuses.find(s => s.name === 'Not sent')?.id ?? null,
+    };
+
+    // API call to save the new quote
+    const response = await api.post('/quotes', payload, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+
+    toast.success(t('leadViewPage.quoteCopySuccess', { quoteTitle: response.data.quote.title }));
+    fetchQuotesHistory(); // Refresh history
+
+  } catch (err) {
+    console.error('Error copying and saving quote:', err);
+    toast.error(t('leadViewPage.quoteCopyError'));
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   const handleSaveQuote = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Find "Not sent" status for new quote
+      const notSentStatus = quoteStatuses.find(s => s.name === 'Not sent');
+      if (!notSentStatus) {
+        toast.error(t('api.quotes.statusLoadError')); // td error message
+        setLoading(false);
+        return;
+      }
+
       const payload = {
         userId: lead.userId,
         leadId: lead.id,
@@ -366,7 +471,8 @@ const LeadViewPage = () => {
       const response = await api.post('/quotes', payload, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      toast.success('Quote saved successfully!');
+      toast.success(t(response.data.message || 'leadViewPage.quoteSaveSuccess'));
+      fetchQuotesHistory();
       setQuoteToActOn(response.data); // Store the newly created quote
       setShowSendQuoteModal(true); // Open the action modal
 
@@ -383,9 +489,13 @@ const LeadViewPage = () => {
       });
       setCurrentQuoteService({ name: '', description: '', quantity: 1, unit: '', pricePerUnit: 0, discountPercent: 0, total: 0 });
 
+     
+
+
     } catch (err) {
       console.error('Error saving quote:', err);
-      toast.error('Failed to save quote.');
+      const errorMessage = err.response?.data?.message || 'leadViewPage.quoteSaveError';
+      toast.error(t(errorMessage));
     } finally {
       setLoading(false);
     }
@@ -393,7 +503,7 @@ const LeadViewPage = () => {
 
   const handleSendQuoteActions = async (actions) => {
     if (!quoteToActOn) {
-      toast.error('No quote data available to perform actions.');
+      toast.error(t('leadViewPage.noQuoteDataActions')); // td error message
       return;
     }
 
@@ -401,11 +511,12 @@ const LeadViewPage = () => {
     try {
       // 1. Update quote status if changed in modal
       if (actions.newStatusId && actions.newStatusId !== quoteToActOn.statusId) {
-        await api.put(`/quotes/${quoteToActOn.id}`, { statusId: actions.newStatusId }, {
+        const response = await api.put(`/quotes/${quoteToActOn.id}`, { statusId: actions.newStatusId }, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
-        toast.success('Quote status updated.');
+        toast.success(t(response.data.message || 'api.quotes.statusUpdateSuccess')); // td success message
       }
+
 
       // 2. Send SMS if checked
       if (actions.sendSms && actions.smsDetails) {
@@ -416,10 +527,10 @@ const LeadViewPage = () => {
           smsMessage: actions.smsDetails.message,     // Changed 'message' to 'smsMessage'
           smsTemplateId: actions.smsDetails.smsTemplateId, // Added smsTemplateId
         };
-        await api.post('/send-sms-quotes', smsPayload, { // Updated endpoint
+        const response = await api.post('/send-sms-quotes', smsPayload, { // Updated endpoint
           headers: { Authorization: `Bearer ${authToken}` },
         });
-        toast.success('SMS sent successfully!');
+       toast.success(t(response.data.message || 'api.sms.sendSuccess'));
       }
 
       // 3. Send Email if checked
@@ -431,17 +542,18 @@ const LeadViewPage = () => {
           emailBody: actions.emailDetails.content,        // Changed 'content' to 'emailBody'
           emailTemplateId: actions.emailDetails.emailTemplateId, // Added emailTemplateId
         };
-        await api.post('/send-email-quotes', emailPayload, { // Updated endpoint
+        const response = await api.post('/send-email-quotes', emailPayload, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
-        toast.success('Email sent successfully!');
+        toast.success(t(response.data.message || 'api.email.sendSuccess')); 
       }
 
       fetchQuotesHistory();
       fetchLeadDetails();
     } catch (err) {
       console.error('Error performing quote actions:', err);
-      toast.error('Failed to perform quote actions.');
+       const errorMessage = err.response?.data?.message || 'leadViewPage.quoteActionsError';
+      toast.error(t(errorMessage));
     } finally {
       setLoading(false);
       setShowSendQuoteModal(false); // Close modal
@@ -458,8 +570,8 @@ const LeadViewPage = () => {
     return <p className="text-danger">{error}</p>;
   }
 
-  if (!lead) {
-    return <p>Lead not found.</p>;
+ if (!lead) {
+    return <p>{t('leadViewPage.leadNotFoundDisplay')}</p>; // td
   }
 
   let displayTags = [];
@@ -482,11 +594,11 @@ const LeadViewPage = () => {
           <div className="leads-headerbox-left">
             <Link to="/leads" className="btn btn-add">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>
-              Back to Leads
+             {t('leadViewPage.backToLeads')}
             </Link>
             <h4>{lead.fullName} <span>{lead.companyName} {lead.leadNumber && `(${lead.leadNumber})`}</span></h4>
           </div>
-          <div className="status">{lead.status?.name || 'N/A'}</div>
+         <div className="status">{lead.status?.name || t('leadViewPage.na')}</div>
         </div>
       </div>
 
@@ -497,19 +609,19 @@ const LeadViewPage = () => {
           <div className="carddesign">
             <h2 className="card-title">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-              Lead Information
+              {t('leadViewPage.leadInformationTitle')}
             </h2>
 
             <div className="leads-infocol">
-              <h3 className="leads-subheading">Contact</h3>
+              <h3 className="leads-subheading">{t('leadViewPage.contactSubheading')}</h3>
               <div className="leads-contact">
                 <div className="leads-info">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                   <div className="leads-info-text">
                     {isEditing.fullName ? (
-                      <input className="form-control editcontrol" placeholder="Enter full name" required="" type="text" value={editedData.fullName} name="fullName" onChange={handleEditLead} />
+                      <input className="form-control editcontrol" placeholder={t('leadViewPage.fullNamePlaceholder')} required="" type="text" value={editedData.fullName} name="fullName" onChange={handleEditLead} />
                     ) : (
-                      <h4>{lead.fullName || 'N/A'}</h4>
+                      <h4>{lead.fullName || t('leadViewPage.na')}</h4>
                     )}
                   </div>
                 </div>
@@ -527,9 +639,9 @@ const LeadViewPage = () => {
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg>
                   <div className="leads-info-text">
                     {isEditing.email ? (
-                      <input className="form-control editcontrol" placeholder="Enter full name" required="" type="text" value={editedData.email} name="email" onChange={handleEditLead} />
+                      <input className="form-control editcontrol" placeholder={t('leadViewPage.emailPlaceholder')} required="" type="text" value={editedData.email} name="email" onChange={handleEditLead} />
                     ) : (
-                      <h4>{lead.email || 'N/A'}</h4>
+                      <h4>{lead.email || t('leadViewPage.na')}</h4>
                     )}
                   </div>
                 </div>
@@ -547,9 +659,9 @@ const LeadViewPage = () => {
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg>
                   <div className="leads-info-text">
                     {isEditing.phone ? (
-                      <input className="form-control editcontrol" placeholder="Enter phone" required="" type="text" value={editedData.phone} name="phone" onChange={handleEditLead} />
+                      <input className="form-control editcontrol" placeholder={t('leadViewPage.phonePlaceholder')} required="" type="text" value={editedData.phone} name="phone" onChange={handleEditLead} />
                     ) : (
-                      <h4>{lead.phone || 'N/A'}</h4>
+                      <h4>{lead.phone || t('leadViewPage.na')}</h4>
                     )}
                   </div>
                 </div>
@@ -567,9 +679,9 @@ const LeadViewPage = () => {
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
                   <div className="leads-info-text">
                     {isEditing.address ? (
-                      <input className="form-control editcontrol" placeholder="Enter address" required="" type="text" value={editedData.address} name="address" onChange={handleEditLead} />
+                      <input className="form-control editcontrol" placeholder={t('leadViewPage.addressPlaceholder')} required="" type="text" value={editedData.address} name="address" onChange={handleEditLead} />
                     ) : (
-                      <h4>{lead.address || 'N/A'}</h4>
+                      <h4>{lead.address || t('leadViewPage.na')}</h4>
                     )}
                   </div>
                 </div>
@@ -585,19 +697,19 @@ const LeadViewPage = () => {
             </div>
 
             <div className="leads-infocol">
-              <h3 className="leads-subheading">Communication</h3>
+              <h3 className="leads-subheading">{t('leadViewPage.communicationSubheading')}</h3>
               <div className="leads-view-action">
                 <Link to="#" className="btn btn-add">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail w-3 h-3 mr-2" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg>
-                  Send Email
+                  {t('leadViewPage.sendEmail')}
                 </Link>
                 <Link to="#" className="btn btn-add">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square w-3 h-3 mr-2" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg>
-                  Send SMS
+                  {t('leadViewPage.sendSms')}
                 </Link>
                 <Link href={`tel:${lead.phone}`} className="btn btn-add">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone w-3 h-3 mr-2" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg>
-                  Call Up
+                  {t('leadViewPage.callUp')}
                 </Link>
               </div>
             </div>
@@ -605,7 +717,7 @@ const LeadViewPage = () => {
             <div className="leads-infocol">
               <div className="formdesign lead-message">
                 <div className="form-group">
-                  <label>Lead Message
+                  <label>{t('leadViewPage.leadMessageLabel')}
                     {isEditing.customerComment ? (
                       <button className="copybtn btn btn-add" onClick={() => handleSave("customerComment")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-square" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
                     ) : (
@@ -613,10 +725,10 @@ const LeadViewPage = () => {
                     )}
                   </label>
                   {isEditing.customerComment ? (
-                    <textarea className="form-control editcontrol" placeholder="Enter Lead Message" required value={editedData.customerComment} name="customerComment" onChange={handleEditLead} />
+                    <textarea className="form-control editcontrol" placeholder={t('leadViewPage.leadMessagePlaceholder')} required value={editedData.customerComment} name="customerComment" onChange={handleEditLead} />
                   ) : (
                     <div className="textareaview">
-                      {lead.customerComment || 'N/A'}
+                      {lead.customerComment || t('leadViewPage.na')}  
                     </div>
                   )}
                 </div>
@@ -626,7 +738,7 @@ const LeadViewPage = () => {
             <div className="leads-infocol">
               <div className="formdesign lead-message">
                 <div className="form-group">
-                  <label>Internal Note
+                  <label>{t('leadViewPage.internalNoteLabel')}
                     {isEditing.internalNote ? (
                       <button className="copybtn btn btn-add" onClick={() => handleSave("internalNote")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-square" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
                     ) : (
@@ -634,10 +746,10 @@ const LeadViewPage = () => {
                     )}
                   </label>
                   {isEditing.internalNote ? (
-                    <textarea className="form-control editcontrol" placeholder="Enter Internal Note" required value={editedData.internalNote} name="internalNote" onChange={handleEditLead} />
+                    <textarea className="form-control editcontrol" placeholder={t('leadViewPage.internalNotePlaceholder')} required value={editedData.internalNote} name="internalNote" onChange={handleEditLead} />
                   ) : (
                     <div className="textareaview">
-                      {lead.internalNote || 'N/A'}
+                      {lead.internalNote || t('leadViewPage.na')}
                     </div>
                   )}
                 </div>
@@ -647,17 +759,17 @@ const LeadViewPage = () => {
 
 
             <div className="leads-infocol">
-              <h3 className="leads-subheading">Company</h3>
+              <h3 className="leads-subheading">{t('leadViewPage.companySubheading')}</h3>
               <div className="formdesign leads-firma">
                 <div className="form-group">
                   <div className="leads-firmacol">
-                    <label>Company Name</label>
+                    <label>{t('leadViewPage.companyNameLabel')}</label>
 
                     {isEditing.companyName ? (
-                      <input className="form-control editcontrol" placeholder="Enter company name" required="" type="text" value={editedData.companyName} name="companyName" onChange={handleEditLead} />
+                      <input className="form-control editcontrol" placeholder={t('leadViewPage.companyNamePlaceholder')} required="" type="text" value={editedData.companyName} name="companyName" onChange={handleEditLead} />
                     ) : (
                       <div className="leads-firma-text">
-                        <h5>{lead.companyName || 'N/A'}</h5>
+                        <h5>{lead.companyName || t('leadViewPage.na')}</h5>
                       </div>
                     )}
 
@@ -673,13 +785,13 @@ const LeadViewPage = () => {
                 </div>
                 <div className="form-group">
                   <div className="leads-firmacol">
-                    <label>CVR Number</label>
+                    <label>{t('leadViewPage.cvrNumberLabel')}</label>
 
                     {isEditing.cvrNumber ? (
-                      <input className="form-control editcontrol" placeholder="Enter company number" required="" type="text" value={editedData.cvrNumber} name="cvrNumber" onChange={handleEditLead} />
+                      <input className="form-control editcontrol" placeholder={t('leadViewPage.cvrNumberPlaceholder')} type="text" value={editedData.cvrNumber} name="cvrNumber" onChange={handleEditLead} />
                     ) : (
                       <div className="leads-firma-text">
-                        <h5>{lead.cvrNumber || 'N/A'}</h5>
+                        <h5>{lead.cvrNumber || t('leadViewPage.na')}</h5>
                       </div>
                     )}
 
@@ -699,7 +811,7 @@ const LeadViewPage = () => {
             <div className="leads-infocol">
               <h3 className="leads-subheading">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>
-                Activity Timeline
+                {t('leadViewPage.activityTimelineTitle')}
               </h3>
               <ul className="leads-timeline">
                 {/* Static Timeline Entries (Replace with dynamic data from backend if available) */}
@@ -802,26 +914,26 @@ const LeadViewPage = () => {
               </ul>
               <div className="formdesign timelinecomment">
                 <div className="form-group">
-                  <textarea className="form-control" rows="3" id="comment" name="text" placeholder="Add internal comment..."></textarea>
+                  <textarea className="form-control" rows="3" id="comment" name="text" placeholder={t('leadViewPage.addInternalCommentPlaceholder')}></textarea>
                 </div>
                 <button className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send " aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>Add Comment</button>
               </div>
             </div>
 
             <div className="leads-infocol">
-              <h3 className="leads-subheading">Lead Details</h3>
+              <h3 className="leads-subheading">{t('leadViewPage.leadDetailsSubheading')}</h3>
               <div className="formdesign leads-firma">
                 <div className="form-group">
                   <div className="leads-firmacol">
-                    <label>Source</label>
+                    <label>{t('leadViewPage.sourceLabel')}</label> 
                     <div className="leads-firma-text">
-                      <h5>{lead.leadSource || 'N/A'}</h5>
+                      <h5>{lead.leadSource || t('leadViewPage.na')}</h5>
                     </div>
                   </div>
                 </div>
                 <div className="form-group">
                   <div className="leads-firmacol">
-                    <label>Estimated Value</label>
+                    <label>{t('leadViewPage.estimatedValueLabel')}</label>
                     <div className="leads-firma-text">
                       <h5>{formatCurrency(lead.value)}</h5>
                     </div>
@@ -829,38 +941,38 @@ const LeadViewPage = () => {
                 </div>
                 <div className="form-group">
                   <div className="leads-firmacol">
-                    <label>Assigned To</label>
+                    <label>{t('leadViewPage.assignedToLabel')}</label>
                     <div className="leads-firma-text">
-                      <h5>{lead.assignedTo || 'Sarah Nielsen'}</h5>
+                      <h5>{lead.assignedTo || '___'}</h5>
                     </div>
                   </div>
                 </div>
                 <div className="form-group">
                   <div className="leads-firmacol">
-                    <label>Created</label>
+                    <label>{t('leadViewPage.createdLabel')}</label>
                     <div className="leads-firma-text">
-                      <h5>{lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : 'N/A'}</h5>
+                      <h5>{lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : t('leadViewPage.na')}</h5>
                     </div>
                   </div>
                 </div>
                 <div className="form-group">
                   <div className="leads-firmacol">
-                    <label>Next Follow-up</label>
+                    <label>{t('leadViewPage.nextFollowUpLabel')}</label>
                     <div className="leads-firma-text">
-                      <h5><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-3 h-3" aria-hidden="true" style={{ width: '10px', height: '10px', marginRight: '6px' }}><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>{lead.followUpDate || 'N/A'}</h5>
+                      <h5><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-3 h-3" aria-hidden="true" style={{ width: '10px', height: '10px', marginRight: '6px' }}><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>{lead.followUpDate || t('leadViewPage.na')}</h5>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             <div className="tags">
-              <h3 className="leads-subheading">Tags</h3>
+              <h3 className="leads-subheading">{t('leadViewPage.tagsSubheading')}</h3>
               {displayTags.length > 0 ? (
                 displayTags.map((tag, index) => (
                   <span key={index} className="badge">{tag}</span>
                 ))
               ) : (
-                <p>No tags</p>
+                <p>{t('leadViewPage.noTags')}</p>
               )}
             </div>
           </div>
@@ -871,23 +983,40 @@ const LeadViewPage = () => {
           <div className="carddesign">
             <h2 className="card-title">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              Search Oblique Photo via Address
+              {t('leadViewPage.searchObliquePhotoTitle')}
             </h2>
 
             <div className="formdesign location-map">
               <div className="form-group ">
                 <div className="input-group">
-                  <input type="text" className="form-control" placeholder={lead.address || 'Enter address'} readOnly />
-                  <button className="btn btn-send" type="button">
+                  <input type="text" className="form-control" value={lead.address || t('leadViewPage.addressPlaceholder')} /> {/* td placeholder */}
+                  <button className="btn btn-send" type="button" onClick={() => geocodeAddress(lead.address)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search h-4 w-4" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
-                    Find Oblique Photo
+                    {t('leadViewPage.findObliquePhoto')}
                   </button>
                 </div>
               </div>
               <div className="location-mapview">
-                <iframe src="https://skraafoto.dataforsyningen.dk/?lon=9.354415&amp;lat=55.550372&amp;zoom=19" className="w-full h-[600px] border border-border rounded-md" allowFullScreen="" title="Oblique Photo"></iframe>
-                <p>Oblique photo provided by Dataforsyningen.dk <br />Coordinates: 55.550372, 9.354415</p>
+                <iframe
+                  src={
+                    coords
+                      ? `https://skraafoto.dataforsyningen.dk/?lon=${coords.lon}&lat=${coords.lat}&zoom=19`
+                      : "https://skraafoto.dataforsyningen.dk/?lon=9.354415&lat=55.550372&zoom=19"
+                  }
+                  className="w-full h-[600px] border border-border rounded-md"
+                  allowFullScreen
+                  title="Oblique Photo"
+                />
+                <p>
+                  {t('leadViewPage.obliquePhotoSource')} <br />
+                  {t('leadViewPage.coordinates')}{" "}
+                  {coords
+                    ? `${coords.lat}, ${coords.lon}`
+                    : `55.550372, 9.354415 (${t('leadViewPage.coordsDefault')})`}
+                </p>
               </div>
+
+
             </div>
           </div>
         </div>
@@ -898,7 +1027,7 @@ const LeadViewPage = () => {
             <div className="leadsslider">
               <button className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left m-0" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
               <button className="btn btn-add leadssliderright-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right m-0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
-              <span>0 of 5 leads</span>
+              <span>{t("leadViewPage.leadsSliderStatus", { current: 1, total: 5 })}</span>
             </div>
           </div>
 
@@ -1187,7 +1316,7 @@ const LeadViewPage = () => {
                         <span>Created: {quote.createdAt ? new Date(quote.createdAt).toLocaleDateString() : 'N/A'}</span>
                         <span>Last Updated: {quote.updatedAt ? new Date(quote.updatedAt).toLocaleDateString() : 'N/A'}</span>
                       </h5>
-                      <h3>{formatCurrency(quote.total)}
+                      <h3>{formatCurrency(quote.total, quote.pricingTemplate?.currency?.code || 'DKK')}
                         <div className="leads-previousoffers-btn">
                           <button type="button" className="btn btn-add" onClick={() => { setQuoteToActOn(quote); setShowSendQuoteModal(true); }}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye m-0" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg></button>
                           <button
@@ -1210,7 +1339,21 @@ const LeadViewPage = () => {
                               <circle cx="12" cy="12" r="10"></circle>
                             </svg>
                           </button>
-
+                          {/* 📋 New Copy Button */}
+                          <button
+                            type="button"
+                            className="btn btn-add"
+                            onClick={() => handleCopyQuote(quote)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                              viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                              className="lucide lucide-copy m-0" aria-hidden="true">
+                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                              <path d="M5 15H4a2 2 0 0 1-2-2V4
+                                      a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                          </button>
                         </div>
                       </h3>
                     </div>

@@ -4,8 +4,10 @@ import { toast } from 'react-toastify';
 import api from '../../utils/api';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { AuthContext } from '../../context/AuthContext';
+import { useTranslation } from "react-i18next";
 
 const SignupPage = () => {
+  const { t } = useTranslation();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -40,11 +42,11 @@ const SignupPage = () => {
 
       // Automatically login after signup
       login(res.data.token, res.data.user);
-      toast.success('Signup successful!');
+      toast.success(t("api.register.success"));
       navigate('/dashboard');
     } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || 'Signup failed');
+      const errorMessageKey = err.response?.data?.message || 'api.register.serverError';
+      toast.error(t(errorMessageKey));
     } finally {
       setLoading(false);
     }
@@ -53,21 +55,21 @@ const SignupPage = () => {
 return (
     <div className="loginmain">
       <div className="logo">
-        <a href="#"><img src="assets/images/logo.svg" className="img-fluid" alt="Logo" /></a>
+        <Link to="#"><img src="assets/images/logo.svg" className="img-fluid" alt="Logo" /></Link>
       </div>
 
       <div className="carddesign">
-        <h1>Create an account</h1>
+        <h1>{t('register.title')}</h1>
         <div className="formdesign">
           <form onSubmit={handleSignup}>
             <div className="row">
               <div className="col-md-6">
                 <div className="form-group">
-                  <label className="form-label">First Name</label>
+                  <label className="form-label">{t('register.nameLabel')}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="First Name"
+                    placeholder={t('register.namePlaceholder')}
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     required
@@ -92,11 +94,11 @@ return (
             <div className="row">
               <div className="col-md-6">
                 <div className="form-group">
-                  <label className="form-label">Email Address</label>
+                  <label className="form-label">{t('register.emailLabel')}</label>
                   <input
                     type="email"
                     className="form-control"
-                    placeholder="Email Address"
+                    placeholder={t('register.emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -105,11 +107,11 @@ return (
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <label className="form-label">Phone Number</label>
+                  <label className="form-label">{t('register.phoneLabel')}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Phone Number"
+                    placeholder={t('register.phonePlaceholder')}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     required
@@ -119,12 +121,12 @@ return (
             </div>
 
             <div className="form-group">
-              <label className="form-label">Password</label>
+              <label className="form-label">{t('register.passwordLabel')}</label>
               <div className="password-input" style={{ position: 'relative' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   className="form-control"
-                  placeholder="Password"
+                  placeholder={t('register.passwordPlaceholder')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -149,13 +151,13 @@ return (
 
             <div className="login-btn">
               <button type="submit" className="btn btn-send" disabled={loading}>
-                {loading ? 'Signing Up...' : 'Sign Up'}
+                {loading ? t('register.loading') : t('register.submit')}
               </button>
             </div>
           </form>
 
           <h5>
-            Already have an account? <Link to="/login">Sign In</Link>
+            {t('register.haveAccount')} <Link to="/login">{t('register.signIn')}</Link>
           </h5>
         </div>
       </div>

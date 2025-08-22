@@ -156,10 +156,16 @@ body {
     --primary: #00d4f0;
     --color-blue-900: oklch(.379 .146 265.522);
     --color-blue-700: oklch(.488 .243 264.376);
+    --color-blue-500: oklch(.623 .214 259.815);
     --color-green-500: oklch(.723 .219 149.579);
     --color-green-600: oklch(.627 .194 149.214);
     --color-yellow-500: oklch(.795 .184 86.047);
+    --color-gray-500: oklch(.551 .027 264.364);
+    --color-red-500: oklch(.637 .237 25.331);
+
+
 }
+
 .aa {
   background-color: var(--card);
 }
@@ -266,6 +272,12 @@ ul.sidebar-menu li.adminpanel {
     margin: 0px;
     font-weight: 300;
     color: var(--muted-foreground);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
 }
 .username h5 {
     font-size: 12px;
@@ -416,6 +428,9 @@ ul.activation-ul {
     font-weight: 400;
     font-size: 12px;
     margin-bottom: 0px;
+}
+.activation-time {
+    text-align: right;
 }
 .activation-time span {
     color: var(--muted-foreground);
@@ -1299,7 +1314,7 @@ span.inputnote {
 .emailmodaltab ul.nav.nav-tabs {
     border: none;
     background-color: var(--muted);
-    border-radius: 40px;
+    border-radius: 15px;
     padding: 4px;
     margin-bottom: 20px;
 }
@@ -1316,6 +1331,9 @@ span.inputnote {
     text-align: center;
     border-radius: 100px;
     border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 ul.emailmodal-tab-ul {
     margin: 0px;
@@ -1941,7 +1959,7 @@ h3.leads-subheading {
 }
 .leads-info {
     display: flex;
-    gap: 0px 8px;
+    gap: 0px 8px; 
 }
 .leads-info svg {
     width: 10px;
@@ -2621,7 +2639,7 @@ h5.resultrabat {
 /*login*/
 .loginmain {
     max-width: 500px;
-    margin: 90px auto;
+    margin: 70px auto;
 }
 .logo a {
     display: block;
@@ -2712,7 +2730,7 @@ h5.resultrabat {
     margin-bottom: 3px;
 }
 .planactive-heading p {
-    font-size: 13px;
+    font-size: 12px;
     margin: 0px;
     color: var(--muted-foreground);
 }
@@ -2811,6 +2829,7 @@ h5.resultrabat {
 }
 .progressoverview .progress-bar {
     background-color: var(--primary);
+    border-radius: 8px;
 }
 .progressoverview p {
     color: #d08700 !important;
@@ -3296,12 +3315,207 @@ ul.notification-settings {
 .cserscard .modalfooter span.inputnote {
     margin: 0px;
 }
+.corporate-branding p.form-labelnot {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    line-height: 14px;
+}
+.corporate-branding .formdesign .form-group label {
+    margin: 4px 0px 0px;
+}
+.corporate-branding svg.lucide.lucide-upload {
+    color: var(--muted-foreground);
+}
+.corporate-branding .btn.btn-add {
+    margin: 10px 0px 0px 0px;
+}
+.corporate-branding .drag-file-area {
+    border: 2px dashed var(--border);
+}
+.carddesign.uploadview {
+    padding: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.uploadview-left {
+    display: flex;
+    gap: 0px 13px;
+    align-items: center;
+}
+.uploadview-icon {
+    background-color: 
+ color-mix(in oklab, var(--primary) 10%, transparent);
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+.uploadview-icon svg {
+    width: 21px;
+    height: 21px;
+}
+.uploadview-info h4 {
+    font-size: 13px;
+    margin: 0px 0px 3px 0px;
+    font-weight: 500;
+}
+.uploadview-info h5 {
+    font-size: 12px;
+    color: var(--muted-foreground);
+    font-weight: 300;
+    margin: 0px;
+}
+.corporate-branding .uploadview .btn.btn-add {
+    margin: 0px;
+    border: none !important;
+    background: none;
+    padding: 7px 9px;
+}
+.standardcolorbox {
+    min-width: 35px;
+    height: 35px;
+    border: 1px solid var(--border);
+    border-radius: .25rem;
+}
+.standardcolors-main {
+    display: flex;
+    align-items: center;
+    gap: 0px 15px;
+}
+.standardcolors .row label {
+    margin-bottom: 8px !important;
+}
+.systemstatus .usersul-name h4 {
+    font-weight: 400;
+}
+.lastupdated {
+    font-size: 13px;
+    margin: 0px;
+    color: var(--muted-foreground);
+}
 /*settings */
 
-
-
-
-
+/*adminpanel*/
+.emailmodaltab.adminpaneltab ul.nav.nav-tabs li.nav-item {
+    width: 16.6666667%;
+}
+.adminpaneltab ul.nav.nav-tabs a.nav-link svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+}
+.searchusers {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+.tableuser-name span {
+    margin: 0px;
+    color: var(--muted-foreground);
+    display: block;
+    font-weight: 400;
+}
+.tableuser-name {
+    font-weight: 500;
+}
+.actionbtn .btn.btn-add {
+    padding: 7px 10px;
+    border: none !important;
+    background: none;
+}
+.cardinfo h6 span {
+    color: var(--muted-foreground);
+}
+.adminpaneltab .cardinfo h3 {
+    color: var(--card-foreground);
+}
+.systemhealth-ul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.systemhealth-ul li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 12px;
+    font-weight: 400;
+}
+.systemhealth-ul li:last-child {
+    margin-bottom: 0px;
+}
+.systemhealth-liright {
+    font-weight: 500;
+}
+.systemhealth-liright svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+}
+.text-yellow-500 {
+    color: var(--color-yellow-500);
+}
+.planactiveoverview .systemhealth-ul li {
+    display: block;
+}
+.storagespacetotal.database span svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+}
+.storagespacetotal.database span {
+    padding-left: 0px;
+}
+.storagespacetotal.database span::after {
+    display: none;
+}
+.adminpaneltab .progressoverview .progress {
+    margin: 9px 0px;
+}
+.inputnote strong {
+    font-weight: 500;
+}
+.datatab .modalfooter {
+    margin-top: 10px;
+    padding-top: 10px;
+}
+.datatab .modalfooter span.inputnote {
+    margin: 0px;
+}
+.btn.btn-add.clearcache {
+    color: rgb(239 68 68) !important;
+}
+.btn.btn-add.clearcache:hover {
+    color: #000 !important;
+}
+.action-headline svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+}
+.text-blue-500 {
+    color: var(--color-blue-500);
+}
+.text-gray-500 {
+    color: var(--color-gray-500);
+}
+.text-red-500 {
+    color: var(--color-red-500);
+}
+.invoicehistory.activitylog .tabledesign .table tbody tr td {
+    color: var(--muted-foreground);
+}
+.action-headline {
+    color: var(--card-foreground);
+}
+.systemtab {
+    height: calc(100% - 23px);
+}
+/*adminpanel*/
 .form-control.editcontrol {
     background-color: var(--input-background);
     outline: none !important;
@@ -3312,7 +3526,6 @@ ul.notification-settings {
     border-radius: 5px;
     padding: 6px 15px;
 }
- 
 .leads-info {   
     align-items: center;
 }

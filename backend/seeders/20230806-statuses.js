@@ -2,7 +2,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.bulkInsert('statuses', [
       // Lead statuses
-      { name: 'Sent', statusFor: 'Lead' },
+      { name: 'New', statusFor: 'Lead' },
       { name: 'In Dialogue', statusFor: 'Lead' },
       { name: 'Qualified', statusFor: 'Lead' },
       { name: 'Offer Sent', statusFor: 'Lead' },
@@ -21,7 +21,7 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     await queryInterface.bulkDelete('statuses', {
       name: [
-        'Sent',
+        'New',
         'In Dialogue',
         'Qualified',
         'Offer Sent',

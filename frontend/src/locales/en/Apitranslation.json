@@ -1,0 +1,73 @@
+{
+  "api": {
+    "register": {
+      "success": "User registered successfully.",
+      "emailExists": "Email already registered.",
+      "serverError": "Server error during registration."
+    },
+    "login": {
+      "userNotFound": "User not found.",
+      "invalidCredentials": "Invalid credentials.",
+      "success": "Logged in successfully.",
+      "serverError": "Server error during login."
+    },
+    "logout": {
+      "success": "Logged out successfully.",
+      "serverError": "Server error during logout."
+    },
+    "leads": {
+      "fetchError": "Failed to fetch leads.",
+      "createSuccess": "Lead created successfully!",
+      "createError": "Error creating lead.",
+      "updateSuccess": "Lead updated successfully!",
+      "updateError": "Error updating lead.",
+      "deleteSuccess": "Lead deleted successfully!",
+      "deleteError": "Failed to delete lead.",
+      "statusUpdateSuccess": "Status updated successfully!",
+      "statusUpdateError": "Failed to update status.",
+      "notFound": "Lead not found.",
+      "notAuthorized": "Lead not found or not authorized.",
+      "pendingStatusNotFound": "Pending status not found in DB.",
+      "publicLeadCreateSuccess": "Lead created successfully.",
+      "publicLeadCreateError": "Error creating public lead.",
+      "publicLeadInvalidEmail": "Invalid secondary email format.",
+      "publicLeadFullNameRequired": "Full name is required.",
+      "publicLeadPhoneRequired": "Invalid phone number.",
+      "publicLeadCompanyNameRequired": "Company name is required.",
+      "publicLeadDuplicate": "Lead with this phone and company is already registered.",
+      "publicLeadInvalidSource": "Invalid lead source.",
+      "publicLeadDefaultStatusNotFound": "Default 'Sent' status not found.",
+      "publicLeadInvalidFollowUpDate": "Invalid follow-up date format.",
+      "publicLeadValueNotNumber": "Value must be a number.",
+      "publicLeadAttachmentsGetMethod": "Attachments are not allowed with GET method. Please use POST instead.",
+      "publicLeadUserIdRequired": "User ID is required.",
+      "publicLeadUserNotFound": "User with provided User ID not found.",
+      "statusLoadError": "Failed to load lead statuses."
+    },
+    "quotes": {
+      "fetchSuccess": "Quotes fetched successfully!",
+      "statusLoadError": "Failed to load quote statuses.",
+      "historyFetchError": "Failed to load quote history.",
+      "statusUpdateSuccess": "Quote status updated.",
+      "notFound": "Quote not found.",
+      "fetchError": "Error fetching quote.",
+      "requiredFields": "User ID, Lead ID, and Title are required.",
+      "createSuccess": "Quote created successfully!",
+      "createError": "Error creating quote.",
+      "updateSuccess": "Quote updated successfully!",
+      "updateError": "Error updating quote.",
+      "deleteSuccess": "Quote deleted successfully!",
+      "deleteError": "Error deleting quote."
+    },
+    "pricingTemplates": {
+      "fetchError": "Failed to load pricing templates."
+    },
+    "sms": {
+      "sendSuccess": "SMS sent successfully!"
+    },
+    "email": {
+      "sendSuccess": "Email sent successfully!"
+    }
+    
+  }
+}

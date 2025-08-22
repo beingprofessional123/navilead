@@ -37,7 +37,7 @@ exports.createLead = async (req, res) => {
     const statusIdFromReq = req.body.statusId;
     const statusId = statusIdFromReq || (await getPendingStatusId());
     if (!statusId) {
-      return res.status(400).json({ message: "Pending status not found in DB" });
+      return res.status(400).json({ message: "api.leads.pendingStatusNotFound" });
     }
 
     // Process attachments if any, add full URL for frontend
@@ -63,10 +63,10 @@ exports.createLead = async (req, res) => {
     };
 
     const lead = await Lead.create(leadData);
-    res.status(201).json(lead);
+    res.status(201).json({ message: "api.leads.createSuccess", lead });
   } catch (err) {
     console.error(err);
-    res.status(400).json({ message: "Error creating lead", error: err.message });
+     res.status(400).json({ message: "api.leads.createError", error: err.message });
   }
 };
 
@@ -76,7 +76,9 @@ exports.updateLead = async (req, res) => {
     const lead = await Lead.findOne({
       where: { id: req.params.id, userId: req.user.id },
     });
-    if (!lead) return res.status(404).json({ message: "Lead not found or not authorized" });
+    if (!lead) {
+      return res.status(404).json({ message: "api.leads.notAuthorized" });
+    }
 
     // Start with existing attachments
     let newAttachments = lead.attachments || [];
@@ -124,10 +126,10 @@ exports.updateLead = async (req, res) => {
       where: { id: req.params.id },
       include: [{ model: Status, as: "status" }],
     });
-    res.json(updatedLead);
+    res.json({ message: "api.leads.updateSuccess", updatedLead });
   } catch (err) {
     console.error(err);
-    res.status(400).json({ message: "Error updating lead", error: err.message });
+    res.status(400).json({ message: "api.leads.updateError", error: err.message });
   }
 };
 
@@ -143,7 +145,7 @@ exports.getAllLeads = async (req, res) => {
     res.json(leads);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error fetching leads", error: err.message });
+    res.status(500).json({ message: "api.leads.fetchError", error: err.message });
   }
 };
 
@@ -154,11 +156,13 @@ exports.getLeadById = async (req, res) => {
       where: { id: req.params.id, userId: req.user.id },
       include: [{ model: Status, as: "status" }],
     });
-    if (!lead) return res.status(404).json({ message: "Lead not found" });
+     if (!lead) {
+      return res.status(404).json({ message: "api.leads.notFound" });
+    }
     res.json(lead);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error fetching lead", error: err.message });
+    res.status(500).json({ message: "api.leads.fetchError", error: err.message });
   }
 };
 
@@ -168,11 +172,13 @@ exports.deleteLead = async (req, res) => {
     const deleted = await Lead.destroy({
       where: { id: req.params.id, userId: req.user.id },
     });
-    if (!deleted) return res.status(404).json({ message: "Lead not found or not authorized" });
-    res.json({ message: "Lead deleted successfully" });
+    if (!deleted) {
+      return res.status(404).json({ message: "api.leads.notAuthorized" });
+    }
+    res.json({ message: "api.leads.deleteSuccess" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error deleting lead", error: err.message });
+    res.status(500).json({ message: "api.leads.deleteError", error: err.message });
   }
 };
 
@@ -185,7 +191,7 @@ exports.createPublicLead = async (req, res) => {
     if (req.method === "GET" && req.body && req.body.attachments) {
       return res.status(400).json({
         success: false,
-        message: "Attachments are not allowed with GET method. Please use POST instead."
+        message: "api.leads.publicLeadAttachmentsGetMethod"
       });
     }
 
@@ -198,29 +204,31 @@ exports.createPublicLead = async (req, res) => {
     const isValidPhone = (phone) => /^[0-9+\-\s]{6,20}$/.test(phone);
     const isValidCVR = (cvr) => /^[0-9]{8}$/.test(cvr);
 
-    if (!userId) {
-      return res.status(400).json({ success: false, message: "Either userId is required" });
+     if (!userId) {
+      return res.status(400).json({ success: false, message: "api.leads.publicLeadUserIdRequired" });
     }
     if (email && !isValidEmail(email)) {
-      return res.status(400).json({ success: false, message: "Invalid secondary email format" });
+      return res.status(400).json({ success: false, message: "api.leads.publicLeadInvalidEmail" });
     }
 
     // Determine user
     let user;
     if (userId) {
       user = await User.findByPk(userId);
-      if (!user) return res.status(400).json({ success: false, message: "User with provided userId not found" });
+      if (!user) {
+        return res.status(400).json({ success: false, message: "api.leads.publicLeadUserNotFound" });
+      }
     }
 
     // Validate required lead fields
     if (!query.fullName || query.fullName.trim() === "") {
-      return res.status(400).json({ success: false, message: "fullName is required" });
+      return res.status(400).json({ success: false, message: "api.leads.publicLeadFullNameRequired" });
     }
     if (!query.phone || !isValidPhone(query.phone)) {
-      return res.status(400).json({ success: false, message: "Invalid phone number" });
+      return res.status(400).json({ success: false, message: "api.leads.publicLeadPhoneRequired" });
     }
     if (!query.companyName || query.companyName.trim() === "") {
-      return res.status(400).json({ success: false, message: "companyName is required" });
+      return res.status(400).json({ success: false, message: "api.leads.publicLeadCompanyNameRequired" });
     }
 
     const allowedLeadSources = [
@@ -239,7 +247,7 @@ exports.createPublicLead = async (req, res) => {
     if (query.leadSource && !allowedLeadSources.includes(query.leadSource)) {
       return res.status(400).json({
         success: false,
-        message: `Invalid leadSource. Allowed values are: ${allowedLeadSources.join(", ")}`,
+        message: "api.leads.publicLeadInvalidSource",
       });
     }
 
@@ -263,7 +271,7 @@ exports.createPublicLead = async (req, res) => {
 
       return res.status(409).json({
         success: false,
-        message: `Lead "${existingLead.fullName}" with this phone and company is already registered.`,
+        message: "api.leads.publicLeadDuplicate",
         lead: {
           ...existingLead.toJSON(),
           status: existingStatus ? existingStatus.name : null,  // replace statusId with status name
@@ -274,14 +282,14 @@ exports.createPublicLead = async (req, res) => {
     // Default status
     const statusId = await getPendingStatusId();
     if (!statusId) {
-      return res.status(400).json({ success: false, message: "Default 'Sent' status not found" });
+      return res.status(400).json({ success: false, message: "api.leads.publicLeadDefaultStatusNotFound" });
     }
 
     // Optional fields validation
     let followUpDate = null;
     if (query.followUpDate) {
       const date = new Date(query.followUpDate);
-      if (isNaN(date.getTime())) return res.status(400).json({ success: false, message: "Invalid followUpDate format" });
+      if (isNaN(date.getTime())) return res.status(400).json({ success: false, message: "api.leads.publicLeadInvalidFollowUpDate" });
       followUpDate = date;
     }
 
@@ -293,7 +301,7 @@ exports.createPublicLead = async (req, res) => {
     }
 
     const value = query.value ? Number(query.value) : null;
-    if (query.value && isNaN(value)) return res.status(400).json({ success: false, message: "value must be a number" });
+    if (query.value && isNaN(value)) return res.status(400).json({ success: false, message: "api.leads.publicLeadValueNotNumber" });
 
     // Generate lead number
     const leadNumber = await generateLeadNumber();
@@ -338,7 +346,7 @@ exports.createPublicLead = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: `Lead "${newLead.fullName}" has been created successfully with Lead Number: ${newLead.leadNumber}.`,
+      message: "api.leads.publicLeadCreateSuccess",
       lead: {
         ...newLead.toJSON(),
         status: status ? status.name : null,  // replace statusId with status name

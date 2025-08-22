@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../../context/AuthContext'; // Assuming AuthContext provides authToken
 import api from '../../utils/api'; // Assuming an API utility for requests
 import AddEditLeadModal from './AddEditLeadModal'; // Import the custom modal component
+import { useTranslation } from "react-i18next";
 
 const LeadsPage = () => {
+  const { t } = useTranslation();
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -39,8 +41,8 @@ const LeadsPage = () => {
       setLeads(response.data);
     } catch (err) {
       console.error('Error fetching leads:', err);
-      setError('Failed to fetch leads.');
-      toast.error('Failed to load leads.');
+      setError(t('api.leads.fetchError')); // Translated error message
+      toast.error(t('api.leads.fetchError')); 
     } finally {
       setLoading(false);
     }
@@ -55,30 +57,31 @@ const LeadsPage = () => {
       setStatuses(response.data.filter(s => s.statusFor === 'Lead'));
     } catch (err) {
       console.error('Error fetching statuses:', err);
-      toast.error('Failed to load statuses.');
+      toast.error(t('api.leads.statusUpdateError')); 
     }
   };
 
   const handleDelete = async (leadId) => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: t('leadsPage.deleteConfirmTitle'), // Translated title
+      text: t('leadsPage.deleteConfirmText'),   // Translated text
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: t('leadsPage.deleteConfirmButton'), // Translated confirm button
+      cancelButtonText: t('leadsPage.deleteCancelButton')    // Translated cancel button
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           await api.delete(`/leads/${leadId}`, {
             headers: { Authorization: `Bearer ${authToken}` },
           });
-          toast.success('Lead deleted successfully!');
+          toast.success(t('api.leads.deleteSuccess')); // Translated toast message
           fetchLeads(); // Refresh the list after deletion
         } catch (err) {
           console.error('Error deleting lead:', err);
-          toast.error('Failed to delete lead.');
+          toast.error(t('api.leads.deleteError')); // Translated toast message
         }
       }
     });
@@ -94,16 +97,17 @@ const LeadsPage = () => {
     setIsModalOpen(true); // Open the modal
   };
 
+
   const handleStatusChange = async (leadId, newStatusId) => {
     try {
       await api.put(`/leads/${leadId}`, { statusId: newStatusId }, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      toast.success('Status updated successfully!');
+      toast.success(t('api.leads.statusUpdateSuccess')); // Translated toast message
       fetchLeads(); // Refresh leads to reflect new status
     } catch (err) {
       console.error('Error updating status:', err);
-      toast.error('Failed to update status.');
+      toast.error(t('api.leads.statusUpdateError')); // Translated toast message
     }
   };
 
@@ -185,20 +189,20 @@ const LeadsPage = () => {
         <div className="row top-row">
           <div className="col-md-6">
             <div className="dash-heading">
-              <h2>Lead Management</h2>
-              <p>Manage and follow up on all your leads</p>
+              <h2>{t('leadsPage.title')}</h2>
+              <p>{t('leadsPage.description')}</p>
             </div>
           </div>
           <div className="col-md-6">
             <div className="dashright">
-              <a href="#" className="btn btn-add">
+              <Link to="#" className="btn btn-add">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download w-4 h-4 mr-2" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>
-                Export
-              </a>
-              <a href="#" className="btn btn-send" onClick={handleCreateNew}>
+                {t('leadsPage.exportButton')}
+              </Link>
+              <Link to="#" className="btn btn-send" onClick={handleCreateNew}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-                New Lead
-              </a>
+                {t('leadsPage.newLeadButton')}
+              </Link>
             </div>
           </div>
         </div>
@@ -209,7 +213,7 @@ const LeadsPage = () => {
             <div className="carddesign">
               <div className="leads-card leads-card1">
                 <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg></span>
-                <h5>Total Leads</h5>
+                <h5>{t('leadsPage.totalLeads')}</h5>
                 <h4>{totalLeads}</h4>
               </div>
             </div>
@@ -218,7 +222,7 @@ const LeadsPage = () => {
             <div className="carddesign">
               <div className="leads-card leads-card2">
                 <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up" aria-hidden="true"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg></span>
-                <h5>New Leads</h5>
+                <h5>{t('leadsPage.newLeads')}</h5>
                 <h4>{newLeads}</h4>
               </div>
             </div>
@@ -227,7 +231,7 @@ const LeadsPage = () => {
             <div className="carddesign">
               <div className="leads-card leads-card3">
                 <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-target" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
-                <h5>Qualified</h5>
+                <h5>{t('leadsPage.qualifiedLeads')}</h5>
                 <h4>{qualifiedLeads}</h4>
               </div>
             </div>
@@ -236,7 +240,7 @@ const LeadsPage = () => {
             <div className="carddesign">
               <div className="leads-card leads-card4">
                 <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-award" aria-hidden="true"><circle cx="12" cy="8" r="7"></circle><path d="M8.21 13.89 7 22l5-3 5 3-1.21-8.11"></path></svg></span>
-                <h5>Won</h5>
+                <h5>{t('leadsPage.wonLeads')}</h5>
                 <h4>{wonLeads}</h4>
               </div>
             </div>
@@ -245,7 +249,7 @@ const LeadsPage = () => {
             <div className="carddesign">
               <div className="leads-card leads-card5">
                 <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-wallet" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h12a2 2 0 0 1 0 4H5a2 2 0 0 0 0 4h12a2 2 0 0 0 0 4h2"></path><path d="M20 12v1H4"></path></svg></span>
-                <h5>Avg. Value</h5>
+                <h5>{t('leadsPage.avgValue')}</h5>
                 <h4>{formatCurrency(avgValue)}</h4>
               </div>
             </div>
@@ -261,7 +265,7 @@ const LeadsPage = () => {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Search by name, company, or email..."
+                  placeholder={t('leadsPage.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -273,7 +277,7 @@ const LeadsPage = () => {
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
                   >
-                    <option value="">All Statuses</option>
+                    <option value="">{t('leadsPage.allStatuses')}</option>
                     {statuses.map(status => (
                       <option key={status.id} value={status.name}>{status.name}</option>
                     ))}
@@ -286,17 +290,18 @@ const LeadsPage = () => {
                     value={selectedSource}
                     onChange={(e) => setSelectedSource(e.target.value)}
                   >
-                    <option value="">All Sources</option>
-                    <option>Google Ads</option>
-                    <option>LinkedIn</option>
-                    <option>Website Form</option>
-                    <option>Facebook Ads</option>
-                    <option>Referral</option>
-                    <option>Phone</option>
-                    <option>Email</option>
-                    <option>Trade Show</option>
-                    <option>Cold Outreach</option>
-                    <option>Other</option>
+                    <option value="">{t('leadsPage.allSources')}</option>
+                    <option>{t('leadsPage.sourceGoogleAds')}</option>
+                    <option>{t('leadsPage.sourceLinkedIn')}</option>
+                    <option>{t('leadsPage.sourceWebsiteForm')}</option>
+                    <option>{t('leadsPage.sourceFacebookAds')}</option>
+                    <option>{t('leadsPage.sourceReferral')}</option>
+                    <option>{t('leadsPage.sourcePhone')}</option>
+                    <option>{t('leadsPage.sourceEmail')}</option>
+                    <option>{t('leadsPage.sourceTradeShow')}</option>
+                    <option>{t('leadsPage.sourceColdOutreach')}</option>
+                    <option>{t('leadsPage.sourceOther')}</option>
+
                   </select>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                 </div>
@@ -306,11 +311,11 @@ const LeadsPage = () => {
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                   >
-                    <option value="createdAt">Creation Date</option>
-                    <option value="followUpDate">Follow-up Date</option>
-                    <option value="fullName">Name</option>
-                    <option value="value">Value</option>
-                  </select>
+                     <option value="createdAt">{t('leadsPage.sortByCreationDate')}</option>
+                      <option value="followUpDate">{t('leadsPage.sortByFollowUpDate')}</option>
+                      <option value="fullName">{t('leadsPage.sortByName')}</option>
+                      <option value="value">{t('leadsPage.sortByValue')}</option>
+                    </select>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                 </div>
                 <div className="filterbtn">
@@ -319,7 +324,7 @@ const LeadsPage = () => {
                     onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-up-down" aria-hidden="true"><path d="m21 16-4 4-4-4"></path><path d="M17 20V4"></path><path d="m3 8 4-4 4 4"></path><path d="M7 4v16"></path></svg>
-                    {sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                     {sortOrder === 'asc' ? t('leadsPage.ascending') : t('leadsPage.descending')}
                   </button>
                 </div>
               </div>
@@ -331,29 +336,29 @@ const LeadsPage = () => {
         <div className="row">
           <div className="col-md-12">
             <div className="carddesign leadstable">
-              <h2 className="card-title">All Leads</h2>
+              <h2 className="card-title">{t('leadsPage.tableTitle')}</h2>
               <div className="tabledesign">
                 <div className="table-responsive">
                   <table className="table">
                     <thead>
                       <tr>
                         <th className="talechebox"><input className="form-check-input" type="checkbox" id="checkAll" /></th>
-                        <th>Lead ID</th>
-                        <th>Name</th>
-                        <th>Company</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Status</th>
-                        <th>Value</th>
-                        <th>Source</th>
-                        <th>Actions</th>
+                        <th>{t('leadsPage.tableHeaderLeadID')}</th>
+                        <th>{t('leadsPage.tableHeaderName')}</th>
+                        <th>{t('leadsPage.tableHeaderCompany')}</th>
+                        <th>{t('leadsPage.tableHeaderEmail')}</th>
+                        <th>{t('leadsPage.tableHeaderPhone')}</th>
+                        <th>{t('leadsPage.tableHeaderStatus')}</th>
+                        <th>{t('leadsPage.tableHeaderValue')}</th>
+                        <th>{t('leadsPage.tableHeaderSource')}</th>
+                        <th>{t('leadsPage.tableHeaderActions')}</th>
                       </tr>
                     </thead>
                     <tbody>
 
                      {loading ? (
                         <tr>
-                          <td colSpan="10" className="text-center">Loading leads...</td>
+                          <td colSpan="10" className="text-center">{t('leadsPage.loadingLeads')}</td>
                         </tr>
                       ) : error ? (
                         <tr>
@@ -377,9 +382,9 @@ const LeadsPage = () => {
                                   {/* Dynamically render status options */}
                                   {statuses.map(status => (
                                     <li key={status.id}>
-                                      <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleStatusChange(lead.id, status.id); }}>
+                                      <Link className="dropdown-item" to="#" onClick={(e) => { e.preventDefault(); handleStatusChange(lead.id, status.id); }}>
                                         {status.name}
-                                      </a>
+                                      </Link>
                                     </li>
                                   ))}
                                 </ul>
@@ -395,20 +400,20 @@ const LeadsPage = () => {
                                 <ul className="dropdown-menu">
                                   <li><Link className="dropdown-item" to={`/leads/${lead.id}`}>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    View Details
+                                    {t('leadsPage.viewDetails')}
                                   </Link></li>
-                                  <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleEdit(lead); }}>
+                                  <li><Link className="dropdown-item" to="#" onClick={(e) => { e.preventDefault(); handleEdit(lead); }}>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>
-                                    Edit
-                                  </a></li>
-                                  <li><a className="dropdown-item" href="#">
+                                    {t('leadsPage.edit')}
+                                  </Link></li>
+                                  <li><Link className="dropdown-item" to="#">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
-                                    Send Message
-                                  </a></li>
-                                  <li className="sletborder"><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleDelete(lead.id); }}>
+                                    {t('leadsPage.sendMessage')}
+                                  </Link></li>
+                                  <li className="sletborder"><Link className="dropdown-item" to="#" onClick={(e) => { e.preventDefault(); handleDelete(lead.id); }}>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                    Delete
-                                  </a></li>
+                                    {t('leadsPage.delete')}
+                                  </Link></li>
                                 </ul>
                               </div>
                             </td>
@@ -416,7 +421,7 @@ const LeadsPage = () => {
                         ))
                        ) : (
                           <tr>
-                            <td colSpan="10" className="text-center">No leads found.</td>
+                            <td colSpan="10" className="text-center">{t('leadsPage.noLeadsFound')}</td>
                           </tr>
                         )}
                     </tbody>
