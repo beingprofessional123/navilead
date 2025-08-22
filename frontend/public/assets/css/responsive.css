@@ -1,0 +1,192 @@
+.mobileheader {
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--card);
+    padding: 10px 10px;
+    position: fixed;
+    width: 100%;
+    left: 0px;
+    top: 0px;
+    z-index: 999;
+}
+.mobilelogo a {
+    width: 150px;
+    display: block;
+}
+
+@media all and (min-width:320px) and (max-width: 1199px) {
+.mobileheader {
+    display: flex;
+}
+.sidebar {
+    left: -300px;
+}
+.mainbody {
+    padding: 70px 0px 30px 0px;
+}
+.open .sidebar {
+    left: 0px;
+    z-index: 99999;
+}
+.sidebar-logo {
+    padding: 10px 10px;
+}
+
+}
+/*320-1199 End*/
+
+@media all and (min-width:320px) and (max-width: 767px) {
+.dashright {
+    text-align: left;
+    margin-top: 15px;
+}
+.lead-search .input-group {
+    flex-wrap: wrap;
+}
+.leads-col {
+    width: 100%;
+}
+.inputsearch .form-control {
+    min-width: 100%;
+}
+.lead-search .input-group .inputselect {
+    margin-bottom: 10px;
+}
+.leadsviewrow {
+    flex-wrap: wrap;
+}
+.leadsleft-bar {
+    width: 100%;
+    min-width: 100%;
+}
+.leadsright-bar {
+    width: 100%;
+    min-width: 100%;
+}
+.leads-info-text {
+    width: 156px;
+}
+.leadscenter-bar {
+    padding: 0px 15px;
+}
+.leads-headerbox-left h4 {
+    font-size: 14px;
+}
+.carddesign.leads-header {
+    padding: 10px;
+}
+.leads-headerbox-left .btn.btn-add {
+    padding: 7px 6px;
+}
+.sendoffer-action {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.leaddropdown ul.dropdown-menu a.dropdown-item {
+    white-space: normal;
+}
+.leaddropdown .btn.btn-primary {
+    white-space: normal;
+}
+.sendemaiinfo span {
+    word-break: break-all;
+}
+.leadlist-box {
+    flex-wrap: wrap;
+}
+.leadlist-info {
+    width: 100%;
+}
+.leadlist-action {
+    width: 100%;
+    margin-top: 10px;
+}
+.addstep-heading {
+    flex-wrap: wrap;
+    gap: 10px 0px;
+}
+.workflowsadd-headingsec {
+    gap: 10px 9px;
+    flex-wrap: wrap;
+}
+.carddesign.cardhandling1 {
+    margin-bottom: 10px;
+}
+.modalfooter.btn-right.opretworkflow {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.emailmodaltab ul.nav.nav-tabs li.nav-item {
+    width: auto;
+    margin-right: 10px;
+}
+.planactive-details .col-md-4 {
+    margin-bottom: 10px;
+}
+.planactive-list ul li {
+    width: 100%;
+}
+.usersul-card {
+    flex-wrap: wrap;    
+    gap: 10px;
+}
+.status.status3 {
+    white-space: nowrap;
+}
+.loginmain {
+    padding: 0px 15px;
+}
+.loginmain .carddesign {
+    padding: 30px 20px;
+}
+.handler-card {
+    margin-bottom: 10px;
+}
+}
+/*320-767 End*/
+
+@media all and (min-width:768px) and (max-width: 1024px) {
+.leads-col {
+    width: 33.33%;
+    padding: 0px 10px;
+}
+.leadsviewrow {
+    flex-wrap: wrap;
+}
+.leadsleft-bar {
+    width: 100%;
+    min-width: 100%;
+}
+.leadsright-bar {
+    width: 100%;
+    min-width: 100%;
+}
+.leaddropdown ul.dropdown-menu a.dropdown-item {
+    white-space: normal;
+}
+.leaddropdown .btn.btn-primary {
+    white-space: normal;
+}
+.sendemaiinfo span {
+    word-break: break-all;
+}
+}
+
+
+/*768-1024 End*/
+
+@media all and (min-width:1025px) and (max-width: 1199px) {
+.leadsviewrow {
+    flex-wrap: wrap;
+}
+.leadsleft-bar {
+    width: 100%;
+    min-width: 100%;
+}
+.leadsright-bar {
+    width: 100%;
+    min-width: 100%;
+}
+}
+/*1025-1199 End*/

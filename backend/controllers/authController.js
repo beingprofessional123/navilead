@@ -49,7 +49,7 @@ exports.register = async (req, res) => {
     );
 
     res.status(201).json({
-      message: 'User registered successfully.',
+      message: 'api.register.success',
       token,
       user: userData,
     });
@@ -57,9 +57,9 @@ exports.register = async (req, res) => {
   } catch (error) {
     console.error('Registration error:', error);
     if (error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(409).json({ message: 'Email already registered.' });
+      return res.status(409).json({ message: 'api.register.emailExists' });
     }
-    res.status(500).json({ message: 'Server error during registration.', error: error.message });
+    res.status(500).json({ message: 'api.register.serverError', error: error.message });
   }
 };
 
@@ -72,10 +72,10 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ where: { email } });
-    if (!user) return res.status(404).json({ message: 'User not found.' });
+    if (!user) return res.status(404).json({ message: 'api.login.userNotFound' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials.' });
+    if (!isMatch) return res.status(401).json({ message: 'api.login.invalidCredentials' });
 
     const token = jwt.sign(
       { id: user.id },
@@ -90,11 +90,11 @@ exports.login = async (req, res) => {
       phone: user.phone,
     };
 
-    res.status(200).json({ message: 'Logged in successfully.', token, user: userData });
+    res.status(200).json({ message: 'api.login.success', token, user: userData });
 
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error during login.', error: error.message });
+    res.status(500).json({ message: 'api.login.serverError', error: error.message });
   }
 };
 
@@ -104,9 +104,9 @@ exports.logout = async (req, res) => {
   try {
     // On frontend: remove token (localStorage/cookies)
     // Here, just respond with a success message
-    res.status(200).json({ message: 'Logged out successfully.' });
+    res.status(200).json({ message: 'api.logout.success' });
   } catch (error) {
     console.error('Logout error:', error);
-    res.status(500).json({ message: 'Server error during logout.', error: error.message });
+    res.status(500).json({ message: 'api.logout.serverError', error: error.message });
   }
 };

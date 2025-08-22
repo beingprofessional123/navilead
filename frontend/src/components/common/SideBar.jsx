@@ -1,8 +1,10 @@
 import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import { useTranslation } from "react-i18next";
 
 const SideBar = () => {
+    const { t } = useTranslation();
     const { user, logout } = useContext(AuthContext);
     const location = useLocation();
 
@@ -31,7 +33,7 @@ const SideBar = () => {
                                 <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                             </svg>
                         </span>
-                        Dashboard
+                        {t('sidebar.dashboard')}
                     </Link>
                 </li>
                 <li className={isActive('/leads') ? 'active' : ''}>
@@ -44,7 +46,7 @@ const SideBar = () => {
                                 <circle cx="9" cy="7" r="4"></circle>
                             </svg>
                         </span>
-                        Leads
+                        {t('sidebar.leads')}
                     </Link>
                 </li>
                 <li className={isActive('/email-sms') ? 'active' : ''}>
@@ -55,7 +57,7 @@ const SideBar = () => {
                                 <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                             </svg>
                         </span>
-                        Email & SMS
+                        {t('sidebar.emailSms')}
                     </Link>
                 </li>
                 <li className={isActive('/workflows') ? 'active' : ''}>
@@ -67,7 +69,7 @@ const SideBar = () => {
                                 <rect width="8" height="8" x="13" y="13" rx="2"></rect>
                             </svg>
                         </span>
-                        Workflows
+                        {t('sidebar.workflows')}
                     </Link>
                 </li>
                 <li className={isActive('/integrations') ? 'active' : ''}>
@@ -77,7 +79,7 @@ const SideBar = () => {
                                 <path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"></path>
                             </svg>
                         </span>
-                        Integrations
+                        {t('sidebar.integrations')} 
                     </Link>
                 </li>
                 <li className={isActive('/pricing-templates') ? 'active' : ''}>
@@ -91,7 +93,7 @@ const SideBar = () => {
                                 <path d="M16 17H8"></path>
                             </svg>
                         </span>
-                        Pricing Templates
+                        {t('sidebar.pricingTemplates')}
                     </Link>
                 </li>
                 <li className={isActive('/offers') ? 'active' : ''}>
@@ -106,7 +108,7 @@ const SideBar = () => {
                                 <path d="M8 16h.01"></path>
                             </svg>
                         </span>
-                        Offer Templates
+                        {t('sidebar.offerTemplates')} 
                     </Link>
                 </li>
                 <li className={isActive('/billing') ? 'active' : ''}>
@@ -117,7 +119,7 @@ const SideBar = () => {
                                 <line x1="2" x2="22" y1="10" y2="10"></line>
                             </svg>
                         </span>
-                        Billing
+                        {t('sidebar.billing')}
                     </Link>
                 </li>
                 <li className={isActive('/settings') ? 'active' : ''}>
@@ -128,7 +130,7 @@ const SideBar = () => {
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
                         </span>
-                        Settings
+                        {t('sidebar.settings')} 
                     </Link>
                 </li>
                 <li className={`adminpanel ${isActive('/admin') ? 'active' : ''}`}>
@@ -138,7 +140,7 @@ const SideBar = () => {
                                 <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
                             </svg>
                         </span>
-                        Admin Panel
+                        {t('sidebar.adminPanel')}
                     </Link>
                 </li>
                 <li className="adminpanel">
@@ -154,7 +156,7 @@ const SideBar = () => {
                                 <line x1="21" y1="12" x2="9" y2="12"></line>
                             </svg>
                         </span>
-                        Logout
+                        {t('sidebar.logout')}
                     </Link>
                 </li>
 
@@ -162,12 +164,9 @@ const SideBar = () => {
             {/* User Information Section */}
             <div className="userinfo">
                 <div className="username">
-                    {/* Display user initials */}
                     <span>{userInitials}</span>
-                    {/* Display user's name or a default "John Doe" */}
                     <h5>{user?.name || 'John Doe'}</h5>
-                    {/* Display user's email or a default "john@company.com" */}
-                    <h6>{user?.email || 'john@company.com'}</h6>
+                    <h6>{'rajesh.sharma.naviland@yopmail.com'}</h6>
                 </div>
             </div>
         </div>

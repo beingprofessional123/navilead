@@ -16,9 +16,9 @@ exports.getQuotes = async (req, res) => {
       ],
       order: [['createdAt', 'DESC']],
     });
-    res.json(quotes);
+    res.status(200).json({ message: 'api.quotes.fetchSuccess', quotes });
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching quotes', error: err.message });
+    res.status(500).json({ message: 'api.quotes.historyFetchError', error: err.message });
   }
 };
 
@@ -33,12 +33,12 @@ exports.getQuoteById = async (req, res) => {
     });
 
     if (!quote) {
-      return res.status(404).json({ message: 'Quote not found' });
+     return res.status(404).json({ message: 'api.quotes.notFound' });
     }
 
-    res.json(quote);
+    res.status(200).json({ message: 'api.quotes.fetchSuccess', quotes });
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching quote', error: err.message });
+    res.status(500).json({ message: 'api.quotes.fetchError', error: err.message });
   }
 };
 
@@ -60,7 +60,7 @@ exports.createQuote = async (req, res) => {
     } = req.body;
 
     if (!userId || !leadId || !title) {
-      return res.status(400).json({ message: 'userId, leadId and title are required' });
+      return res.status(400).json({ message: 'api.quotes.requiredFields' });
     }
 
     const cleanOverallDiscount = overallDiscount && overallDiscount < 0 ? 0 : overallDiscount;
@@ -97,9 +97,9 @@ exports.createQuote = async (req, res) => {
       ],
     });
 
-    res.status(201).json(newQuote);
+    res.status(201).json({ message: 'api.quotes.createSuccess',newQuote });
   } catch (err) {
-    res.status(500).json({ message: 'Error creating quote', error: err.message });
+    res.status(500).json({ message: 'api.quotes.createError', error: err.message });
   }
 };
 
@@ -122,7 +122,7 @@ exports.updateQuote = async (req, res) => {
 
     const quote = await Quote.findByPk(quoteId);
     if (!quote) {
-      return res.status(404).json({ message: 'Quote not found' });
+      return res.status(404).json({ message: 'api.quotes.notFound' });
     }
 
     const cleanOverallDiscount = overallDiscount && overallDiscount < 0 ? 0 : overallDiscount;
@@ -163,7 +163,7 @@ exports.updateQuote = async (req, res) => {
       ],
     });
 
-    res.json(updatedQuote);
+    res.status(200).json({ message: 'api.quotes.updateSuccess', updatedQuote });
   } catch (err) {
     res.status(500).json({ message: 'Error updating quote', error: err.message });
   }
@@ -177,7 +177,7 @@ exports.deleteQuote = async (req, res) => {
 
     const quote = await Quote.findByPk(quoteId);
     if (!quote) {
-      return res.status(404).json({ message: 'Quote not found' });
+     return res.status(404).json({ message: 'api.quotes.notFound' });
     }
 
     // Delete related services
@@ -192,10 +192,10 @@ exports.deleteQuote = async (req, res) => {
     // Finally delete the quote
     await quote.destroy();
 
-    res.json({ message: 'Quote deleted successfully' });
+    res.status(200).json({ message: 'api.quotes.deleteSuccess' });
   } catch (err) {
     res.status(500).json({
-      message: 'Error deleting quote',
+      message: 'api.quotes.deleteError',
       error: err.message
     });
   }

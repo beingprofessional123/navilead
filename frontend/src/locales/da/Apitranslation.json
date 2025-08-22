@@ -1,0 +1,72 @@
+{
+  "api": {
+    "register": {
+      "success": "Bruger registreret med succes.",
+      "emailExists": "E-mail er allerede registreret.",
+      "serverError": "Serverfejl under registrering."
+    },
+    "login": {
+      "userNotFound": "Bruger ikke fundet.",
+      "invalidCredentials": "Ugyldige legitimationsoplysninger.",
+      "success": "Logget ind med succes.",
+      "serverError": "Serverfejl under login."
+    },
+    "logout": {
+      "success": "Logget ud med succes.",
+      "serverError": "Serverfejl under logout."
+    },
+    "leads": {
+      "fetchError": "Kunne ikke hente leads.",
+      "createSuccess": "Lead oprettet med succes!",
+      "createError": "Fejl under oprettelse af lead.",
+      "updateSuccess": "Lead opdateret med succes!",
+      "updateError": "Fejl under opdatering af lead.",
+      "deleteSuccess": "Lead slettet med succes!",
+      "deleteError": "Kunne ikke slette lead.",
+      "statusUpdateSuccess": "Status opdateret med succes!",
+      "statusUpdateError": "Kunne ikke opdatere status.",
+      "notFound": "Lead ikke fundet.",
+      "notAuthorized": "Lead ikke fundet eller ikke autoriseret.",
+      "pendingStatusNotFound": "Afventende status blev ikke fundet i databasen.",
+      "publicLeadCreateSuccess": "Lead oprettet med succes.",
+      "publicLeadCreateError": "Fejl under oprettelse af offentligt lead.",
+      "publicLeadInvalidEmail": "Ugyldigt sekundær e-mailformat.",
+      "publicLeadFullNameRequired": "Fuldt navn er påkrævet.",
+      "publicLeadPhoneRequired": "Ugyldigt telefonnummer.",
+      "publicLeadCompanyNameRequired": "Firmanavn er påkrævet.",
+      "publicLeadDuplicate": "Lead med dette telefonnummer og firma er allerede registreret.",
+      "publicLeadInvalidSource": "Ugyldig lead-kilde.",
+      "publicLeadDefaultStatusNotFound": "Standard 'Sendt' status blev ikke fundet.",
+      "publicLeadInvalidFollowUpDate": "Ugyldigt opfølgningsdatoformat.",
+      "publicLeadValueNotNumber": "Værdien skal være et tal.",
+      "publicLeadAttachmentsGetMethod": "Vedhæftede filer er ikke tilladt med GET-metode. Brug venligst POST i stedet.",
+      "publicLeadUserIdRequired": "Bruger-ID er påkrævet.",
+      "publicLeadUserNotFound": "Bruger med angivet Bruger-ID ikke fundet.",
+      "statusLoadError": "Kunne ikke indlæse lead-statusser."
+    },
+     "quotes": {
+      "fetchSuccess": "Tilbud hentet med succes!",
+      "statusLoadError": "Kunne ikke indlæse tilbudsstatusser.",
+      "historyFetchError": "Kunne ikke indlæse tilbudshistorik.",
+      "statusUpdateSuccess": "Tilbudsstatus opdateret.",
+      "notFound": "Tilbud ikke fundet.",
+      "fetchError": "Fejl under hentning af tilbud.",
+      "requiredFields": "Bruger-ID, Lead-ID og Titel er påkrævet.",
+      "createSuccess": "Tilbud oprettet med succes!",
+      "createError": "Fejl under oprettelse af tilbud.",
+      "updateSuccess": "Tilbud opdateret med succes!",
+      "updateError": "Fejl under opdatering af tilbud.",
+      "deleteSuccess": "Tilbud slettet med succes!",
+      "deleteError": "Fejl under sletning af tilbud."
+    },
+    "pricingTemplates": {
+      "fetchError": "Kunne ikke indlæse pris-skabeloner."
+    },
+    "sms": {
+      "sendSuccess": "SMS sendt med succes!"
+    },
+    "email": {
+      "sendSuccess": "E-mail sendt med succes!"
+    }
+  }
+}
