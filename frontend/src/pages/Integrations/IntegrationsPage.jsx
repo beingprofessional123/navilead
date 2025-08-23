@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import MobileHeader from '../../components/common/MobileHeader';
 
 const IntegrationsPage = () => {
     const [activeTab, setActiveTab] = useState('browse');
@@ -201,6 +202,7 @@ const IntegrationsPage = () => {
     return (
         <div className="mainbody">
             <div className="container-fluid">
+                <MobileHeader />
                 <div className="row top-row">
                     <div className="col-md-12">
                         <div className="dash-heading">

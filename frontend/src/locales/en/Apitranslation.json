@@ -59,15 +59,74 @@
       "deleteSuccess": "Quote deleted successfully!",
       "deleteError": "Error deleting quote."
     },
-    "pricingTemplates": {
-      "fetchError": "Failed to load pricing templates."
-    },
     "sms": {
       "sendSuccess": "SMS sent successfully!"
     },
     "email": {
       "sendSuccess": "Email sent successfully!"
+    },
+    "userVariables": {
+      "fetchError": "Error fetching user variables."
+    },
+    "statuses": {
+      "fetchError": "Error fetching statuses."
+    },
+    "smsQuotes": {
+      "missingFields": "Missing required fields for SMS quote.",
+      "storeSuccess": "SMS stored successfully.",
+      "serverError": "Internal server error during SMS quote processing."
+    },
+    "emailQuotes": {
+      "missingFields": "Missing required fields for email quote.",
+      "quoteNotFoundForLeadUpdate": "Quote not found for updating Lead status.",
+      "serverError": "Internal server error during email quote processing."
+    },
+    "pricingTemplates": {
+      "fetchError": "Failed to fetch pricing templates.",
+      "createSuccess": "Template created successfully!",
+      "createError": "Failed to create template.",
+      "notFound": "Template not found.",
+      "fetchByIdError": "Failed to fetch template.",
+      "updateSuccess": "Template updated successfully!",
+      "updateError": "Failed to update template.",
+      "deleteSuccess": "Template deleted successfully!",
+      "deleteError": "Failed to delete template.",
+      "authError": "Authentication token not found."
+    },
+    "currencies": {
+      "fetchError": "Failed to fetch currencies."
+    },
+    "pricingTemplateModal": {
+      "saveSuccess": "Template {action} successfully!",
+      "saveError": "Failed to {action} template."
+    },
+    "emailTemplates": {
+      "fetchError": "Failed to fetch email templates.",
+      "notFound": "Email template not found.",
+      "fetchByIdError": "Failed to fetch email template.",
+      "createError": "Failed to create email template.",
+      "updateError": "Failed to update email template.",
+      "deleteSuccess": "Email template deleted successfully!",
+      "deleteError": "Failed to delete email template.",
+      "authError": "Authentication token not found for email templates.",
+      "saveError": "Failed to {action} email template.",
+      "fileUploadError": "Failed to upload attachments.",
+      "noFilesProvided": "No files provided for upload."
+    },
+    "smsTemplates": {
+      "fetchError": "Failed to fetch SMS templates.",
+      "notFound": "SMS template not found.",
+      "fetchByIdError": "Failed to fetch SMS template.",
+      "createError": "Failed to create SMS template.",
+      "updateError": "Failed to update SMS template.",
+      "deleteSuccess": "SMS template deleted successfully!",
+      "deleteError": "Failed to delete SMS template.",
+      "authError": "Authentication token not found for SMS templates.",
+      "saveError": "Failed to {action} SMS template."
+    },
+    "variables": {
+      "authError": "Authentication token not found for variables.",
+      "fetchError": "Failed to fetch variables."
     }
-    
   }
 }

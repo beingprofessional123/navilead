@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    attachments: {
+        type: DataTypes.JSON,
+        allowNull: true,
+    },
     userId: {                    // <--- Add userId field
       type: DataTypes.INTEGER,
       allowNull: false,

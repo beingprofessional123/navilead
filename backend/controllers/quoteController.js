@@ -90,14 +90,14 @@ exports.createQuote = async (req, res) => {
       await QuoteService.bulkCreate(servicesWithQuoteId);
     }
 
-    const newQuote = await Quote.findByPk(quote.id, {
+    const quotes = await Quote.findByPk(quote.id, {
       include: [
         { model: QuoteService, as: 'services' },
         // Removed Status and EmailTemplate includes
       ],
     });
 
-    res.status(201).json({ message: 'api.quotes.createSuccess',newQuote });
+    res.status(201).json({ message: 'api.quotes.createSuccess',quotes });
   } catch (err) {
     res.status(500).json({ message: 'api.quotes.createError', error: err.message });
   }

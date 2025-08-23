@@ -6,6 +6,8 @@ import { AuthContext } from '../../context/AuthContext'; // Assuming AuthContext
 import api from '../../utils/api'; // Assuming an API utility for requests
 import AddEditLeadModal from './AddEditLeadModal'; // Import the custom modal component
 import { useTranslation } from "react-i18next";
+import MobileHeader from '../../components/common/MobileHeader';
+
 
 const LeadsPage = () => {
   const { t } = useTranslation();
@@ -42,7 +44,7 @@ const LeadsPage = () => {
     } catch (err) {
       console.error('Error fetching leads:', err);
       setError(t('api.leads.fetchError')); // Translated error message
-      toast.error(t('api.leads.fetchError')); 
+      toast.error(t('api.leads.fetchError'));
     } finally {
       setLoading(false);
     }
@@ -57,7 +59,7 @@ const LeadsPage = () => {
       setStatuses(response.data.filter(s => s.statusFor === 'Lead'));
     } catch (err) {
       console.error('Error fetching statuses:', err);
-      toast.error(t('api.leads.statusUpdateError')); 
+      toast.error(t('api.leads.statusUpdateError'));
     }
   };
 
@@ -185,7 +187,7 @@ const LeadsPage = () => {
   return (
     <div className="mainbody">
       <div className="container-fluid">
-
+        <MobileHeader />
         <div className="row top-row">
           <div className="col-md-6">
             <div className="dash-heading">
@@ -311,11 +313,11 @@ const LeadsPage = () => {
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                   >
-                     <option value="createdAt">{t('leadsPage.sortByCreationDate')}</option>
-                      <option value="followUpDate">{t('leadsPage.sortByFollowUpDate')}</option>
-                      <option value="fullName">{t('leadsPage.sortByName')}</option>
-                      <option value="value">{t('leadsPage.sortByValue')}</option>
-                    </select>
+                    <option value="createdAt">{t('leadsPage.sortByCreationDate')}</option>
+                    <option value="followUpDate">{t('leadsPage.sortByFollowUpDate')}</option>
+                    <option value="fullName">{t('leadsPage.sortByName')}</option>
+                    <option value="value">{t('leadsPage.sortByValue')}</option>
+                  </select>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                 </div>
                 <div className="filterbtn">
@@ -324,7 +326,7 @@ const LeadsPage = () => {
                     onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-up-down" aria-hidden="true"><path d="m21 16-4 4-4-4"></path><path d="M17 20V4"></path><path d="m3 8 4-4 4 4"></path><path d="M7 4v16"></path></svg>
-                     {sortOrder === 'asc' ? t('leadsPage.ascending') : t('leadsPage.descending')}
+                    {sortOrder === 'asc' ? t('leadsPage.ascending') : t('leadsPage.descending')}
                   </button>
                 </div>
               </div>
@@ -338,9 +340,9 @@ const LeadsPage = () => {
             <div className="carddesign leadstable">
               <h2 className="card-title">{t('leadsPage.tableTitle')}</h2>
               <div className="tabledesign">
-                <div className="table-responsive">
+                <div className="table-responsive" style={{ minHeight: "150px", maxHeight: "480px" }}>
                   <table className="table">
-                    <thead>
+                    <thead style={{ position: "sticky", top: 0, background: "rgb(22 31 38)", zIndex: 10, }}>
                       <tr>
                         <th className="talechebox"><input className="form-check-input" type="checkbox" id="checkAll" /></th>
                         <th>{t('leadsPage.tableHeaderLeadID')}</th>
@@ -356,7 +358,7 @@ const LeadsPage = () => {
                     </thead>
                     <tbody>
 
-                     {loading ? (
+                      {loading ? (
                         <tr>
                           <td colSpan="10" className="text-center">{t('leadsPage.loadingLeads')}</td>
                         </tr>
@@ -419,11 +421,11 @@ const LeadsPage = () => {
                             </td>
                           </tr>
                         ))
-                       ) : (
-                          <tr>
-                            <td colSpan="10" className="text-center">{t('leadsPage.noLeadsFound')}</td>
-                          </tr>
-                        )}
+                      ) : (
+                        <tr>
+                          <td colSpan="10" className="text-center">{t('leadsPage.noLeadsFound')}</td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>

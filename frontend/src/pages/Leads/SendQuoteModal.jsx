@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { toast } from 'react-toastify';
-// Removed: import { Modal } from 'react-bootstrap';
 import { AuthContext } from '../../context/AuthContext';
-import api from '../../utils/api'; // Ensure this path is correct
+import api from '../../utils/api';
+import { useTranslation } from "react-i18next"; // Import useTranslation
 
 const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }) => {
-  const { authToken,user } = useContext(AuthContext);
+  const { authToken, user } = useContext(AuthContext);
+  const { t: translate } = useTranslation(); // Initialize translation hook
 
   const [currentStatusId, setCurrentStatusId] = useState(quoteData?.statusId || '');
   const [sendSmsChecked, setSendSmsChecked] = useState(false);
@@ -30,7 +31,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
 
   // Character count for SMS
   const smsCharCount = smsMessage.length;
-  const smsType = smsCharCount <= 99 ? 'Single SMS' : `Multi-part SMS (${Math.ceil(smsCharCount / 99)} parts)`;
+  const smsType = smsCharCount <= 99 ? translate('sendQuoteModal.singleSms') : translate('sendQuoteModal.multiPartSms', { parts: Math.ceil(smsCharCount / 99) }); // Translated
 
 
   // Update state when quoteData or lead changes (e.g., when a new quote is created)
@@ -48,7 +49,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
 
   const fetchVariables = async () => {
     if (!authToken) {
-      toast.error("Authentication token not found.");
+      toast.error(translate('api.auth.tokenNotFound')); // Translated
       return;
     }
 
@@ -61,7 +62,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
       setVariables(response.data); // save directly
     } catch (error) {
       console.error("Error fetching variables:", error);
-      toast.error("Failed to fetch variables.");
+      toast.error(translate('api.userVariables.fetchError')); // Translated
     } finally {
       setLoadingVariables(false);
     }
@@ -84,7 +85,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
   const fetchEmailTemplates = async () => {
     if (!authToken) {
       setLoadingEmails(false);
-      toast.error('Authentication token not found for email templates.');
+      toast.error(translate('api.auth.tokenNotFoundForEmailTemplates')); // Translated
       return;
     }
     setLoadingEmails(true);
@@ -106,7 +107,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
       })));
     } catch (error) {
       console.error("Error fetching email templates:", error);
-      toast.error('Failed to fetch email templates.');
+      toast.error(translate('api.emailTemplates.fetchError')); // Translated
     } finally {
       setLoadingEmails(false);
     }
@@ -115,7 +116,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
   const fetchSmsTemplates = async () => {
     if (!authToken) {
       setLoadingSMS(false);
-      toast.error('Authentication token not found for SMS templates.');
+      toast.error(translate('api.auth.tokenNotFoundForSmsTemplates')); // Translated
       return;
     }
     setLoadingSMS(true);
@@ -134,7 +135,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
       })));
     } catch (error) {
       console.error("Error fetching SMS templates:", error);
-      toast.error('Failed to fetch SMS templates.');
+      toast.error(translate('api.smsTemplates.fetchError')); // Translated
     } finally {
       setLoadingSMS(false);
     }
@@ -215,6 +216,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
 
     return replaced;
   };
+
   return (
     <>
     <div className={`${show ? 'modal-backdrop fade show' : ''}`}></div>
@@ -223,7 +225,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
       <div className="modal-dialog modal-dialog-centered" role="document">
         <div className="modal-content">
           <div className="modal-header">
-            <h4 className="modal-title">Actions for: {quoteData?.title || 'New Quote'}</h4>
+            <h4 className="modal-title">{translate('sendQuoteModal.actionsFor', { quoteTitle: quoteData?.title || translate('sendQuoteModal.newQuote') })}</h4> {/* Translated */}
             <button type="button" className="btn-close" onClick={onHide}>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
                 <path d="M18 6 6 18"></path>
@@ -235,7 +237,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
           <div className="modal-body">
             <div className="formdesign sendoffer-action">
               <div className="form-group">
-                <label>Set status</label>
+                <label>{translate('sendQuoteModal.setStatus')}</label> {/* Translated */}
                 <div className="sendoffer-status">
                   <div className="inputselect">
                     <select className="form-select" value={currentStatusId} onChange={(e) => setCurrentStatusId(Number(e.target.value))}>
@@ -247,16 +249,16 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
                       <path d="m6 9 6 6 6-6"></path>
                     </svg>
                   </div>
-                  <span>Currently: {quoteStatuses.find(s => s.id === currentStatusId)?.name || 'N/A'}</span>
+                  <span>{translate('sendQuoteModal.currently')}: {quoteStatuses.find(s => s.id === currentStatusId)?.name || translate('leadViewPage.na')}</span> {/* Translated */}
                 </div>
               </div>
               <div className="modalfooter btn-right">
-                <button type="button" className="btn btn-add" onClick={onHide}>Cancel</button>
+                <button type="button" className="btn btn-add" onClick={onHide}>{translate('sendQuoteModal.cancel')}</button> {/* Translated */}
                 <button type="button" className="btn btn-send" onClick={handleSendOffer}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true">
                     <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path>
                     <path d="m21.854 2.147-10.94 10.939"></path>
-                  </svg>Send Tilbud
+                  </svg>{translate('sendQuoteModal.sendOffer')} {/* Translated */}
                 </button>
               </div>
             </div>
@@ -269,21 +271,21 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
                     <label htmlFor="sendSmsCheckbox" className="form-check-label d-inline-flex align-items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square" aria-hidden="true">
                         <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path>
-                      </svg>Send SMS
+                      </svg>{translate('sendQuoteModal.sendSms')} {/* Translated */}
                     </label>
                   </h2>
                   <div className="carddesign" style={{ opacity: sendSmsChecked ? 1 : 0.5, pointerEvents: sendSmsChecked ? 'auto' : 'none' }}>
-                    <h2 className="card-title">SMS Editor</h2>
+                    <h2 className="card-title">{translate('sendQuoteModal.smsEditor')}</h2> {/* Translated */}
                     <div className="sendoffer-info">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone" aria-hidden="true">
                         <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path>
-                      </svg>To: {lead?.phone || 'N/A'}
+                      </svg>{translate('sendQuoteModal.to')} {lead?.phone || translate('leadViewPage.na')} {/* Translated */}
                     </div>
                     <div className="form-group mb-2">
-                      <label>SMS Template</label>
+                      <label>{translate('sendQuoteModal.smsTemplate')}</label> {/* Translated */}
                       <div className="inputselect">
                         <select className="form-select" value={selectedSmsTemplateId} onChange={handleSmsTemplateChange} disabled={loadingSMS}>
-                          <option value="">Select a template</option>
+                          <option value="">{translate('sendQuoteModal.selectATemplate')}</option> {/* Translated */}
                           {smsTemplates.map(template => (
                             <option key={template.id} value={template.id}>{template.templateName}</option>
                           ))}
@@ -292,22 +294,22 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
                       </div>
                     </div>
                     <div className="form-group">
-                      <label>From name</label>
+                      <label>{translate('sendQuoteModal.fromName')}</label> {/* Translated */}
                       <input type="text" className="form-control" placeholder="" value={smsFromName} onChange={(e) => setSmsFromName(e.target.value)} />
                     </div>
                     <div className="form-group">
-                      <label>SMS Message</label>
-                      <textarea className="form-control" rows="5" placeholder="Your SMS message..." maxLength={99} value={smsMessage} onChange={(e) => setSmsMessage(e.target.value)}></textarea>
+                      <label>{translate('sendQuoteModal.smsMessage')}</label> {/* Translated */}
+                      <textarea className="form-control" rows="5" placeholder={translate('sendQuoteModal.yourSmsMessagePlaceholder')} maxLength={99} value={smsMessage} onChange={(e) => setSmsMessage(e.target.value)}></textarea> {/* Translated */}
                       <div className="texttypelimit">
-                        <span className="inputnote">Character count: {smsCharCount}</span>
+                        <span className="inputnote">{translate('sendQuoteModal.characterCount')} {smsCharCount}</span> {/* Translated */}
                         <span className="texttype-besked">{smsType}</span>
                       </div>
                     </div>
                     <div className="form-group">
-                      <label>Preview</label>
+                      <label>{translate('sendQuoteModal.preview')}</label> {/* Translated */}
                       <div className="carddesign smspreview">
                         <div className="smspreviewbox">
-                          <h5>SMS from {smsFromName}</h5>
+                          <h5>{translate('sendQuoteModal.smsFrom', { fromName: smsFromName })}</h5> {/* Translated */}
                           <p>{replaceVariables(smsMessage, variables, { quoteId: quoteData.id })}</p>
                         </div>
                         <div className="texttypelimit">
@@ -315,7 +317,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
                             className={`inputnote ${replaceVariables(smsMessage, variables).length > 99 ? "text-danger" : ""
                               }`}
                           >
-                            Character count: {replaceVariables(smsMessage, variables).length}/99
+                            {translate('sendQuoteModal.characterCount')} {replaceVariables(smsMessage, variables, { quoteId: quoteData.id }).length}/99 {/* Translated */}
                           </span>
                         </div>
                       </div>
@@ -332,22 +334,22 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail w-5 h-5" aria-hidden="true">
                         <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path>
                         <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                      </svg>Send Email
+                      </svg>{translate('sendQuoteModal.sendEmail')} {/* Translated */}
                     </label>
                   </h2>
                   <div className="carddesign" style={{ opacity: sendEmailChecked ? 1 : 0.5, pointerEvents: sendEmailChecked ? 'auto' : 'none' }}>
-                    <h2 className="card-title">Email Editor</h2>
+                    <h2 className="card-title">{translate('sendQuoteModal.emailEditor')}</h2> {/* Translated */}
                     <div className="sendoffer-info">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail" aria-hidden="true">
                         <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path>
                         <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                      </svg>To: {lead?.email || 'N/A'}
+                      </svg>{translate('sendQuoteModal.to')} {lead?.email || translate('leadViewPage.na')} {/* Translated */}
                     </div>
                     <div className="form-group mb-2">
-                      <label>Email template</label>
+                      <label>{translate('sendQuoteModal.emailTemplate')}</label> {/* Translated */}
                       <div className="inputselect">
                         <select className="form-select" value={selectedEmailTemplateId} onChange={handleEmailTemplateChange} disabled={loadingEmails}>
-                          <option value="">Select a template</option>
+                          <option value="">{translate('sendQuoteModal.selectATemplate')}</option> {/* Translated */}
                           {emailTemplates.map(template => (
                             <option key={template.id} value={template.id}>{template.templateName}</option>
                           ))}
@@ -358,46 +360,50 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
                     <div className="row">
                       <div className="col-md-6">
                         <div className="form-group">
-                          <label>From name</label>
+                          <label>{translate('sendQuoteModal.fromName')}</label> {/* Translated */}
                           <input type="text" className="form-control" placeholder="" value={emailFromName} onChange={(e) => setEmailFromName(e.target.value)} />
                         </div>
                       </div>
                       <div className="col-md-6">
                         <div className="form-group">
-                          <label>From email</label>
-                          <input type="text" className="form-control" placeholder="kontakt@kasperwest.dk" value={emailFromEmail} onChange={(e) => setEmailFromEmail(e.target.value)} />
+                          <label>{translate('sendQuoteModal.fromEmail')}</label> {/* Translated */}
+                          <input type="text" className="form-control" placeholder={translate('sendQuoteModal.fromEmailPlaceholder')} value={emailFromEmail} onChange={(e) => setEmailFromEmail(e.target.value)} /> {/* Translated */}
                         </div>
                       </div>
                     </div>
                     <div className="form-group">
-                      <label>Subject</label>
-                      <input type="text" className="form-control" placeholder="Regarding quote from Kasperwest.dk" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} />
+                      <label>{translate('sendQuoteModal.subject')}</label> {/* Translated */}
+                      <input type="text" className="form-control" placeholder={translate('sendQuoteModal.subjectPlaceholder')} value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} /> {/* Translated */}
                     </div>
                     <div className="form-group">
-                      <label>Email Content</label>
-                      <textarea className="form-control" rows="10" placeholder="Your email content..." value={emailContent} onChange={(e) => setEmailContent(e.target.value)}></textarea>
+                      <label>{translate('sendQuoteModal.emailContent')}</label> {/* Translated */}
+                      <textarea className="form-control" rows="10" placeholder={translate('sendQuoteModal.yourEmailContentPlaceholder')} value={emailContent} onChange={(e) => setEmailContent(e.target.value)}></textarea> {/* Translated */}
                     </div>
                     <div className="form-group">
-                      <label>Attachments</label>
+                      <label>{translate('sendQuoteModal.attachments')}</label> {/* Translated */}
                       <div className="inputselect">
                         <select className="form-select" value={selectedAttachment} onChange={(e) => setSelectedAttachment(e.target.value)}>
-                          <option value="None">None</option>
-                          {/* You'd dynamically populate these based on quote attachments or predefined files */}
+                          <option value="None">{translate('sendQuoteModal.none')}</option> {/* Translated */}
                           {quoteData?.attachments?.map((attachment, index) => (
-                            <option key={index} value={attachment.url}>{attachment.originalname}</option>
+                            <option
+                              key={index}
+                              value={attachment.url ?? `http://localhost:4000/${attachment.filePath}`}
+                            >
+                              {attachment.originalName}
+                            </option>
                           ))}
                         </select>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                       </div>
                     </div>
                     <div className="form-group">
-                      <label>Preview</label>
+                      <label>{translate('sendQuoteModal.preview')}</label> {/* Translated */}
                       <div className="carddesign emailpreview">
                         <div className="emailpreviewbox">
                           <div className="emailpreview-from">
-                            <div><strong>From:</strong> {emailFromName} &lt;{emailFromEmail}&gt;</div>
-                            <div><strong>To:</strong> {lead?.email || 'N/A'}</div>
-                            <div><strong>Subject:</strong> {emailSubject}</div>
+                            <div><strong>{translate('sendQuoteModal.fromName')}:</strong> {emailFromName} &lt;{emailFromEmail}&gt;</div> {/* Translated */}
+                            <div><strong>{translate('sendQuoteModal.to')}:</strong> {lead?.email || translate('leadViewPage.na')}</div> {/* Translated */}
+                            <div><strong>{translate('sendQuoteModal.subject')}:</strong> {emailSubject}</div> {/* Translated */}
                           </div>
                           <div className="emailpreview-body">
                             <pre className="pre-wrap">{emailContent}</pre>

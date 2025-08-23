@@ -44,7 +44,7 @@
       "publicLeadUserNotFound": "Bruger med angivet Bruger-ID ikke fundet.",
       "statusLoadError": "Kunne ikke indlæse lead-statusser."
     },
-     "quotes": {
+    "quotes": {
       "fetchSuccess": "Tilbud hentet med succes!",
       "statusLoadError": "Kunne ikke indlæse tilbudsstatusser.",
       "historyFetchError": "Kunne ikke indlæse tilbudshistorik.",
@@ -59,14 +59,74 @@
       "deleteSuccess": "Tilbud slettet med succes!",
       "deleteError": "Fejl under sletning af tilbud."
     },
-    "pricingTemplates": {
-      "fetchError": "Kunne ikke indlæse pris-skabeloner."
-    },
     "sms": {
       "sendSuccess": "SMS sendt med succes!"
     },
     "email": {
       "sendSuccess": "E-mail sendt med succes!"
+    },
+    "userVariables": {
+      "fetchError": "Fejl under hentning af brugerdefinerede variabler."
+    },
+    "statuses": {
+      "fetchError": "Fejl under hentning af statusser."
+    },
+    "smsQuotes": {
+      "missingFields": "Manglende påkrævede felter til SMS-tilbud.",
+      "storeSuccess": "SMS gemt med succes.",
+      "serverError": "Intern serverfejl under SMS-tilbudsbehandling."
+    },
+    "emailQuotes": {
+      "missingFields": "Manglende påkrævede felter til e-mail-tilbud.",
+      "quoteNotFoundForLeadUpdate": "Tilbud ikke fundet til opdatering af Lead-status.",
+      "serverError": "Intern serverfejl under e-mail-tilbudsbehandling."
+    },
+    "pricingTemplates": {
+      "fetchError": "Kunne ikke hente prisskabeloner.",
+      "createSuccess": "Skabelon oprettet med succes!",
+      "createError": "Kunne ikke oprette skabelon.",
+      "notFound": "Skabelon ikke fundet.",
+      "fetchByIdError": "Kunne ikke hente skabelon.",
+      "updateSuccess": "Skabelon opdateret med succes!",
+      "updateError": "Kunne ikke opdatere skabelon.",
+      "deleteSuccess": "Skabelon slettet med succes!",
+      "deleteError": "Kunne ikke slette skabelon.",
+      "authError": "Godkendelsestoken ikke fundet."
+    },
+     "currencies": {
+      "fetchError": "Kunne ikke hente valutaer."
+    },
+    "pricingTemplateModal": {
+      "saveSuccess": "Skabelon {action} med succes!",
+      "saveError": "Kunne ikke {action} skabelon."
+    },
+    "emailTemplates": {
+      "fetchError": "Kunne ikke hente e-mailskabeloner.",
+      "notFound": "E-mailskabelon ikke fundet.",
+      "fetchByIdError": "Kunne ikke hente e-mailskabelon.",
+      "createError": "Kunne ikke oprette e-mailskabelon.",
+      "updateError": "Kunne ikke opdatere e-mailskabelon.",
+      "deleteSuccess": "E-mailskabelon slettet med succes!",
+      "deleteError": "Kunne ikke slette e-mailskabelon.",
+      "authError": "Godkendelsestoken ikke fundet til e-mailskabeloner.",
+      "saveError": "Kunne ikke {action} e-mailskabelon.",
+      "fileUploadError": "Kunne ikke uploade vedhæftninger.",
+      "noFilesProvided": "Ingen filer angivet til upload."
+    },
+    "smsTemplates": {
+      "fetchError": "Kunne ikke hente SMS-skabeloner.",
+      "notFound": "SMS-skabelon ikke fundet.",
+      "fetchByIdError": "Kunne ikke hente SMS-skabelon.",
+      "createError": "Kunne ikke oprette SMS-skabelon.",
+      "updateError": "Kunne ikke opdatere SMS-skabelon.",
+      "deleteSuccess": "SMS-skabelon slettet med succes!",
+      "deleteError": "Kunne ikke slette SMS-skabelon.",
+      "authError": "Godkendelsestoken ikke fundet til SMS-skabeloner.",
+      "saveError": "Kunne ikke {action} SMS-skabelon."
+    },
+    "variables": {
+      "authError": "Godkendelsestoken ikke fundet til variabler.",
+      "fetchError": "Kunne ikke hente variabler."
     }
   }
 }

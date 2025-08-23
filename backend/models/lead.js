@@ -29,12 +29,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       phone: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,   // ✅ now nullable
       },
       email: {
         type: DataTypes.STRING,
-        allowNull: false,
-        validate: { isEmail: true },
+        allowNull: true,   // ✅ now nullable
       },
       address: {
         type: DataTypes.STRING,
@@ -42,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       companyName: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       cvrNumber: {
         type: DataTypes.STRING,
@@ -66,11 +65,13 @@ module.exports = (sequelize, DataTypes) => {
       },
       followUpDate: {
         type: DataTypes.DATEONLY,
-        allowNull: true,
+        allowNull: true,       // ✅ allow null
+        defaultValue: null,    // ✅ default null
       },
       notifyOnFollowUp: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        allowNull: true,       // ✅ allow null
+        defaultValue: null,    // or `false` if you want auto-false
       },
       attachments: {
         type: DataTypes.JSON,

@@ -1,4 +1,3 @@
-// controllers/sendSmsQuoteController.js
 const db = require('../models');
 const SmsTemplate = db.SmsTemplate;
 const SendSms = db.SendSms;
@@ -22,7 +21,8 @@ exports.storeSendSmsQuote = async (req, res) => {
     const { quoteId, recipientPhone, smsMessage, smsTemplateId, senderName } = req.body;
 
     if (!quoteId || !recipientPhone || (!smsMessage && !smsTemplateId)) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      // Changed message to i18n key
+      return res.status(400).json({ message: 'api.smsQuotes.missingFields' });
     }
 
     // Fetch user variables
@@ -41,7 +41,10 @@ exports.storeSendSmsQuote = async (req, res) => {
 
     if (!finalMessage && smsTemplateId) {
       const template = await SmsTemplate.findOne({ where: { id: smsTemplateId, userId } });
-      if (!template) return res.status(404).json({ message: 'SMS template not found' });
+      if (!template) {
+        // Changed message to i18n key
+        return res.status(404).json({ message: 'api.smsTemplates.notFound' });
+      }
       finalMessage = template.smsContent;
     }
 
@@ -87,10 +90,12 @@ exports.storeSendSmsQuote = async (req, res) => {
     }
 
     await t.commit();
-    res.status(201).json({ message: 'SMS stored successfully', smsRecord });
+    // Changed message to i18n key
+    res.status(201).json({ message: 'api.smsQuotes.storeSuccess', smsRecord });
   } catch (error) {
     await t.rollback();
     console.error('Error storing SMS quote:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    // Changed message to i18n key
+    res.status(500).json({ message: 'api.smsQuotes.serverError', error: error.message });
   }
 };

@@ -11,10 +11,10 @@ exports.getAllTemplates = async (req, res) => {
         { model: Currency, as: 'currency' },
       ],
     });
-    res.json(templates);
+    res.json(templates); // Successfully fetched templates, no specific success message needed here traditionally
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch templates' });
+    res.status(500).json({ error: 'api.pricingTemplates.fetchError' });
   }
 };
 
@@ -52,10 +52,10 @@ exports.createTemplate = async (req, res) => {
       ],
     });
 
-    res.status(201).json(result);
+    res.status(201).json({ message: 'api.pricingTemplates.createSuccess', template: result });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to create template' });
+    res.status(500).json({ error: 'api.pricingTemplates.createError' });
   }
 };
 
@@ -70,12 +70,14 @@ exports.getTemplateById = async (req, res) => {
       ],
     });
 
-    if (!template) return res.status(404).json({ error: 'Template not found' });
+    if (!template) {
+        return res.status(404).json({ error: 'api.pricingTemplates.notFound' });
+    }
 
     res.json(template);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch template' });
+    res.status(500).json({ error: 'api.pricingTemplates.fetchByIdError' });
   }
 };
 
@@ -88,7 +90,9 @@ exports.updateTemplate = async (req, res) => {
       where: { id: req.params.id, userId: req.user.id },
     });
 
-    if (!template) return res.status(404).json({ error: 'Template not found' });
+    if (!template) {
+        return res.status(404).json({ error: 'api.pricingTemplates.notFound' });
+    }
 
     await template.update({
       name,
@@ -121,10 +125,10 @@ exports.updateTemplate = async (req, res) => {
       ],
     });
 
-    res.json(updated);
+    res.json({ message: 'api.pricingTemplates.updateSuccess', template: updated });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to update template' });
+    res.status(500).json({ error: 'api.pricingTemplates.updateError' });
   }
 };
 
@@ -135,12 +139,14 @@ exports.deleteTemplate = async (req, res) => {
       where: { id: req.params.id, userId: req.user.id },
     });
 
-    if (!template) return res.status(404).json({ error: 'Template not found' });
+    if (!template) {
+        return res.status(404).json({ error: 'api.pricingTemplates.notFound' });
+    }
 
     await template.destroy();
-    res.json({ message: 'Deleted successfully' });
+    res.json({ message: 'api.pricingTemplates.deleteSuccess' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to delete template' });
+    res.status(500).json({ error: 'api.pricingTemplates.deleteError' });
   }
 };
