@@ -17,7 +17,7 @@ const FloatingLanguageToggle = () => {
   return (
     <div
       className="position-fixed"
-      style={{ bottom: "20px", right: "20px", zIndex: 1050 }}
+      style={{ bottom: "20px", right: "20px", zIndex: 2000 }}
     >
       <div className="btn-group">
         <button

@@ -12,6 +12,7 @@ exports.getUserVariables = async (req, res) => {
     res.json(variables);
   } catch (error) {
     console.error('Error fetching user variables:', error);
-    res.status(500).json({ message: 'Error fetching user variables', error: error.message });
+    // Changed message to i18n key
+    res.status(500).json({ message: 'api.userVariables.fetchError', error: error.message });
   }
 };

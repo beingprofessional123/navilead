@@ -26,6 +26,32 @@ const getQualifiedStatusId = async () => {
   return qualifiedStatus ? qualifiedStatus.id : null;
 };
 
+const sanitizeToNull = (value) => {
+  if (
+    value === undefined ||
+    value === null ||
+    value === "" ||
+    value === "null" ||
+    value === "Invalid date"
+  ) {
+    return null;
+  }
+  return value;
+};
+
+const sanitizeToNumber = (value) => {
+  if (
+    value === undefined ||
+    value === null ||
+    value === "" ||
+    value === "null"
+  ) {
+    return null;
+  }
+  const num = Number(value);
+  return isNaN(num) ? null : num;
+};
+
 
 // Create lead
 exports.createLead = async (req, res) => {
@@ -53,9 +79,28 @@ exports.createLead = async (req, res) => {
       }));
     }
 
+    let followUpDate = req.body.followUpDate;
+    if (!followUpDate || followUpDate === "" || followUpDate === "Invalid date") {
+      followUpDate = null;
+    }
+
     // Build lead data object
     const leadData = {
-      ...req.body,
+      fullName: sanitizeToNull(req.body.fullName),
+      attName: sanitizeToNull(req.body.attName),
+      phone: sanitizeToNull(req.body.phone),
+      email: sanitizeToNull(req.body.email),
+      address: sanitizeToNull(req.body.address),
+      companyName: sanitizeToNull(req.body.companyName),
+      cvrNumber: sanitizeToNull(req.body.cvrNumber),
+      leadSource: sanitizeToNull(req.body.leadSource),
+      internalNote: sanitizeToNull(req.body.internalNote),
+      customerComment: sanitizeToNull(req.body.customerComment),
+      tags: req.body.tags || [],
+      value: sanitizeToNumber(req.body.value),  // ✅ fix here
+      reminderTime: sanitizeToNull(req.body.reminderTime),
+
+      followUpDate,
       leadNumber,
       userId: req.user.id,
       statusId,
@@ -112,8 +157,24 @@ exports.updateLead = async (req, res) => {
       statusId = await getQualifiedStatusId();
     }
 
+    let followUpDate = req.body.followUpDate;
+    if (!followUpDate || followUpDate === "" || followUpDate === "Invalid date") {
+      followUpDate = null;
+    }
+
+    let notifyOnFollowUp = req.body.notifyOnFollowUp;
+    if (notifyOnFollowUp === "null" || notifyOnFollowUp === "" || notifyOnFollowUp === undefined) {
+      notifyOnFollowUp = null; // goes to DB as NULL
+    } else if (notifyOnFollowUp === "true" || notifyOnFollowUp === true) {
+      notifyOnFollowUp = true;
+    } else if (notifyOnFollowUp === "false" || notifyOnFollowUp === false) {
+      notifyOnFollowUp = false;
+    }
+
     const updateData = {
       ...req.body,
+      followUpDate,
+      notifyOnFollowUp,
       attachments: newAttachments,
       statusId,
     };

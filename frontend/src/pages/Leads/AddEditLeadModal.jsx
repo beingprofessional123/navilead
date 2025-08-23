@@ -79,8 +79,8 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
         tags: parsedTags, // Use the parsed tags
         internalNote: leadData.internalNote || '',
         customerComment: leadData.customerComment || '',
-        followUpDate: leadData.followUpDate ? leadData.followUpDate.split('T')[0] : '', // Format date for input[type="date"]
-        notifyOnFollowUp: leadData.notifyOnFollowUp || false,
+        followUpDate: leadData.followUpDate ? leadData.followUpDate.split('T')[0] : null,
+        notifyOnFollowUp: leadData.notifyOnFollowUp ? leadData.notifyOnFollowUp : null,
         value: leadData.value || '',
         statusId: leadData.statusId || '',
         reminderTime: leadData.reminderTime || '08:00', // Set reminder time if exists
@@ -170,16 +170,17 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
     const method = leadData ? 'put' : 'post';
 
     const form = new FormData();
-    // Append form data fields
     for (const key in formData) {
-      // Special handling for 'value' field: send null if it's an empty string
-      if (key === 'value' && formData[key] === '') {
-        form.append(key, null);
-      }
-      // Handle tags array by stringifying if not empty
-      else if (key === 'tags') {
-        form.append(key, JSON.stringify(formData[key]));
-      } else { // Append other fields
+      if (key === 'tags') {
+        form.append(key, JSON.stringify(formData[key] || []));
+      } else if (key === 'followUpDate') {
+        form.append(
+          key,
+          formData.followUpDate && formData.followUpDate !== "Invalid date"
+            ? formData.followUpDate
+            : ""
+        );
+      } else {
         form.append(key, formData[key]);
       }
     }
@@ -398,7 +399,7 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
                   <div className="form-group">
                     <label>{t('addEditLeadModal.followUpDateLabel')}</label>
                     <div className="inputicon">
-                      <input type="date" className="form-control" name="followUpDate" value={formData.followUpDate} onChange={handleChange} />
+                      <input type="date" className="form-control" name="followUpDate" value={formData.followUpDate || "00-00-0000"} onChange={handleChange} />
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-calendar" aria-hidden="true"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
                     </div>
                   </div>

@@ -19,7 +19,8 @@ exports.storeSendEmailQuote = async (req, res) => {
     const { quoteId, recipientEmail, emailSubject, emailBody, emailTemplateId } = req.body;
 
     if (!quoteId || !recipientEmail || !emailSubject || !emailBody) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      // Changed message to i18n key
+      return res.status(400).json({ message: 'api.emailQuotes.missingFields' });
     }
 
     const userVariables = await UserVariable.findAll({ where: { userId } });
@@ -63,7 +64,8 @@ exports.storeSendEmailQuote = async (req, res) => {
     // 1. Find the quote to get the leadId
     const quote = await Quote.findByPk(quoteId);
     if (!quote) {
-      return res.status(404).json({ message: 'Quote not found for updating Lead status' });
+      // Changed message to i18n key
+      return res.status(404).json({ message: 'api.emailQuotes.quoteNotFoundForLeadUpdate' });
     }
 
     // 2. Find the "Offer Sent" status for Lead
@@ -81,6 +83,7 @@ exports.storeSendEmailQuote = async (req, res) => {
     res.status(201).json(sendEmailRecord);
   } catch (error) {
     console.error('Error storing and sending email quote:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    // Changed message to i18n key
+    res.status(500).json({ message: 'api.emailQuotes.serverError', error: error.message });
   }
 };

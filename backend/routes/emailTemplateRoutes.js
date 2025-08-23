@@ -12,11 +12,13 @@ router.get('/', emailTemplateController.getEmailTemplates);
 // Get a single email template by id
 router.get('/:id', emailTemplateController.getEmailTemplateById);
 
-// Create a new email template
-router.post('/', emailTemplateController.createEmailTemplate);
+// Create a new email template with attachment support
+// The 'upload.array('attachments')' middleware will process files uploaded under the 'attachments' field.
+router.post('/', emailTemplateController.upload.array('attachments'), emailTemplateController.createEmailTemplate);
 
-// Update an existing email template by id
-router.put('/:id', emailTemplateController.updateEmailTemplate);
+// Update an existing email template by id with attachment support
+// The 'upload.array('attachments')' middleware will process new files for update.
+router.put('/:id', emailTemplateController.upload.array('attachments'), emailTemplateController.updateEmailTemplate);
 
 // Delete an email template by id
 router.delete('/:id', emailTemplateController.deleteEmailTemplate);

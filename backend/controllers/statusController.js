@@ -11,6 +11,7 @@ exports.getAllStatuses = async (req, res) => {
 
     res.json(statuses);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching statuses', error: err.message });
+    // Changed message to i18n key
+    res.status(500).json({ message: 'api.statuses.fetchError', error: err.message });
   }
 };

@@ -11,7 +11,7 @@ exports.getAllTemplates = async (req, res) => {
     res.json(templates);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch SMS templates' });
+    res.status(500).json({ error: 'api.smsTemplates.fetchError' });
   }
 };
 
@@ -23,13 +23,13 @@ exports.getTemplateById = async (req, res) => {
     });
 
     if (!template) {
-      return res.status(404).json({ error: 'SMS template not found' });
+      return res.status(404).json({ error: 'api.smsTemplates.notFound' });
     }
 
     res.json(template);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch SMS template' });
+    res.status(500).json({ error: 'api.smsTemplates.fetchByIdError' });
   }
 };
 
@@ -52,7 +52,7 @@ exports.createTemplate = async (req, res) => {
     res.status(201).json(template);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to create SMS template' });
+    res.status(500).json({ error: 'api.smsTemplates.createError' });
   }
 };
 
@@ -70,7 +70,7 @@ exports.updateTemplate = async (req, res) => {
     });
 
     if (!template) {
-      return res.status(404).json({ error: 'SMS template not found' });
+      return res.status(404).json({ error: 'api.smsTemplates.notFound' });
     }
 
     await template.update({
@@ -82,7 +82,7 @@ exports.updateTemplate = async (req, res) => {
     res.json(template);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to update SMS template' });
+    res.status(500).json({ error: 'api.smsTemplates.updateError' });
   }
 };
 
@@ -94,14 +94,14 @@ exports.deleteTemplate = async (req, res) => {
     });
 
     if (!template) {
-      return res.status(404).json({ error: 'SMS template not found' });
+      return res.status(404).json({ error: 'api.smsTemplates.notFound' });
     }
 
     await template.destroy();
 
-    res.json({ message: 'SMS template deleted successfully' });
+    res.json({ message: 'api.smsTemplates.deleteSuccess' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to delete SMS template' });
+    res.status(500).json({ error: 'api.smsTemplates.deleteError' });
   }
 };
