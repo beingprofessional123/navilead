@@ -6,6 +6,8 @@ import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './context/AuthContext';
 import FloatingLanguageToggle from './components/common/FloatingLanguageToggle';
 
+
+
 function App() {
     return (
         <Router>

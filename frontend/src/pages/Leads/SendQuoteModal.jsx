@@ -3,6 +3,8 @@ import { toast } from 'react-toastify';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../utils/api';
 import { useTranslation } from "react-i18next"; // Import useTranslation
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }) => {
   const { authToken, user } = useContext(AuthContext);
@@ -377,7 +379,17 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
                     </div>
                     <div className="form-group">
                       <label>{translate('sendQuoteModal.emailContent')}</label> {/* Translated */}
-                      <textarea className="form-control" rows="10" placeholder={translate('sendQuoteModal.yourEmailContentPlaceholder')} value={emailContent} onChange={(e) => setEmailContent(e.target.value)}></textarea> {/* Translated */}
+                      {/* <textarea className="form-control" rows="10" placeholder={translate('sendQuoteModal.yourEmailContentPlaceholder')} value={emailContent} onChange={(e) => setEmailContent(e.target.value)}></textarea> Translated */}
+                        <CKEditor
+                          editor={ClassicEditor}
+                          data={emailContent} // initial value
+                            onChange={(event, editor) => {
+                              const data = editor.getData();
+                              setEmailContent(data);
+                              const fakeEvent = { target: { value: data } };
+                              setEmailContent(fakeEvent.target.value);
+                            }}
+                        />
                     </div>
                     <div className="form-group">
                       <label>{translate('sendQuoteModal.attachments')}</label> {/* Translated */}
@@ -405,9 +417,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend }
                             <div><strong>{translate('sendQuoteModal.to')}:</strong> {lead?.email || translate('leadViewPage.na')}</div> {/* Translated */}
                             <div><strong>{translate('sendQuoteModal.subject')}:</strong> {emailSubject}</div> {/* Translated */}
                           </div>
-                          <div className="emailpreview-body">
-                            <pre className="pre-wrap">{emailContent}</pre>
-                          </div>
+                          <div className="pre-wrap text-black"  dangerouslySetInnerHTML={{ __html: emailContent }} />
                         </div>
                       </div>
                     </div>

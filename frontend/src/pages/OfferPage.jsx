@@ -5,9 +5,11 @@ import api from '../utils/api';
 import FullPageLoader from '../components/common/FullPageLoader';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.css';
+import { useTranslation } from 'react-i18next';
 
 const OfferPage = () => {
   const { id } = useParams();
+  const { t: translate } = useTranslation();
   const [offer, setOffer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -29,6 +31,7 @@ const OfferPage = () => {
       if (currentDate > validUntilDate) {
         setIsOfferExpired(true);
         toast.error("This offer has expired.");
+        toast.error(translate('api.offers.offerExpired'));
       }
 
       const initialSelectedServices = new Set();
@@ -58,8 +61,8 @@ const OfferPage = () => {
       setSelectedServiceIds(initialSelectedServices);
     } catch (err) {
       console.error("Error fetching offer:", err);
-      const errorMessage = err.response?.data?.message || 'Failed to load offer. It might not exist or has expired.';
-      toast.error(errorMessage);
+      const errorMessageKey = err.response?.data?.message || 'api.offers.internalServerError';
+      toast.error(translate(errorMessageKey, { id: id })); // Pass id for dynamic message
       setOffer(null);
     } finally {
       setLoading(false);
@@ -107,20 +110,20 @@ const OfferPage = () => {
   };
 
   const handleAcceptQuote = async () => {
-    if (!acceptTerms) {
-      toast.error("Please accept the Terms & Conditions to proceed.");
+     if (!acceptTerms) {
+      toast.error(translate('api.offers.termsNotAccepted')); // Translated
       return;
     }
     if (!offer) {
-      toast.error("No offer data available.");
+      toast.error(translate('api.offers.noOfferData')); // Translated
       return;
     }
     if (isOfferExpired) {
-      toast.error("This offer has expired and cannot be accepted.");
+      toast.error(translate('api.offers.offerExpiredError')); // Translated
       return;
     }
     if (offer.status?.name === 'Accepted') {
-      toast.info("This offer has already been accepted.");
+      toast.info(translate('api.offers.offerAlreadyAccepted')); // Translated
       return;
     }
 
@@ -143,8 +146,8 @@ const OfferPage = () => {
       fetchOffer();
     } catch (error) {
       console.error("Error accepting offer:", error);
-      const errorMessage = error.response?.data?.message || 'Failed to accept offer.';
-      toast.error(errorMessage);
+      const errorMessageKey = error.response?.data?.message || 'api.offers.offerAcceptFailed';
+      toast.error(translate(errorMessageKey));
     } finally {
       setLoading(false);
     }
@@ -152,36 +155,39 @@ const OfferPage = () => {
 
   const handleAskQuestion = async () => {
     if (isOfferExpired) {
-      toast.error("This offer has expired. You cannot ask questions about it.");
+      toast.error(translate('api.offers.offerExpiredQuestion')); // Translated
       return;
     }
     if (offer?.status?.name === 'Accepted') {
-      toast.info("This offer has already been accepted. You cannot ask further questions.");
+      toast.info(translate('api.offers.offerAlreadyAcceptedQuestion')); // Translated
       return;
     }
     if (offer?.status?.name === 'In Dialogue') {
-      toast.info("A question has already been sent for this offer. Please wait for a response from our team.");
+      toast.info(translate('api.offers.questionAlreadySent')); // Translated
       return;
     }
 
     const { value: question } = await Swal.fire({
-      title: 'Ask a Question',
+      title: translate('offerPage.askQuestionModalTitle'), // Translated
       input: 'textarea',
-      inputPlaceholder: 'Type your question here...',
+      inputPlaceholder: translate('offerPage.askQuestionInputPlaceholder'), // Translated
       showCancelButton: true,
+      confirmButtonText: translate('offerPage.sendQuestionButton'), // Now using the new, specific translation key
+      cancelButtonText: translate('emailSmsPage.cancel'), // Reusing cancel button translation
       customClass: {
         popup: 'swal2-dark'
       },
       inputValidator: (value) => {
         if (!value || value.trim() === '') {
-          return 'You need to write something!';
+          return translate('offerPage.askQuestionInputValidator'); // Translated
         }
+        return null;
       }
     });
 
     if (question) {
       if (!offer) {
-        toast.error("No offer data available.");
+        toast.error(translate('api.offers.noOfferData')); // Translated
         return;
       }
 
@@ -191,18 +197,19 @@ const OfferPage = () => {
           quoteId: offer.id,
           question: question.trim(),
         };
-        await api.post('/offers/asked-question', payload);
-        toast.success("Your question has been sent successfully! We've updated the lead status to 'In Dialogue' and notified our sales representative.");
+        const response = await api.post('/offers/asked-question', payload);
+        toast.success(translate(response.data.message)); // Translated API message
         fetchOffer();
       } catch (error) {
         console.error("Error asking question:", error);
-        const errorMessage = error.response?.data?.message || 'Failed to send question.';
-        toast.error(errorMessage);
+        const errorMessageKey = error.response?.data?.message || 'api.offers.questionSendFailed';
+        toast.error(translate(errorMessageKey)); // Translated error message
       } finally {
         setLoading(false);
       }
     }
   };
+
 
   const interactionDisabled = offer?.status?.name === 'Accepted' || offer?.status?.name === 'In Dialogue' || isOfferExpired;
 
@@ -213,8 +220,8 @@ const OfferPage = () => {
   if (!offer) {
     return (
       <div className="container mx-auto p-4 text-red-500">
-        <h1 className="text-2xl font-bold mb-4">Offer Not Found!</h1>
-        <p>The offer with ID "{id}" could not be loaded or has expired.</p>
+        <h1 className="text-2xl font-bold mb-4">{translate('offerPage.offerNotFoundTitle')}</h1> {/* Translated */}
+        <p className='text-danger'>{translate('offerPage.offerNotFoundMessage', { id: id })}</p> {/* Translated */}
       </div>
     );
   }
@@ -224,7 +231,6 @@ const OfferPage = () => {
   return (
     <>
       <section className="navpublic">
-        <ToastContainer />
         <div className="container">
           <div className="row">
             <div className="col-md-12">
@@ -237,16 +243,22 @@ const OfferPage = () => {
             <div className="col-md-7">
               <div className="carddesign">
                 <div className="offer-title d-flex justify-content-between align-items-center">
-                  <h1 className="tilbud-title mb-0">{title}</h1>
+                  <h1 className="tilbud-title">{translate('offerPage.offerTitle', { title: title })}</h1> 
                   {offer.status && (
                     <div className={`badge ${offer.status.name === "Accepted" ? "bg-success" : ""} ${offer.status.name === "In Dialogue" ? "bg-warning text-dark" : ""} ${offer.status.name === "Viewed by customer" ? "bg-info" : ""}`}>
-                      <span>{offer.status.name === "Viewed by customer" ? "Offer is viewed by you" : offer.status.name === "Accepted" ? "This offer is accepted by you" : offer.status.name}</span>
+                      <span>
+                        {offer.status.name === "Viewed by customer"
+                          ? translate('offerPage.offerViewedBadge') // Translated
+                          : offer.status.name === "Accepted"
+                            ? translate('offerPage.offerAcceptedBadge') // Translated
+                            : translate('offerPage.offerStatusBadge', { statusName: offer.status.name })} {/* Translated */}
+                      </span>
                     </div>
                   )}
                 </div>
                 <div className="intro">
-                  <p>{description}</p>
-                  <p className="muted">Please review the details below and approve the quote if satisfactory. Contact us with any questions.</p>
+                  <p>{translate('offerPage.introDescription', { description: description })}</p> {/* Translated */}
+                  <p className="muted">{translate('offerPage.introMutedText')}</p> {/* Translated */}
                 </div>
                 <div className="items">
                   {services.map(service => (
@@ -268,27 +280,27 @@ const OfferPage = () => {
                 </div>
                 <div className="totals">
                   <div className="totalsrow">
-                    <span>Subtotal</span>
+                    <span>{translate('offerPage.subtotal')}</span>
                     <strong>{currentSubtotal} {offer.pricingTemplate?.currency?.symbol}</strong>
                   </div>
                   <div className="totalsrow">
-                    <span>VAT ({vatRate * 100}%)</span>
+                    <span>{translate('offerPage.vat', { vatRate: vatRate * 100 })}</span> {/* Translated */}
                     <strong>{vat} {offer.pricingTemplate?.currency?.symbol}</strong>
                   </div>
                   {offer.overallDiscount > 0 && (
                     <div className="totalsrow">
-                      <span>Discount ({offer.overallDiscount}%)</span>
+                      <span>{translate('offerPage.discount', { overallDiscount: offer.overallDiscount })}</span> {/* Translated */}
                       <strong>-{currentSubtotal * offer.overallDiscount / 100} {offer.pricingTemplate?.currency?.symbol}</strong>
                     </div>
                   )}
                   <div className="totalsrow">
-                    <span style={{ fontWeight: 700 }}>Total</span>
+                    <span style={{ fontWeight: 700 }}>{translate('offerPage.total')}</span> {/* Translated */}
                     <strong style={{ fontSize: '16px' }}>{totalWithVat} {offer.pricingTemplate?.currency?.symbol}</strong>
                   </div>
                 </div>
                 <div className="publicbottom">
                   <div className="publicbottom-heading">
-                    <h2 className="card-title">Terms</h2>
+                    <h2 className="card-title">{translate('offerPage.termsTitle')}</h2> {/* Translated */}
                     <p>{terms}</p>
                   </div>
                   <div className="terms-row">
@@ -303,7 +315,7 @@ const OfferPage = () => {
                     <label htmlFor="acceptTerms">I accept the <Link href="#" target="_blank" rel="noopener">Terms & Conditions</Link>.</label>
                   </div>
                   <div className="mb-4 form-group">
-                    <label htmlFor="customerNotes" className="form-label">Notes for us (optional):</label>
+                    <label htmlFor="customerNotes" className="form-label">{translate('offerPage.notesLabel')}</label>
                     <textarea
                       id="customerNotes"
                       className="form-control customerNotes"
@@ -311,16 +323,15 @@ const OfferPage = () => {
                       value={customerNotes}
                       onChange={(e) => setCustomerNotes(e.target.value)}
                       disabled={interactionDisabled}
-                      style={{ background: 'rgb(15, 20, 24)', height: '77px', color: 'white' }}
                     ></textarea>
                   </div>
                 </div>
                 <div className="modalfooter">
                   <button className="btn btn-add" onClick={handleAcceptQuote} disabled={interactionDisabled}>
-                    {interactionDisabled ? 'Offer Accepted' : 'Accept Quote'}
+                    {interactionDisabled ? translate('offerPage.offerAcceptedButton') : translate('offerPage.acceptQuoteButton')} {/* Translated */}
                   </button>
                   <button className="btn btn-send" onClick={handleAskQuestion} disabled={interactionDisabled}>
-                    Ask a Question
+                    {translate('offerPage.askQuestionButton')} {/* Translated */}
                   </button>
                 </div>
               </div>
@@ -331,12 +342,12 @@ const OfferPage = () => {
                   <Link href="#"><img src="/assets/images/blog3.jpg" className="img-fluid" alt="" /></Link>
                 </div>
                 <div className="publicbottom-heading">
-                  <h2 className="card-title">About Us</h2>
-                  <p><strong>About Our Company:</strong> We are a dedicated service provider focused on delivering top-quality results and exceptional customer experiences. Our mission is to make every interaction with us professional, friendly, and hassle-free.</p>
-                  <p><strong>Our Commitment:</strong> We take pride in our attention to detail and reliability. Whether we are working at your home or business, we treat every project with care and respect.</p>
-                  <p><strong>Experienced Team:</strong> Our skilled team members are carefully selected and trained to uphold our high standards, ensuring consistent results for all our clients.</p>
-                  <p><strong>Value You Can Trust:</strong> We offer competitive rates without compromising on quality. Our clients trust us for dependable service that exceeds expectations.</p>
-                  <p><strong>Clear Communication:</strong> We believe in open and honest communication, so you always know what to expect when working with us.</p>
+                  <h2 className="card-title">{translate('offerPage.aboutUsTitle')}</h2> {/* Translated */}
+                  <p>{translate('offerPage.aboutUsParagraph1')}</p> {/* Translated */}
+                  <p>{translate('offerPage.aboutUsParagraph2')}</p> {/* Translated */}
+                  <p>{translate('offerPage.aboutUsParagraph3')}</p> {/* Translated */}
+                  <p>{translate('offerPage.aboutUsParagraph4')}</p> {/* Translated */}
+                  <p>{translate('offerPage.aboutUsParagraph5')}</p> {/* Translated */}
                 </div>
               </div>
             </div>

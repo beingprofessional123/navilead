@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../../context/AuthContext';
@@ -8,6 +8,9 @@ import api from '../../utils/api';
 import VariableSelector from './VariableSelector';
 import MobileHeader from '../../components/common/MobileHeader';
 import { useTranslation } from "react-i18next";
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+
 
 
 const EmailSMSPage = () => {
@@ -284,35 +287,43 @@ const EmailSMSPage = () => {
     const insertVariable = (variable) => {
         if (!focusedRef?.current) return;
 
-        const input = focusedRef.current;
+        const editor = focusedRef.current;
+
+        // Case 1: CKEditor
+        if (editor.model) {
+            editor.model.change((writer) => {
+                const insertPosition = editor.model.document.selection.getFirstPosition();
+                writer.insertText(variable, insertPosition);
+            });
+            return;
+        }
+
+        // Case 2: normal input/textarea
+        const input = editor;
         const start = input.selectionStart || 0;
         const end = input.selectionEnd || 0;
 
         const newValue =
-            input.value.substring(0, start) +
-            variable +
-            input.value.substring(end);
+            input.value.substring(0, start) + variable + input.value.substring(end);
 
         const fieldName = input.name;
 
-        // Update state dynamically
-        setCurrentTemplate(prev => ({
+        setCurrentTemplate((prev) => ({
             ...prev,
-            [fieldName]: newValue
+            [fieldName]: newValue,
         }));
 
-        // For SMS, update counts
-        if (input === smsContentRef.current) { // Use .current for ref comparison
+        if (input === smsContentRef.current) {
             setSmsCharCount(newValue.length);
             setSmsMessageCount(Math.ceil(newValue.length / SMS_MAX_CHARS) || 1);
         }
 
-        // Focus and move cursor after inserted variable
         setTimeout(() => {
             input.focus();
             input.selectionEnd = start + variable.length;
         }, 0);
     };
+
 
 
     // --- CRUD Operations Handlers ---
@@ -348,7 +359,7 @@ const EmailSMSPage = () => {
                         // 'Content-Type': 'multipart/form-data', // Axios handles this automatically with FormData
                     },
                 });
-                toast.success(translate('api.emailTemplates.updateSuccess', { action: translate('emailSmsPage.updateTemplate') }));
+                toast.success(translate('api.emailTemplates.updateSuccess'));
             } else {
                 await api.post(`/email-templates`, formData, {
                     headers: {
@@ -356,7 +367,7 @@ const EmailSMSPage = () => {
                         // 'Content-Type': 'multipart/form-data', // Axios handles this automatically with FormData
                     },
                 });
-                toast.success(translate('api.emailTemplates.createSuccess', { action: translate('emailSmsPage.saveTemplate') }));
+                toast.success(translate('api.emailTemplates.createSuccess'));
             }
             closeEmailModal();
             fetchEmailTemplates();
@@ -385,12 +396,12 @@ const EmailSMSPage = () => {
                 await api.put(`/sms-templates/${currentTemplate.id}`, templateData, {
                     headers: { Authorization: `Bearer ${authToken}` },
                 });
-                toast.success(translate('api.smsTemplates.updateSuccess', { action: translate('emailSmsPage.updateTemplate') }));
+                toast.success(translate('api.smsTemplates.updateSuccess'));
             } else {
                 await api.post(`/sms-templates`, templateData, {
                     headers: { Authorization: `Bearer ${authToken}` },
                 });
-                toast.success(translate('api.smsTemplates.createSuccess', { action: translate('emailSmsPage.saveTemplate') }));
+                toast.success(translate('api.smsTemplates.createSuccess'));
             }
             closeSmsModal();
             fetchSmsTemplates();
@@ -570,12 +581,12 @@ const EmailSMSPage = () => {
                                                 <td className="actionbtn">
                                                     <div className="dropdown leaddropdown">
                                                         <button type="button" className="btn btn-add dropdown-toggle" data-bs-toggle="dropdown">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
                                                         </button>
                                                         <ul className="dropdown-menu">
-                                                        <li><Link className="dropdown-item" to="#" onClick={() => openViewContentModal(template.body)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{translate('emailSmsPage.viewContent')}</Link></li>
-                                                        <li><Link className="dropdown-item" to="#"  onClick={() => openEmailModal(template)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{translate('emailSmsPage.edit')}</Link></li>
-                                                        <li className="sletborder"><Link className="dropdown-item" to="#" onClick={() => handleDeleteEmailTemplate(template.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>{translate('emailSmsPage.delete')}</Link></li>
+                                                            <li><Link className="dropdown-item" to="#" onClick={() => openViewContentModal(template.body)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{translate('emailSmsPage.viewContent')}</Link></li>
+                                                            <li><Link className="dropdown-item" to="#" onClick={() => openEmailModal(template)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{translate('emailSmsPage.edit')}</Link></li>
+                                                            <li className="sletborder"><Link className="dropdown-item" to="#" onClick={() => handleDeleteEmailTemplate(template.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>{translate('emailSmsPage.delete')}</Link></li>
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -624,12 +635,12 @@ const EmailSMSPage = () => {
                                                 <td className="actionbtn">
                                                     <div className="dropdown leaddropdown">
                                                         <button type="button" className="btn btn-add dropdown-toggle" data-bs-toggle="dropdown">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
                                                         </button>
                                                         <ul className="dropdown-menu">
-                                                        <li><Link className="dropdown-item" to="#" onClick={() => openViewContentModal(template.smsContent)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{translate('emailSmsPage.viewContent')}</Link></li>
-                                                        <li><Link className="dropdown-item" to="#"  onClick={() => openSmsModal(template)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{translate('emailSmsPage.edit')}</Link></li>
-                                                        <li className="sletborder"><Link className="dropdown-item" to="#" onClick={() => handleDeleteSmsTemplate(template.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>{translate('emailSmsPage.delete')}</Link></li>
+                                                            <li><Link className="dropdown-item" to="#" onClick={() => openViewContentModal(template.smsContent)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{translate('emailSmsPage.viewContent')}</Link></li>
+                                                            <li><Link className="dropdown-item" to="#" onClick={() => openSmsModal(template)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{translate('emailSmsPage.edit')}</Link></li>
+                                                            <li className="sletborder"><Link className="dropdown-item" to="#" onClick={() => handleDeleteSmsTemplate(template.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>{translate('emailSmsPage.delete')}</Link></li>
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -680,7 +691,7 @@ const EmailSMSPage = () => {
                                                 <div className="col-md-6">
                                                     <div className="form-group">
                                                         <label>{translate('emailSmsPage.recipientEmailLabel')}</label>
-                                                        <input type="text" className="form-control" name="recipientEmail"  ref={recipientEmailRef}  onFocus={() => setFocusedRef(recipientEmailRef)} value={currentTemplate.recipientEmail} onChange={handleInputChange} placeholder={translate('emailSmsPage.recipientEmailPlaceholder')} />
+                                                        <input type="text" className="form-control" name="recipientEmail" ref={recipientEmailRef} onFocus={() => setFocusedRef(recipientEmailRef)} value={currentTemplate.recipientEmail} onChange={handleInputChange} placeholder={translate('emailSmsPage.recipientEmailPlaceholder')} />
                                                         <span className="inputnote">{translate('emailSmsPage.recipientEmailNote', { contact_email: '{{contact_email}}' })}</span>
                                                     </div>
                                                 </div>
@@ -689,7 +700,7 @@ const EmailSMSPage = () => {
                                                 <div className="col-md-6">
                                                     <div className="form-group">
                                                         <label>{translate('emailSmsPage.subjectLabel')}</label>
-                                                        <input type="text" className="form-control" name="subject"  onFocus={() => setFocusedRef(subjectRef)} ref={subjectRef} value={currentTemplate.subject} onChange={handleInputChange} placeholder={translate('emailSmsPage.subjectPlaceholder')} required />
+                                                        <input type="text" className="form-control" name="subject" onFocus={() => setFocusedRef(subjectRef)} ref={subjectRef} value={currentTemplate.subject} onChange={handleInputChange} placeholder={translate('emailSmsPage.subjectPlaceholder')} required />
                                                         <div className="addoption">
                                                             <button type="button" className="btn btn-add" onClick={() => insertVariable('{{contact_name}}')}>
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{translate('emailSmsPage.contactName')}
@@ -703,7 +714,7 @@ const EmailSMSPage = () => {
                                                 <div className="col-md-6">
                                                     <div className="form-group">
                                                         <label>{translate('emailSmsPage.ccLabel')}</label>
-                                                        <input type="text" className="form-control" name="cc" ref={ccRef} value={currentTemplate.cc}  onFocus={() => setFocusedRef(ccRef)} onChange={handleInputChange} placeholder={translate('emailSmsPage.ccPlaceholder')} />
+                                                        <input type="text" className="form-control" name="cc" ref={ccRef} value={currentTemplate.cc} onFocus={() => setFocusedRef(ccRef)} onChange={handleInputChange} placeholder={translate('emailSmsPage.ccPlaceholder')} />
                                                         <span className="inputnote">{translate('emailSmsPage.ccNote')}</span>
                                                     </div>
                                                 </div>
@@ -712,7 +723,35 @@ const EmailSMSPage = () => {
                                                 <div className="col-md-12">
                                                     <div className="form-group">
                                                         <label>{translate('emailSmsPage.emailContentLabel')}</label>
-                                                        <textarea className="form-control" rows="5" name="body" ref={emailBodyRef} value={currentTemplate.body} onChange={handleInputChange} onFocus={() => setFocusedRef(emailBodyRef)} placeholder={translate('emailSmsPage.emailContentPlaceholder')}></textarea>
+                                                        <CKEditor
+                                                            editor={ClassicEditor}
+                                                            name="body"
+                                                            data={currentTemplate.body || ''}   // similar to value
+                                                            onReady={(editor) => {
+                                                                emailBodyRef.current = editor;
+                                                                // Apply height style directly when editor is ready
+                                                                editor.editing.view.change((writer) => {
+                                                                    writer.setStyle(
+                                                                        "min-height",
+                                                                        "200px", // change as per need
+                                                                        editor.editing.view.document.getRoot()
+                                                                    );
+                                                                });
+                                                            }}
+                                                            onChange={(event, editor) => {
+                                                                const data = editor.getData();
+
+                                                                // Mimic normal input event for handleInputChange
+                                                                handleInputChange({
+                                                                    target: { name: "body", value: data }
+                                                                });
+                                                            }}
+                                                            onFocus={() => setFocusedRef(emailBodyRef)}
+                                                            config={{
+                                                                placeholder: translate('emailSmsPage.emailContentPlaceholder')
+                                                            }}
+                                                        />
+                                                        {/* <textarea className="form-control" rows="5" name="body" ref={emailBodyRef} value={currentTemplate.body} onChange={handleInputChange} onFocus={() => setFocusedRef(emailBodyRef)} placeholder={translate('emailSmsPage.emailContentPlaceholder')}></textarea> */}
                                                     </div>
                                                 </div>
                                             </div>
@@ -722,7 +761,7 @@ const EmailSMSPage = () => {
                                                 <div className="upload-files-container">
                                                     <div className="drag-file-area">
                                                         <span className="material-icons-outlined upload-icon">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-upload w-8 h-8 text-muted-foreground" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-upload w-8 h-8 text-muted-foreground" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg>
                                                         </span>
 
                                                         <label className="label">
@@ -747,7 +786,7 @@ const EmailSMSPage = () => {
                                                                     </div>
                                                                     <button type="button" className="btn btn-add" onClick={() => handleRemoveExistingAttachment(file.fileName)}>
                                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 w-3 h-3 m-0" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                                                            {/* {translate('emailSmsPage.removeAttachment')} */}
+                                                                        {/* {translate('emailSmsPage.removeAttachment')} */}
                                                                     </button>
                                                                 </li>
                                                             ))}
@@ -767,7 +806,7 @@ const EmailSMSPage = () => {
                                                                     </div>
                                                                     <button type="button" className="btn btn-add" onClick={() => handleRemoveExistingAttachment(file.fileName)}>
                                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 w-3 h-3 m-0" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                                                            {/* {translate('emailSmsPage.removeAttachment')} */}
+                                                                        {/* {translate('emailSmsPage.removeAttachment')} */}
                                                                     </button>
                                                                 </li>
                                                             ))}
@@ -810,7 +849,7 @@ const EmailSMSPage = () => {
             </div>
 
             {/* SMS Modal for Add/Edit (Updated with new design) */}
-             <div className={`${showSmsModal ? 'modal-backdrop fade show' : ''}`}></div>
+            <div className={`${showSmsModal ? 'modal-backdrop fade show' : ''}`}></div>
             <div className={`modal fade modaldesign emailmodal ${showSmsModal ? 'show d-block' : ''}`} tabIndex="-1" role="dialog" style={{ display: showSmsModal ? 'block' : 'none' }}>
                 <div className="modal-dialog modal-lg" role="document"> {/* Changed to modal-lg for wider content */}
                     <div className="modal-content">
@@ -845,7 +884,7 @@ const EmailSMSPage = () => {
                                                 <div className="col-md-6">
                                                     <div className="form-group">
                                                         <label>{translate('emailSmsPage.recipientPhoneLabel')}</label>
-                                                        <input type="text" className="form-control" name="recipientPhone"  ref={recipientPhoneRef} value={currentTemplate.recipientPhone} onChange={handleInputChange}  onFocus={() => setFocusedRef(recipientPhoneRef)} placeholder={translate('emailSmsPage.recipientPhonePlaceholder')} />
+                                                        <input type="text" className="form-control" name="recipientPhone" ref={recipientPhoneRef} value={currentTemplate.recipientPhone} onChange={handleInputChange} onFocus={() => setFocusedRef(recipientPhoneRef)} placeholder={translate('emailSmsPage.recipientPhonePlaceholder')} />
                                                         <span className="inputnote">{translate('emailSmsPage.recipientPhoneNote', { contact_phone: '{{contact_phone}}' })}</span>
                                                     </div>
                                                 </div>

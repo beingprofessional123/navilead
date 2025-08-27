@@ -266,6 +266,7 @@ ul.sidebar-menu li.adminpanel {
     font-size: 12px;
     text-align: center;
     line-height: 30px;
+    text-transform: uppercase;
 }
 .username h6 {
     font-size: 11px;
@@ -284,6 +285,7 @@ ul.sidebar-menu li.adminpanel {
     margin: 0px;
     font-weight: 400;
     color: var(--foreground);
+    text-transform: capitalize;
 }
 .mainbody {
     padding: 25px 20px 30px 260px;
@@ -1366,6 +1368,7 @@ ul.emailmodal-tab-ul {
     font-size: 12px;
     font-weight: 400;
     margin: 0px;
+    text-transform: capitalize;
 }
 .copybtn.btn.btn-add {
     padding: 0px;
@@ -1605,6 +1608,7 @@ ul.emailmodal-tab-ul li:hover {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 18px;
+    gap: 10px; 
 }
 .workflowsadd h2.card-title {
     margin: 0px;
@@ -1928,6 +1932,7 @@ p.connectbox-note {
 .leads-headerbox-left h4 {
     font-size: 21px;
     margin: 0px;
+    text-transform: capitalize; 
 }
 .leads-headerbox-left h4 span {
     display: block;
@@ -2320,6 +2325,7 @@ h5.resultrabat {
 }
 .leads-previousoffers-btn .btn.btn-add {
     padding: 7px 11px;
+    margin-left: 3px;
 }
 .modaldesign.sendoffer .modal-dialog {
     max-width: 1160px;
@@ -3528,4 +3534,9 @@ ul.notification-settings {
 }
 .leads-info {   
     align-items: center;
+}
+
+.alert {
+    font-size: 14px;
+    padding: 10px 15px;
 }

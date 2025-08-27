@@ -328,3 +328,16 @@ h2.card-title {
 .about-media {
     margin-bottom: 15px;
 }
+
+.customerNotes{
+
+  background-color: var(--input-background) !important;
+    outline: none !important;
+    box-shadow: none !important;
+    border: 1px solid var(--input);
+    color: var(--card-foreground);
+    font-size: 12px;
+    border-radius: 8.7px;
+    padding: 8px 15px;
+}
+ 

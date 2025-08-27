@@ -106,6 +106,8 @@
       "fetchByIdError": "Kunne ikke hente e-mailskabelon.",
       "createError": "Kunne ikke oprette e-mailskabelon.",
       "updateError": "Kunne ikke opdatere e-mailskabelon.",
+      "createSuccess": "E-mailskabelonen er oprettet!",
+      "updateSuccess": "E-mailskabelonen er opdateret!",
       "deleteSuccess": "E-mailskabelon slettet med succes!",
       "deleteError": "Kunne ikke slette e-mailskabelon.",
       "authError": "Godkendelsestoken ikke fundet til e-mailskabeloner.",
@@ -117,6 +119,8 @@
       "fetchError": "Kunne ikke hente SMS-skabeloner.",
       "notFound": "SMS-skabelon ikke fundet.",
       "fetchByIdError": "Kunne ikke hente SMS-skabelon.",
+      "createSuccess": "SMS-skabelonen er oprettet!",
+      "updateSuccess": "SMS-skabelonen er opdateret!",
       "createError": "Kunne ikke oprette SMS-skabelon.",
       "updateError": "Kunne ikke opdatere SMS-skabelon.",
       "deleteSuccess": "SMS-skabelon slettet med succes!",
@@ -127,6 +131,26 @@
     "variables": {
       "authError": "Godkendelsestoken ikke fundet til variabler.",
       "fetchError": "Kunne ikke hente variabler."
+    },
+    "offers": {
+      "quoteIdRequired": "Tilbuds-ID er påkrævet",
+      "offerNotFound": "Tilbud ikke fundet",
+      "offerExpired": "Dette tilbud er udløbet.",
+      "internalServerError": "Intern serverfejl",
+      "acceptOfferMissingFields": "Manglende påkrævede felter for at acceptere tilbud.",
+      "acceptedStatusNotConfigured": "Accepteret status er ikke konfigureret i databasen.",
+      "wonStatusNotConfigured": "Vundet status er ikke konfigureret i databasen.",
+      "offerAcceptedSuccess": "Tilbud accepteret med succes! Vores team er blevet underrettet, og leadstatus er nu 'Vundet'.",
+      "offerAcceptFailed": "Kunne ikke acceptere tilbud.",
+      "questionSentSuccess": "Dit spørgsmål er blevet sendt med succes! Vi har opdateret leadstatus til 'I Dialog' og underrettet vores salgsrepræsentant.",
+      "questionSendFailed": "Kunne ikke sende spørgsmål.",
+      "offerExpiredError": "Dette tilbud er udløbet og kan ikke accepteres.",
+      "offerAlreadyAccepted": "Dette tilbud er allerede accepteret.",
+      "offerExpiredQuestion": "Dette tilbud er udløbet. Du kan ikke stille spørgsmål om det.",
+      "offerAlreadyAcceptedQuestion": "Dette tilbud er allerede accepteret. Du kan ikke stille yderligere spørgsmål.",
+      "questionAlreadySent": "Et spørgsmål er allerede sendt for dette tilbud. Vent venligst på et svar fra vores team.",
+      "termsNotAccepted": "Accepter venligst Vilkår og Betingelser for at fortsætte.",
+      "noOfferData": "Ingen tilbudsdata tilgængelig."
     }
   }
 }

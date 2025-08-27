@@ -70,6 +70,8 @@ const LeadViewPage = () => {
 
   // State for quote history
   const [quotesHistory, setQuotesHistory] = useState([]);
+  const [allquotesHistory, setAllQuotesHistory] = useState([]);
+  const [allfetchLeads, setAllfetchLeads] = useState([]);
 
   // States for SendQuoteModal
   const [showSendQuoteModal, setShowSendQuoteModal] = useState(false);
@@ -153,11 +155,13 @@ const LeadViewPage = () => {
   };
 
   useEffect(() => {
+    fetchLeads();
     fetchLeadDetails();
     fetchStatuses();
     fetchQuoteStatuses();
     fetchPricingTemplates();
     fetchQuotesHistory();
+    fetchAllQuotesHistory();
   }, [id, authToken, translate]); // Added translate to dependencies
 
   const fetchLeadDetails = async () => {
@@ -251,6 +255,62 @@ const LeadViewPage = () => {
       toast.error(translate('api.quotes.historyFetchError')); // Translated error message
     }
   };
+
+  const fetchAllQuotesHistory = async () => {
+    try {
+      const response = await api.get(`/quotes`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setAllQuotesHistory(response.data.quotes || []); // Access quotes from response.data.quotes
+    } catch (err) {
+      console.error('Error fetching quotes history:', err);
+      toast.error(translate('api.quotes.historyFetchError')); // Translated error message
+    }
+  };
+
+  const fetchLeads = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get('/leads', {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setAllfetchLeads(response.data);
+    } catch (err) {
+      console.error('Error fetching leads:', err);
+      setError(translate('api.leads.fetchError')); // Translated error message
+      toast.error(translate('api.leads.fetchError'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const [currentLeadIndex, setCurrentLeadIndex] = useState(0);
+  const currentLead = allfetchLeads[currentLeadIndex];
+  const currentLeadQuotes = allquotesHistory.filter(
+    (quote) => quote.leadId === currentLead?.id
+  );
+
+
+  const prevLead = () => {
+    if (allfetchLeads.length === 0) return;
+    const newIndex = currentLeadIndex > 0 ? currentLeadIndex - 1 : allfetchLeads.length - 1;
+    setCurrentLeadIndex(newIndex);
+  };
+
+  const nextLead = () => {
+    if (allfetchLeads.length === 0) return;
+    const newIndex = currentLeadIndex < allfetchLeads.length - 1 ? currentLeadIndex + 1 : 0;
+    setCurrentLeadIndex(newIndex);
+  };
+
+  useEffect(() => {
+    if (allfetchLeads.length > 0 && lead) {
+      const idx = allfetchLeads.findIndex(l => l.id === lead.id);
+      setCurrentLeadIndex(idx);
+    }
+  }, [allfetchLeads, lead]);
+
 
   const handleCopyText = (text) => {
     try {
@@ -390,7 +450,7 @@ const LeadViewPage = () => {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       toast.success(translate('leadViewPage.quoteCopySuccess', { quoteTitle: response.data.quotes.title })); // Translated success message
-      fetchQuotesHistory(); // Refresh history
+      fetchAllQuotesHistory();
     } catch (err) {
       console.error('Error copying and saving quote:', err);
       toast.error(translate('leadViewPage.quoteCopyError'));
@@ -402,6 +462,7 @@ const LeadViewPage = () => {
 
   const handleSaveQuote = async (e) => {
     e.preventDefault();
+    const action = e.nativeEvent.submitter?.value;
     setLoading(true);
     try {
       // Find "Not sent" status for new quote
@@ -431,8 +492,12 @@ const LeadViewPage = () => {
       });
       toast.success(translate(response.data.message || 'leadViewPage.quoteSaveSuccess')); // Translated success message
       fetchQuotesHistory();
-      setQuoteToActOn(response.data.quote); // Store the newly created quote (response.data.quote)
-      setShowSendQuoteModal(true); // Open the action modal
+      setQuoteToActOn(response.data.quotes); // Store the newly created quote (response.data.quote)
+      if (action === "saveAndSend") {
+        // Open send modal immediately
+        setShowSendQuoteModal(true);
+      }
+
 
       // Reset form after successful save
       setNewQuoteFormData({
@@ -992,9 +1057,9 @@ const LeadViewPage = () => {
         <div className="leadsright-bar">
           <div className="carddesign leadssliderbox">
             <div className="leadsslider">
-              <button className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left m-0" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
-              <button className="btn btn-add leadssliderright-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right m-0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
-              <span>{translate('leadViewPage.leadsSliderStatus', { current: 0, total: 5 })}</span> {/* Translated, using interpolation */}
+              <button className="btn btn-add" onClick={prevLead}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left m-0" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+              <button className="btn btn-add leadssliderright-icon" onClick={nextLead}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right m-0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+              <span>{translate('leadViewPage.leadsSliderStatus', { current: currentLeadIndex + 1, total: allfetchLeads.length })}</span> {/* Translated, using interpolation */}
             </div>
           </div>
 
@@ -1248,9 +1313,13 @@ const LeadViewPage = () => {
                       </div>
 
                       {/* Action Buttons for Quote Creation */}
-                      <button type="submit" className="btn btn-send w-100 mb-2" disabled={loading}>
+                      <button type="submit" className="btn btn-send w-100 mb-2" disabled={loading} name="action" value="saveOnly" >
+                        {loading ? translate('leadViewPage.savingButton') : translate('leadViewPage.saveQuoteButton')}
+                      </button>
+
+                      <button type="submit" className="btn btn-send w-100 mb-2" disabled={loading} name="action" value="saveAndSend" >
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
-                        {loading ? translate('leadViewPage.savingButton') : translate('leadViewPage.saveQuoteButton', { leadName: lead.fullName })} {/* Translated, with interpolation */}
+                        {loading ? translate('leadViewPage.savingButton') : translate('leadViewPage.saveAndSendQuoteButton')}
                       </button>
                       <Link to="#" className="btn btn-add w-100">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -1263,73 +1332,198 @@ const LeadViewPage = () => {
             </div>
 
             {/* Quote History Tab Content */}
-            <div id="quote-history-tab" className={`tab-pane ${activeTab === "history" ? "active" : ""}`}>
+            <div
+              id="quote-history-tab"
+              className={`tab-pane ${activeTab === "history" ? "active" : ""}`}
+            >
               <div className="carddesign">
                 <h2 className="card-title">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-4 h-4" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>
-                  {translate('leadViewPage.previousQuotesTitle')}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="lucide lucide-clock w-4 h-4"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 6v6l4 2"></path>
+                    <circle cx="12" cy="12" r="10"></circle>
+                  </svg>
+                  {id == allfetchLeads[currentLeadIndex]?.id
+                    ? translate("leadViewPage.currentQuotesTitle") // selected lead = current
+                    : translate("leadViewPage.previousQuotesTitle") // otherwise older ones
+                  }
                 </h2>
-                {quotesHistory.length > 0 ? (
-                  quotesHistory.map(quote => (
-                    <div className="leads-previousoffers-box mb-3" key={quote.id}>
-                      <div className="leads-previousoffers-top">
-                        <div className="leads-previousoffers-left">
-                          <h4>{quote.title || translate('leadViewPage.noTitle')}</h4>
-                          <h6>{quote.description || translate('leadViewPage.noDescription')}</h6>
+
+                {currentLeadQuotes.length > 0 ? (
+                  currentLeadQuotes.map((quote) => {
+                    const isCurrentLead = id == allfetchLeads[currentLeadIndex]?.id;
+
+                    return (
+                      <div className="leads-previousoffers-box mb-3" key={quote.id}>
+                        <div className="leads-previousoffers-top">
+                          <div className="leads-previousoffers-left">
+                            <h4>{quote.title || translate("leadViewPage.noTitle")}</h4>
+                            <h6>{quote.description || translate("leadViewPage.noDescription")}</h6>
+                          </div>
+                          <div className="status">
+                            {quote.status?.name || translate("leadViewPage.na")}
+                          </div>
                         </div>
-                        <div className="status">{quote.status?.name || translate('leadViewPage.na')}</div>
+
+                        <h5>
+                          <span>
+                            {translate("leadViewPage.createdDate", {
+                              date: quote.createdAt
+                                ? new Date(quote.createdAt).toLocaleDateString()
+                                : translate("leadViewPage.na"),
+                            })}
+                          </span>
+                          <span>
+                            {translate("leadViewPage.lastUpdatedDate", {
+                              date: quote.updatedAt
+                                ? new Date(quote.updatedAt).toLocaleDateString()
+                                : translate("leadViewPage.na"),
+                            })}
+                          </span>
+                        </h5>
+
+                        <h3>
+                          {formatCurrency(
+                            quote.total,
+                            quote.pricingTemplate?.currency?.code || "DKK"
+                          )}
+
+                          <div className="leads-previousoffers-btn">
+                            {isCurrentLead ? (
+                              <>
+                                {/* 👁 View Button */}
+                                <button
+                                  type="button"
+                                  className="btn btn-add"
+                                  onClick={() => {
+                                    setQuoteToActOn(quote);
+                                    setShowSendQuoteModal(true);
+                                  }}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="lucide lucide-eye m-0"
+                                    aria-hidden="true"
+                                  >
+                                    <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path>
+                                    <path d="m21.854 2.147-10.94 10.939"></path>
+                                  </svg>
+                                </button>
+
+                                {/* ✅ Qualified Button */}
+                                <button
+                                  type="button"
+                                  className="btn btn-add"
+                                  onClick={() => {
+                                    const qualifiedStatus = statuses.find(
+                                      (s) => s.name === "Qualified"
+                                    );
+                                    if (qualifiedStatus) {
+                                      handleStatusChange(qualifiedStatus.id);
+                                    } else {
+                                      toast.error(
+                                        translate("leadViewPage.qualifiedStatusNotFound")
+                                      );
+                                    }
+                                  }}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="lucide lucide-check-circle m-0"
+                                    aria-hidden="true"
+                                  >
+                                    <path d="M9 12l2 2 4-4"></path>
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                  </svg>
+                                </button>
+
+                                {/* 📋 Copy Button */}
+                                <button
+                                  type="button"
+                                  className="btn btn-add"
+                                  onClick={() => handleCopyQuote(quote)}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="lucide lucide-copy m-0"
+                                    aria-hidden="true"
+                                  >
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                  </svg>
+                                </button>
+                              </>
+                            ) : (
+                              /* 📋 Only Copy Button for Previous Quotes */
+                              <button
+                                type="button"
+                                className="btn btn-add"
+                                onClick={() => handleCopyQuote(quote)}
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="24"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="lucide lucide-copy m-0"
+                                  aria-hidden="true"
+                                >
+                                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+                        </h3>
                       </div>
-                      <h5>
-                        <span>{translate('leadViewPage.createdDate', { date: quote.createdAt ? new Date(quote.createdAt).toLocaleDateString() : translate('leadViewPage.na') })}</span>
-                        <span>{translate('leadViewPage.lastUpdatedDate', { date: quote.updatedAt ? new Date(quote.updatedAt).toLocaleDateString() : translate('leadViewPage.na') })}</span>
-                      </h5>
-                      <h3>{formatCurrency(quote.total, quote.pricingTemplate?.currency?.code || 'DKK')}
-                        <div className="leads-previousoffers-btn">
-                          <button type="button" className="btn btn-add" onClick={() => { setQuoteToActOn(quote); setShowSendQuoteModal(true); }}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye m-0" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg></button>
-                          <button
-                            type="button"
-                            className="btn btn-add"
-                            onClick={() => {
-                              const qualifiedStatus = statuses.find(s => s.name === "Qualified");
-                              if (qualifiedStatus) {
-                                handleStatusChange(qualifiedStatus.id);
-                              } else {
-                                toast.error(translate('leadViewPage.qualifiedStatusNotFound')); // Translated
-                              }
-                            }}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                              viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                              className="lucide lucide-check-circle m-0" aria-hidden="true">
-                              <path d="M9 12l2 2 4-4"></path>
-                              <circle cx="12" cy="12" r="10"></circle>
-                            </svg>
-                          </button>
-                          {/* 📋 New Copy Button */}
-                          <button
-                            type="button"
-                            className="btn btn-add"
-                            onClick={() => handleCopyQuote(quote)}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                              viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                              className="lucide lucide-copy m-0" aria-hidden="true">
-                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                              <path d="M5 15H4a2 2 0 0 1-2-2V4
-                                      a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                          </button>
-                        </div>
-                      </h3>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
-                  <p>{translate('leadViewPage.noQuotesFound')}</p>
+                  <p className="text-danger">{translate("leadViewPage.noQuotesFound")}</p>
                 )}
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -1351,7 +1545,6 @@ const LeadViewPage = () => {
           onSend={handleSendQuoteActions}
         />
       )}
-      <ToastContainer position="top-center" autoClose={3000} /> {/* Ensure ToastContainer is present */}
     </>
   );
 };

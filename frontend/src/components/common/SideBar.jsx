@@ -165,8 +165,8 @@ const SideBar = () => {
             <div className="userinfo">
                 <div className="username">
                     <span>{userInitials}</span>
-                    <h5>{user?.name || 'John Doe'}</h5>
-                    <h6>{'rajesh.sharma.naviland@yopmail.com'}</h6>
+                    <h5>{user?.name}</h5>
+                    <h6>{user?.email}</h6>
                 </div>
             </div>
         </div>
