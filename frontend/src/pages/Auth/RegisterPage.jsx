@@ -65,11 +65,11 @@ return (
             <div className="row">
               <div className="col-md-6">
                 <div className="form-group">
-                  <label className="form-label">{t('register.nameLabel')}</label>
+                  <label className="form-label">{t('register.firstnameLabel')}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder={t('register.namePlaceholder')}
+                    placeholder={t('register.firstnamePlaceholder')}
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     required
@@ -78,11 +78,11 @@ return (
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <label className="form-label">Last Name</label>
+                  <label className="form-label">{t('register.lastnameLabel')}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Last Name"
+                    placeholder={t('register.lastnamePlaceholder')}
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     required
@@ -140,7 +140,6 @@ return (
                     right: '10px',
                     transform: 'translateY(-50%)',
                     cursor: 'pointer',
-                    color: '#555',
                     fontSize: '1.1rem'
                   }}
                 >

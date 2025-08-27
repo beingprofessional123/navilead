@@ -98,7 +98,6 @@ const LoginPage = () => {
                     right: "10px",
                     transform: "translateY(-50%)",
                     cursor: "pointer",
-                    color: "#555",
                     fontSize: "1.1rem",
                   }}
                 >

@@ -105,6 +105,8 @@
       "notFound": "Email template not found.",
       "fetchByIdError": "Failed to fetch email template.",
       "createError": "Failed to create email template.",
+      "createSuccess": "Email template created successfully!",
+      "updateSuccess": "Email template updated successfully!",
       "updateError": "Failed to update email template.",
       "deleteSuccess": "Email template deleted successfully!",
       "deleteError": "Failed to delete email template.",
@@ -119,6 +121,8 @@
       "fetchByIdError": "Failed to fetch SMS template.",
       "createError": "Failed to create SMS template.",
       "updateError": "Failed to update SMS template.",
+      "createSuccess": "SMS template created successfully!",
+      "updateSuccess": "SMS template updated successfully!",
       "deleteSuccess": "SMS template deleted successfully!",
       "deleteError": "Failed to delete SMS template.",
       "authError": "Authentication token not found for SMS templates.",
@@ -127,6 +131,26 @@
     "variables": {
       "authError": "Authentication token not found for variables.",
       "fetchError": "Failed to fetch variables."
+    },
+    "offers": {
+      "quoteIdRequired": "Quote ID is required",
+      "offerNotFound": "Offer not found",
+      "offerExpired": "This offer has expired.",
+      "internalServerError": "Internal server error",
+      "acceptOfferMissingFields": "Missing required fields for accepting offer.",
+      "acceptedStatusNotConfigured": "Accepted status not configured in database.",
+      "wonStatusNotConfigured": "Won status not configured in database.",
+      "offerAcceptedSuccess": "Offer accepted successfully! Our team has been notified and the lead status is now 'Won'.",
+      "offerAcceptFailed": "Failed to accept offer.",
+      "questionSentSuccess": "Your question has been sent successfully! We've updated the lead status to 'In Dialogue' and notified our sales representative.",
+      "questionSendFailed": "Failed to send question.",
+      "offerExpiredError": "This offer has expired and cannot be accepted.",
+      "offerAlreadyAccepted": "This offer has already been accepted.",
+      "offerExpiredQuestion": "This offer has expired. You cannot ask questions about it.",
+      "offerAlreadyAcceptedQuestion": "This offer has already been accepted. You cannot ask further questions.",
+      "questionAlreadySent": "A question has already been sent for this offer. Please wait for a response from our team.",
+      "termsNotAccepted": "Please accept the Terms & Conditions to proceed.",
+      "noOfferData": "No offer data available."
     }
   }
 }

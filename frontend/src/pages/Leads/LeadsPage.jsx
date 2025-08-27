@@ -145,9 +145,9 @@ const LeadsPage = () => {
   const filteredAndSortedLeads = leads
     .filter((lead) => {
       const matchesSearch = searchTerm === '' ||
-        lead.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.email.toLowerCase().includes(searchTerm.toLowerCase());
+        (lead.fullName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (lead.companyName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (lead.email?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
       const matchesStatus = selectedStatus === '' || lead.status?.name === selectedStatus;
       const matchesSource = selectedSource === '' || lead.leadSource === selectedSource;

@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../utils/api';
 import { useTranslation } from "react-i18next";
+import { Link } from 'react-router-dom';
 
 const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
   const { t } = useTranslation(); // Initialize the translation hook and rename 't' to 'translate'
@@ -315,9 +316,9 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
                   <div className="row">
                     <div className="col-md-6">
                       <div className="form-group">
-                        <label>Lead Source *</label>
+                        <label>Lead Source (Optional)</label>
                         <div className="inputselect">
-                          <select className="form-select" name="leadSource" value={formData.leadSource} onChange={handleChange} required>
+                          <select className="form-select" name="leadSource" value={formData.leadSource} onChange={handleChange}>
                             <option value="">{t('addEditLeadModal.selectLeadSource')}</option>
                             <option value="Facebook Ads">{t('addEditLeadModal.leadSourceFacebookAds')}</option>
                             <option value="Google Ads">{t('addEditLeadModal.leadSourceGoogleAds')}</option>
@@ -366,10 +367,10 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus m-0" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
                       </button>
                     </div>
-                    <div className="tags-display mt-2">
+                    <div className="tags mt-2">
                       {formData.tags.map((tag, index) => tag && (
-                        <span key={index} className="badge bg-secondary me-1">
-                          {tag} <button type="button" className="btn-close" aria-label={t('addEditLeadModal.removeTag')} onClick={() => handleRemoveTag(tag)}></button>
+                        <span key={index} className="badge me-1">
+                          {tag} <Link to="#" className="text-danger" aria-label={t('addEditLeadModal.removeTag')} onClick={() => handleRemoveTag(tag)}>X</Link>
                         </span>
                       ))}
                     </div>

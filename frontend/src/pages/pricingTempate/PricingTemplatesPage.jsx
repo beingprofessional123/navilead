@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../utils/api';
@@ -84,6 +84,44 @@ const PricingTemplatesPage = () => {
         setModalShow(false);
     };
 
+    const handleCopyTemplate = async (template) => {
+        try {
+            // Build new template data from existing one
+            const copyData = {
+                name: `(Copy) ${template.name}`,
+                title: template.title,
+                description: template.description,
+                terms: template.terms,
+                currencyId: template.currencyId,
+                choiceType: template.choiceType,
+                services: template.services.map((service) => ({
+                    name: service.name,
+                    description: service.description,
+                    price: service.price,
+                    quantity: service.quantity,
+                    isRequired: service.isRequired,
+                })),
+            };
+
+            // Call API to create the copy
+            const response = await api.post('/pricing-templates', copyData, {
+                headers: { Authorization: `Bearer ${authToken}` },
+            });
+
+            // Success toast
+            toast.success(
+                translate(response.data.message || 'api.pricingTemplates.createSuccess')
+            );
+
+            // Refresh list
+            fetchPricingTemplates();
+        } catch (error) {
+            console.error("Error copying template:", error);
+            toast.error(translate('api.pricingTemplates.copyError'));
+        }
+    };
+
+
     if (loading) {
         return <div className="loading">{translate('pricingTemplatesPage.loading')}</div>; // Translated
     }
@@ -138,6 +176,7 @@ const PricingTemplatesPage = () => {
                                     </h4>
                                     <div className="pricing-cardbtn">
                                         <Link href="#" className="btn btn-add" onClick={() => handleEditTemplate(template)}>{translate('pricingTemplatesPage.editButton')}</Link> {/* Translated */}
+                                        <Link href="#" className="btn btn-add" onClick={() => handleCopyTemplate(template)}>{translate('pricingTemplatesPage.copyButton')}</Link> {/* Translated */}
                                         <Link to="#" className="btn btn-add">{translate('pricingTemplatesPage.useButton')}</Link> {/* Translated */}
                                         <Link href="#" className="btn btn-add" onClick={() => handleDeleteTemplate(template.id)}>{translate('pricingTemplatesPage.deleteButton')}</Link> {/* Translated */}
                                     </div>
@@ -146,7 +185,7 @@ const PricingTemplatesPage = () => {
                         ))
                     ) : (
                         <div className="col-12 text-center">
-                            <p>{translate('pricingTemplatesPage.noTemplatesFound')}</p> {/* Translated */}
+                            <p className='text-danger'>{translate('pricingTemplatesPage.noTemplatesFound')}</p> {/* Translated */}
                         </div>
                     )}
                 </div>
@@ -159,7 +198,6 @@ const PricingTemplatesPage = () => {
                     onSave={handleSaveTemplate}
                 />
             )}
-            <ToastContainer position="top-center" autoClose={3000} />
         </div>
     );
 };
