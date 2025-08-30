@@ -1052,6 +1052,15 @@ ul.leadlistul li:hover {
     border: 1px solid var(--border);
     background-color: var(--card);
 }
+.status.status8 {
+        color: #9f2d00;
+    background-color: #ffedd4;
+}
+.status.status8 svg {
+    margin-right: 8px;
+    width: 11px;
+    height: 11px;
+}
 .leadlist-price h4 {
     color: var(--foreground);
     font-size: 14px;
@@ -1608,7 +1617,7 @@ ul.emailmodal-tab-ul li:hover {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 18px;
-    gap: 10px; 
+    gap: 10px;
 }
 .workflowsadd h2.card-title {
     margin: 0px;
@@ -1863,7 +1872,7 @@ h2.card-title.conditioncard-title2 .lucide-circle-alert {
     margin-right: 0px;
 }
 .integrations-top span svg.lucide {
-    color: var(--primary);
+   /* color: var(--primary);*/
 }
 .integrations-top span {
     position: absolute;
@@ -1871,7 +1880,7 @@ h2.card-title.conditioncard-title2 .lucide-circle-alert {
     top: 0px;
     background-color: 
  color-mix(in oklab, var(--primary) 10%, transparent);
-    color: var(--primary);
+    /*color: var(--primary);*/
     width: 42px;
     height: 42px;
     border-radius: 8px;
@@ -1911,6 +1920,91 @@ p.connectbox-note {
     margin: 0px 0px 10px 0px;
     font-weight: 400;
 }
+.integrationsbox .btn.btn-add {
+    width: 100%;
+}
+.integrationsbox .status {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+}
+.webhookslist {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.webhookslist li {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8.7px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.webhookslist-left h2.card-title {
+    margin-bottom: 8px;
+}
+.webhookslist-left p {
+    font-size: 12px;
+    margin-bottom: 8px;
+    word-break: break-all;
+    color: var(--muted-foreground);
+}
+.webhookslist-left h2.card-title .status {
+    margin-left: 6px;
+}
+.planactive-heading.integrationsheading h2.card-title {
+    font-size: 16px;
+}
+.apikeys {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.apikeys li {
+    border: 1px solid var(--border);
+    padding: 15px;
+    border-radius: 8.7px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.apikeys-left h3 {
+    font-size: 13px;
+    margin-bottom: 2px;
+    font-weight: 500;
+}
+.apikeys-left p {
+    font-size: 12px;
+    margin: 0px;
+    color: var(--muted-foreground);
+}
+.api-documentation p {
+    font-size: 12px;
+    margin: 0px;
+    color: var(--muted-foreground);
+    margin-bottom: 14px;
+}
+.ratelimits .carddesign {
+    text-align: center;
+    margin: 0px;
+}
+.ratelimits h3 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 1px;
+}
+.ratelimits p {
+    font-size: 12px;
+    margin: 0px;
+    color: var(--muted-foreground);
+}
+.apiaccess {
+    height: calc(100% - 23px);
+}
 /*integrations*/
 
 
@@ -1932,7 +2026,7 @@ p.connectbox-note {
 .leads-headerbox-left h4 {
     font-size: 21px;
     margin: 0px;
-    text-transform: capitalize; 
+    text-transform: capitalize;
 }
 .leads-headerbox-left h4 span {
     display: block;
@@ -2295,6 +2389,7 @@ h5.resultrabat {
     display: flex;
     justify-content: space-between;
     align-items: self-start;
+    gap: 10px;
 }
 .leads-previousoffers-left h4 {
     font-size: 13px;
@@ -3535,8 +3630,12 @@ ul.notification-settings {
 .leads-info {   
     align-items: center;
 }
-
 .alert {
     font-size: 14px;
     padding: 10px 15px;
 }
+.leads-previousoffers-top .status {
+    white-space: nowrap;
+}
+
+

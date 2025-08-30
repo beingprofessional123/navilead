@@ -151,6 +151,18 @@
       "questionAlreadySent": "A question has already been sent for this offer. Please wait for a response from our team.",
       "termsNotAccepted": "Please accept the Terms & Conditions to proceed.",
       "noOfferData": "No offer data available."
+    },
+    "settings": {
+      "saveSuccess": "Settings saved successfully!",
+      "saveError": "Failed to save settings.",
+      "logoUploadSuccess": "Logo uploaded successfully!",
+      "logoUploadError": "Failed to upload logo.",
+      "logoRemoveSuccess": "Logo removed successfully!",
+      "logoRemoveError": "Failed to remove logo.",
+      "signatureSaveSuccess": "Email signature saved successfully!",
+      "signatureSaveError": "Failed to save email signature.",
+      "userInviteSuccess": "User invite sent successfully!",
+      "userInviteError": "Failed to send user invite."
     }
   }
 }

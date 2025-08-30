@@ -151,6 +151,18 @@
       "questionAlreadySent": "Et spørgsmål er allerede sendt for dette tilbud. Vent venligst på et svar fra vores team.",
       "termsNotAccepted": "Accepter venligst Vilkår og Betingelser for at fortsætte.",
       "noOfferData": "Ingen tilbudsdata tilgængelig."
+    },
+    "settings": {
+      "saveSuccess": "Indstillinger gemt succesfuldt!",
+      "saveError": "Kunne ikke gemme indstillinger.",
+      "logoUploadSuccess": "Logo uploadet succesfuldt!",
+      "logoUploadError": "Kunne ikke uploade logo.",
+      "logoRemoveSuccess": "Logo fjernet succesfuldt!",
+      "logoRemoveError": "Kunne ikke fjerne logo.",
+      "signatureSaveSuccess": "Email signatur gemt succesfuldt!",
+      "signatureSaveError": "Kunne ikke gemme email signatur.",
+      "userInviteSuccess": "Brugerinvitation sendt succesfuldt!",
+      "userInviteError": "Kunne ikke sende brugerinvitation."
     }
   }
 }
