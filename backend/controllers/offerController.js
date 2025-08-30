@@ -264,6 +264,8 @@ exports.askedQuestion = async (req, res) => {
       await lead.update({ statusId: inDialogueStatus.id });
     }
 
+    console.log(lead.user?.email);
+
     // Send email to assigned sales rep
     if (lead.user?.email) {
     const emailHtml =

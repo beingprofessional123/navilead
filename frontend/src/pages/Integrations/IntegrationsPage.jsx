@@ -2,368 +2,264 @@ import React, { useState } from 'react';
 import MobileHeader from '../../components/common/MobileHeader';
 
 const IntegrationsPage = () => {
-    const [activeTab, setActiveTab] = useState('browse');
-    const [copied, setCopied] = useState(false);
-    const [formData, setFormData] = useState({
-        userId: '',
-        email: '',
-        fullName: '',
-        companyName: '',
-        phone: '',
-        notifyOnFollowUp: true,
-        tags: '',
-        attName: '',
-        address: '',
-        cvrNumber: '',
-        leadSource: '',
-        internalNote: '',
-        customerComment: '',
-        followUpDate: '',
-        value: '',
-        simulatedUrl: ''
-    });
 
-    const integrations = [
-        {
-            name: 'Facebook Ads',
-            category: 'Marketing',
-            description: 'Import leads directly from your Facebook ad campaigns',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-facebook" aria-hidden="true">
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                </svg>
-            ),
-        },
-        {
-            name: 'Google Ads',
-            category: 'Marketing',
-            description: 'Sync conversion data and import leads from Google Ads.',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-megaphone" aria-hidden="true">
-                    <path d="m3 11 18-8-2 13L3 11z"></path>
-                    <path d="M11.6 16.8a3 3 0 1 1-5.6-1.7l3.7-2.7 3.7 2.7Z"></path>
-                </svg>
-            ),
-        },
-        {
-            name: 'Website Form',
-            category: 'Lead Capture',
-            description: 'Integrate forms from your website to capture leads directly.',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-form" aria-hidden="true">
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-                    <path d="M14 2v6h6"></path>
-                    <path d="M10 12h8"></path>
-                    <path d="M10 18h8"></path>
-                    <path d="M10 15h8"></path>
-                </svg>
-            ),
-        },
-        {
-            name: 'Phone Call',
-            category: 'Lead Capture',
-            description: 'Track incoming phone calls as new leads in your system.',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone" aria-hidden="true">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2.02 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                </svg>
-            ),
-        },
-        {
-            name: 'Email',
-            category: 'Communication',
-            description: 'Integrate your email system for lead communication.',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail" aria-hidden="true">
-                    <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                </svg>
-            ),
-        },
-        {
-            name: 'Referral',
-            category: 'Lead Source',
-            description: 'Manage and track leads generated through referrals.',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-share-2" aria-hidden="true">
-                    <circle cx="18" cy="5" r="3"></circle>
-                    <circle cx="6" cy="12" r="3"></circle>
-                    <circle cx="18" cy="19" r="3"></circle>
-                    <path d="m8.59 13.51 6.83 4.97"></path>
-                    <path d="m15.41 6.49-6.83 4.97"></path>
-                </svg>
-            ),
-        },
-        {
-            name: 'LinkedIn',
-            category: 'Social Media',
-            description: 'Import professional leads and connect through LinkedIn.',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-linkedin" aria-hidden="true">
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                    <rect width="4" height="12" x="2" y="9"></rect>
-                    <circle cx="4" cy="4" r="2"></circle>
-                </svg>
-            ),
-        },
-        {
-            name: 'Trade Show',
-            category: 'Event Marketing',
-            description: 'Import leads collected from trade shows and events.',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-building" aria-hidden="true">
-                    <rect width="16" height="20" x="4" y="2" rx="2" ry="2"></rect>
-                    <path d="M9 22v-4h6v4"></path>
-                    <path d="M8 6h.01"></path>
-                    <path d="M16 6h.01"></path>
-                    <path d="M12 6h.01"></path>
-                    <path d="M12 10h.01"></path>
-                    <path d="M12 14h.01"></path>
-                    <path d="M16 10h.01"></path>
-                    <path d="M16 14h.01"></path>
-                    <path d="M8 10h.01"></path>
-                    <path d="M8 14h.01"></path>
-                </svg>
-            ),
-        },
-        {
-            name: 'Cold Outreach',
-            category: 'Sales',
-            description: 'Manage and track leads generated through cold outreach campaigns.',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true">
-                    <path d="m22 2-7 20-4-9-9-4 20-7Z"></path>
-                    <path d="M9 11l-6 6"></path>
-                </svg>
-            ),
-        },
-        {
-            name: 'Other',
-            category: 'General',
-            description: 'Connect with other custom lead sources.',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus-circle" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M8 12h8"></path>
-                    <path d="M12 8v8"></path>
-                </svg>
-            ),
-        },
-    ];
-
-    const handleConnectClick = (integrationName) => {
-        const baseUrl = `${process.env.REACT_APP_API_BASE_URL}/public-leads`;
-        const currentFormData = {
-            userId: ' ',
-            email: ' ',
-            fullName: ' ',
-            companyName: ' ',
-            phone: ' ',
-            notifyOnFollowUp: true,
-            tags: '',
-            attName: ' ',
-            address: ' ',
-            cvrNumber: '98765432',
-            leadSource: integrationName,
-            internalNote: ' ',
-            customerComment: ' ',
-            followUpDate: ' ',
-            value: ' '
-        };
-
-        const queryParams = new URLSearchParams();
-        for (const key in currentFormData) {
-            if (typeof currentFormData[key] === 'boolean') {
-                queryParams.append(key, currentFormData[key] ? 'true' : 'false');
-            } else {
-                queryParams.append(key, currentFormData[key]);
-            }
-        }
-        const generatedUrl = `${baseUrl}?${queryParams.toString()}`;
-
-        setFormData((prevData) => ({
-            ...prevData,
-            leadSource: integrationName,
-            simulatedUrl: generatedUrl
-        }));
-         window.scrollTo({
-            top: document.body.scrollHeight,
-            behavior: 'smooth' // This makes the scroll animate smoothly
-        });
-    };
-
-    const handleCopy = () => {
-        navigator.clipboard.writeText(formData.simulatedUrl).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        });
-    };
-    
     return (
-        <div className="mainbody">
-            <div className="container-fluid">
-                <MobileHeader />
-                <div className="row top-row">
-                    <div className="col-md-12">
-                        <div className="dash-heading">
-                            <h2>Integrations</h2>
-                            <p>Connect Navilead with your favorite tools</p>
+        <>
+            <div className="mainbody">
+                <div className="container-fluid">
+                    <MobileHeader />
+                    <div className="row top-row">
+                        <div className="col-md-12">
+                            <div className="dash-heading">
+                                <h2>Integrations</h2>
+                                <p>Connect Navilead with your favorite tools</p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="emailmodaltab">
-                    <ul className="nav nav-tabs" role="tablist">
-                        <li className="nav-item">
-                            <a className={`nav-link ${activeTab === 'browse' ? 'active' : ''}`} onClick={() => setActiveTab('browse')} data-bs-toggle="tab" href="#browse">Browse Integrations</a>
-                        </li>
-                        <li className="nav-item">
-                            <a className={`nav-link ${activeTab === 'webhooks' ? 'active' : ''}`} onClick={() => setActiveTab('webhooks')} data-bs-toggle="tab" href="#webhooks">Webhooks</a>
-                        </li>
-                        <li className="nav-item">
-                            <a className={`nav-link ${activeTab === 'api' ? 'active' : ''}`} onClick={() => setActiveTab('api')} data-bs-toggle="tab" href="#api">API Access</a>
-                        </li>
-                    </ul>
-                    <div className="tab-content">
-                        <div id="browse" className={`tab-pane fade ${activeTab === 'browse' ? 'show active' : ''}`}>
-                            <div className="row">
-                                {integrations.map((integration) => (
-                                    <div className="col-md-4" key={integration.name}>
+                    <div className="emailmodaltab">
+                        <ul className="nav nav-tabs" role="tablist">
+                            <li className="nav-item">
+                                <a className="nav-link active" data-bs-toggle="tab" href="#home">Browse Integrations</a>
+                            </li>
+                            <li className="nav-item">
+                                <a className="nav-link" data-bs-toggle="tab" href="#menu1">Webhooks</a>
+                            </li>
+                            <li className="nav-item">
+                                <a className="nav-link" data-bs-toggle="tab" href="#menu2">API Access</a>
+                            </li>
+                        </ul>
+                        <div className="tab-content">
+                            <div id="home" className="tab-pane active">
+                                <div className="row">
+                                    <div className="col-md-4">
                                         <div className="carddesign integrationsbox">
                                             <div className="integrations-top">
-                                                <span>{integration.icon}</span>
-                                                <h4>{integration.name}</h4>
-                                                <h5>{integration.category}</h5>
+                                                <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-facebook text-primary" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></span>
+                                                <h4>Facebook Ads</h4>
+                                                <h5>Marketing</h5>
                                             </div>
-                                            <p>{integration.description}</p>
-                                            <a href="#" className="btn btn-send" onClick={(e) => { e.preventDefault(); handleConnectClick(integration.name); }}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true">
-                                                    <path d="M5 12h14"></path>
-                                                    <path d="M12 5v14"></path>
-                                                </svg>
-                                                Connect
-                                            </a>
+                                            <p>Import leads directly from your Facebook ad campaigns</p>
+                                            <a href="#" className="btn btn-send" data-bs-toggle="modal" data-bs-target="#myModal4"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Connect</a>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                            <div className="carddesign integrationsbox">
-                                <div className="integrations-top">
-                                    <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-webhook" aria-hidden="true">
-                                        <path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Z"></path>
-                                        <path d="M15 12.5a2.5 2.5 0 0 1-2.5 2.5V12.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M12.5 15a2.5 2.5 0 0 1-2.5-2.5H12.5a2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M9.5 12.5a2.5 2.5 0 0 1 2.5-2.5V12.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M12.5 9.5a2.5 2.5 0 0 1-2.5-2.5H12.5a2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                    </svg></span>
-                                    <h4>API Integration</h4>
-                                    <h5>Generate API Endpoints</h5>
-                                </div>
-                                <p>This simulates an API endpoint for a new lead based on the last integration you selected. Click 'Connect' on any integration to generate a new URL.</p>
-                                <div className="mt-3">
-                                    <p className="">
-                                        **API URL:** <span className="text-sm" style={{ wordBreak: 'break-all', fontSize: '14px' }}>{formData.simulatedUrl}</span>
-                                    </p>
-                                    <button className="btn btn-send" onClick={handleCopy} disabled={!formData.simulatedUrl}>
-                                        {copied ? 'Copied!' : 'Copy'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="webhooks" className={`tab-pane fade ${activeTab === 'webhooks' ? 'show active' : ''}`}>
-                            <h3>Webhooks</h3>
-                            <p>Connect with other services using webhooks.</p>
-                            <div className="row">
-                                <div className="col-md-4">
-                                <div className="carddesign integrationsbox">
-                                    <div className="integrations-top">
-                                     <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-webhook" aria-hidden="true">
-                                        <path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Z"></path>
-                                        <path d="M15 12.5a2.5 2.5 0 0 1-2.5 2.5V12.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M12.5 15a2.5 2.5 0 0 1-2.5-2.5H12.5a2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M9.5 12.5a2.5 2.5 0 0 1 2.5-2.5V12.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M12.5 9.5a2.5 2.5 0 0 1-2.5-2.5H12.5a2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                    </svg></span>
-                                    <h4>Webhooks</h4>
-                                    <h5>Connect with other services using webhooks.</h5>
+                                    <div className="col-md-4">
+                                        <div className="carddesign integrationsbox">
+                                            <div className="integrations-top">
+                                                <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap text-primary" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg></span>
+                                                <h4>Zapier</h4>
+                                                <h5>Automation</h5>
+                                                <div className="status status3">Connected</div>
+                                            </div>
+                                            <p>Automate workflows between Navilead and 5000+ other apps</p>
+                                            <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>Configure</a>
+                                        </div>
                                     </div>
-                                    <p>Connect with other services using webhooks.</p>
-                                    <a href="#" className="btn btn-send" onClick={(e) => { e.preventDefault(); handleConnectClick("Other"); }}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Connect</a>
-                                </div>
-                                </div>
-                            </div>
-                            <div className="carddesign integrationsbox">
-                                <div className="integrations-top">
-                                    <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-webhook" aria-hidden="true">
-                                        <path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Z"></path>
-                                        <path d="M15 12.5a2.5 2.5 0 0 1-2.5 2.5V12.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M12.5 15a2.5 2.5 0 0 1-2.5-2.5H12.5a2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M9.5 12.5a2.5 2.5 0 0 1 2.5-2.5V12.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M12.5 9.5a2.5 2.5 0 0 1-2.5-2.5H12.5a2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                    </svg></span>
-                                    <h4>API Integration</h4>
-                                    <h5>Generate API Endpoints</h5>
-                                </div>
-                                <p>This simulates an API endpoint for a new lead based on the last integration you selected. Click 'Connect' on any integration to generate a new URL.</p>
-                                <div className="mt-3">
-                                    <p className="">
-                                        **API URL:** <span className="text-sm" style={{ wordBreak: 'break-all', fontSize: '14px' }}>{formData.simulatedUrl}</span>
-                                    </p>
-                                    <button className="btn btn-send" onClick={handleCopy} disabled={!formData.simulatedUrl}>
-                                        {copied ? 'Copied!' : 'Copy'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="api" className={`tab-pane fade ${activeTab === 'api' ? 'show active' : ''}`}>
-                            <h3>API Access</h3>
-                            <p>Access and manage your data with our powerful API.</p>
-                            <div className="row">
-                                <div className="col-md-4">
-                                <div className="carddesign integrationsbox">
-                                    <div className="integrations-top">
-                                     <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-webhook" aria-hidden="true">
-                                        <path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Z"></path>
-                                        <path d="M15 12.5a2.5 2.5 0 0 1-2.5 2.5V12.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M12.5 15a2.5 2.5 0 0 1-2.5-2.5H12.5a2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M9.5 12.5a2.5 2.5 0 0 1 2.5-2.5V12.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M12.5 9.5a2.5 2.5 0 0 1-2.5-2.5H12.5a2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                    </svg></span>
-                                    <h4>API Access</h4>
-                                    <h5>Connect with other services using api access.</h5>
+                                    <div className="col-md-4">
+                                        <div className="carddesign integrationsbox">
+                                            <div className="integrations-top">
+                                                <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-globe text-primary" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg></span>
+                                                <h4>WordPress</h4>
+                                                <h5>Web</h5>
+                                            </div>
+                                            <p>Import leads directly from your Facebook ad campaigns</p>
+                                            <a href="#" className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Connect</a>
+                                        </div>
                                     </div>
-                                    <p>Connect with other services using webhooks.</p>
-                                    <a href="#" className="btn btn-send" onClick={(e) => { e.preventDefault(); handleConnectClick("Other"); }}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Connect</a>
-                                </div>
+                                    <div className="col-md-4">
+                                        <div className="carddesign integrationsbox comingsoon">
+                                            <div className="integrations-top">
+                                                <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-database text-muted-foreground" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg></span>
+                                                <h4>Previsto</h4>
+                                                <h5>CRM</h5>
+                                                <div className="status status8"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>Coming Soon</div>
+                                            </div>
+                                            <p>Sync leads and customer data with Previsto CRM platform</p>
+                                            <a href="#" className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>Coming Soon</a>
+                                        </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                        <div className="carddesign integrationsbox comingsoon">
+                                            <div className="integrations-top">
+                                                <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chrome text-muted-foreground" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><line x1="21.17" x2="12" y1="8" y2="8"></line><line x1="3.95" x2="8.54" y1="6.06" y2="14"></line><line x1="10.88" x2="15.46" y1="21.94" y2="14"></line></svg></span>
+                                                <h4>Fenster</h4>
+                                                <h5>Construction</h5>
+                                                <div className="status status8"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>Coming Soon</div>
+                                            </div>
+                                            <p>Connect window quote requests from Fenster platform</p>
+                                            <a href="#" className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>Coming Soon</a>
+                                        </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                        <div className="carddesign integrationsbox comingsoon">
+                                            <div className="integrations-top">
+                                                <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-target text-muted-foreground" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
+                                                <h4>Skvizbizz</h4>
+                                                <h5>Business</h5>
+                                                <div className="status status8"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>Coming Soon</div>
+                                            </div>
+                                            <p>Import business leads from Skvizbizz marketplace</p>
+                                            <a href="#" className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>Coming Soon</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="carddesign integrationsbox">
-                                <div className="integrations-top">
-                                    <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-webhook" aria-hidden="true">
-                                        <path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Z"></path>
-                                        <path d="M15 12.5a2.5 2.5 0 0 1-2.5 2.5V12.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M12.5 15a2.5 2.5 0 0 1-2.5-2.5H12.5a2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M9.5 12.5a2.5 2.5 0 0 1 2.5-2.5V12.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                        <path d="M12.5 9.5a2.5 2.5 0 0 1-2.5-2.5H12.5a2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5Z"></path>
-                                    </svg></span>
-                                    <h4>API Integration</h4>
-                                    <h5>Generate API Endpoints</h5>
+                            <div id="menu1" className="tab-pane fade">
+                                <div className="planactive-heading integrationsheading">
+                                    <div>
+                                        <h2 className="card-title">Webhooks</h2>
+                                        <p>Receive real-time notifications when changes occur</p>
+                                    </div>
+                                    <a href="#" className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>New webhook</a>
                                 </div>
-                                <p>This simulates an API endpoint for a new lead based on the last integration you selected. Click 'Connect' on any integration to generate a new URL.</p>
-                                <div className="mt-3">
-                                    <p className="">
-                                        **API URL:** <span className="text-sm" style={{ wordBreak: 'break-all', fontSize: '14px' }}>{formData.simulatedUrl}</span>
-                                    </p>
-                                    <button className="btn btn-send" onClick={handleCopy} disabled={!formData.simulatedUrl}>
-                                        {copied ? 'Copied!' : 'Copy'}
-                                    </button>
+                                <ul className="webhookslist">
+                                    <li>
+                                        <div className="webhookslist-left">
+                                            <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-webhook text-muted-foreground" aria-hidden="true"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"></path><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"></path><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"></path></svg>Lead Created Webhook  <div className="status status3">Active</div></h2>
+                                            <p>https://api.yourcompany.com/webhooks/lead-created</p>
+                                            <div className="status status7">lead.created</div>
+                                            <div className="status status7">lead.updated</div>
+                                        </div>
+                                        <div className="webhookslist-right">
+                                            <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings m-0" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg></a>
+                                            <a href="#" className="btn btn-add">Test</a>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div className="webhookslist-left">
+                                            <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-webhook text-muted-foreground" aria-hidden="true"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"></path><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"></path><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"></path></svg>Offer Accepted Webhook  <div className="status status3">Active</div></h2>
+                                            <p>https://api.yourcompany.com/webhooks/offer-accepted</p>
+                                            <div className="status status7">offer.accepted</div>
+                                        </div>
+                                        <div className="webhookslist-right">
+                                            <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings m-0" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg></a>
+                                            <a href="#" className="btn btn-add">Test</a>
+                                        </div>
+                                    </li>
+                                </ul>
+
+                            </div>
+                            <div id="menu2" className="tab-pane fade">
+                                <div className="planactive-heading integrationsheading">
+                                    <div>
+                                        <h2 className="card-title">API Access</h2>
+                                        <p>Manage your API keys and documentation</p>
+                                    </div>
                                 </div>
+                                <div className="row">
+                                    <div className="col-md-6">
+                                        <div className="carddesign apiaccess">
+                                            <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-key" aria-hidden="true"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"></path><path d="m21 2-9.6 9.6"></path><circle cx="7.5" cy="15.5" r="5.5"></circle></svg>API Keys</h2>
+                                            <ul className="apikeys">
+                                                <li>
+                                                    <div className="apikeys-left">
+                                                        <h3>Production Key</h3>
+                                                        <p>Created Dec 15, 2024</p>
+                                                    </div>
+                                                    <div className="apikeys-right">
+                                                        <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy m-0" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></a>
+                                                        <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings m-0" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg></a>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div className="apikeys-left">
+                                                        <h3>Development Key</h3>
+                                                        <p>Created Dec 10, 2024</p>
+                                                    </div>
+                                                    <div className="apikeys-right">
+                                                        <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy m-0" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></a>
+                                                        <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings m-0" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg></a>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                            <a href="#" className="btn btn-send w-100"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Generate new key</a>
+                                        </div>
+                                    </div>
+                                    <div className="col-md-6">
+                                        <div className="carddesign apiaccess api-documentation">
+                                            <h2 className="card-title">API Documentation</h2>
+                                            <p>Learn how to integrate with the Navilead API and automate your workflows.</p>
+                                            <a href="#" className="btn btn-add w-100 text-start mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-external-link" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>API Documentation</a>
+                                            <a href="#" className="btn btn-add w-100 text-start mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>API Examples</a>
+                                            <a href="#" className="btn btn-add w-100 text-start "><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>SDK Download</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="carddesign ratelimits">
+                                    <h2 className="card-title">Rate Limits</h2>
+                                    <div className="row">
+                                        <div className="col-md-4">
+                                            <div className="carddesign">
+                                                <h3 className="text-primary">1,847</h3>
+                                                <p>Requests today</p>
+                                            </div>
+                                        </div>
+                                        <div className="col-md-4">
+                                            <div className="carddesign">
+                                                <h3>5,000</h3>
+                                                <p>Daily limit</p>
+                                            </div>
+                                        </div>
+                                        <div className="col-md-4">
+                                            <div className="carddesign">
+                                                <h3 className="text-green-500">37%</h3>
+                                                <p>Used</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
                             </div>
                         </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div className="modal fade modaldesign workflowmodal" id="myModal4">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+
+                        <div className="modal-header">
+                            <h4 className="modal-title"><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-facebook" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></span>Facebook Ads</h4>
+                            <p>Import leads directly from your Facebook ad campaigns</p>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+                        </div>
+
+                        <div className="modal-body">
+                            <div className="formdesign">
+                                <form>
+                                    <div className="carddesign connectbox">
+                                        <div className="form-group mb-2">
+                                            <label>API Keys</label>
+                                            <div className="input-group">
+                                                <input type="text" className="form-control" id="" placeholder="eg: http://me@example.com/myresource/ ..." readonly="" />
+                                                <button className="btn btn-send" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-copy m-0" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button>
+                                            </div>
+                                        </div>
+                                        <p className="connectbox-note">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                                            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+                                            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+                                            consequat.</p>
+                                    </div>
+
+                                    <div className="modalfooter btn-right">
+                                        <a href="#" className="btn btn-add">Annuller</a>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+
+
                     </div>
                 </div>
             </div>
-        </div>
+
+        </>
     );
 };
 

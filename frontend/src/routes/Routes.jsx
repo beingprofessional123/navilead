@@ -13,6 +13,7 @@ import PricingTemplatesPage from '../pages/pricingTempate/PricingTemplatesPage';
 import LeadsPage from '../pages/Leads/LeadsPage';
 import LeadViewPage from '../pages/Leads/LeadViewPage'; 
 import IntegrationsPage from '../pages/Integrations/IntegrationsPage'; 
+import SettingsPage from '../pages/Settings/SettingsPage'; 
 
 const RouterSetup = () => {
   return (
@@ -118,7 +119,7 @@ const RouterSetup = () => {
         element={
           <ProtectedRoute>
             <PublicLayout>
-              <Dashboard /> {/* Placeholder, replace with actual SettingsPage if available */}
+              <SettingsPage /> {/* Placeholder, replace with actual SettingsPage if available */}
             </PublicLayout>
           </ProtectedRoute>
         }
