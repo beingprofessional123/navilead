@@ -17,6 +17,8 @@ const AcceptedOffer = require('./acceptedOffer');
 const AskQuestion = require('./askQuestion');
 const SmsTemplate = require('./smsTemplate');
 const SendSms = require('./sendSms');
+const ApiLog = require('./ApiLog');
+const Settings = require('./Settings');
 
 
 const db = {};
@@ -39,6 +41,8 @@ db.AcceptedOffer = AcceptedOffer(sequelize, DataTypes);
 db.AskQuestion = AskQuestion(sequelize, DataTypes);
 db.SmsTemplate = SmsTemplate(sequelize, DataTypes);
 db.SendSms = SendSms(sequelize, DataTypes);
+db.ApiLog = ApiLog(sequelize, DataTypes);
+db.Settings = Settings(sequelize, DataTypes);
 
 
 // Setup associations

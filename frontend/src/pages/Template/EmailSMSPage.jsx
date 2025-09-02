@@ -756,7 +756,7 @@ const EmailSMSPage = () => {
                                                 </div>
                                             </div>
                                             {/* Attachments Section */}
-                                            <div className="form-group mt-3">
+                                            <div className="form-group">
                                                 <label className="form-label">{translate('emailSmsPage.uploadFilesLabel')}</label>
                                                 <div className="upload-files-container">
                                                     <div className="drag-file-area">

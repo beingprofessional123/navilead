@@ -3638,4 +3638,29 @@ ul.notification-settings {
     white-space: nowrap;
 }
 
-
+.ck.ck-editor .ck-label {
+   font-weight: 400;
+}
+.ck.ck-editor .ck.ck-toolbar {
+    background: #00d4f0;
+}
+.ck.ck-editor .ck.ck-sticky-panel__content {
+    border: 1px solid #00d4f0;
+}
+.ck.ck-editor .ck.ck-toolbar__separator {
+    background: #0ea5b9 !important;
+}
+.ck.ck-editor .ck.ck-editor__main .ck.ck-content {
+    background-color: var(--input-background);
+    border: 1px solid var(--input);
+    color: var(--card-foreground) !important;
+    font-size: 12px;
+    border-radius: 0px 0px 8.7px 8.7px;
+}
+.ck.ck-editor .ck.ck-editor__main .ck.ck-content p.ck-placeholder {
+    color: var(--card-foreground) !important;
+}
+.ck.ck-editor .ck.ck-editor__main .ck.ck-content p.ck-placeholder::before {
+    color: var(--card-foreground) !important;
+}
+ 

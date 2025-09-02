@@ -1,7 +1,15 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const db = require('../models');
 const { User, UserVariable } = db;
+
+function generateApiKey(userId) {
+  return crypto
+    .createHash('md5')               // MD5 always gives 32 hex chars
+    .update(userId.toString())
+    .digest('hex');                  // no substring → full 32 chars
+}
 
 // REGISTER
 exports.register = async (req, res) => {
@@ -16,6 +24,10 @@ exports.register = async (req, res) => {
       phone,
       password: hashedPassword,
     });
+
+    const apiKey = generateApiKey(user.id);
+    await user.update({ apikey: apiKey });
+
 
     // Insert user variables
     const firstName = name.split(' ')[0] || name;
@@ -39,6 +51,8 @@ exports.register = async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      apikey: user.apikey,
+      createdAt: user.createdAt,
     };
 
     // Generate JWT token
@@ -83,11 +97,21 @@ exports.login = async (req, res) => {
       { expiresIn: '6h' }
     );
 
+    // ✅ Generate API key only if missing
+    let apiKey = user.apikey;
+    if (!apiKey || apiKey.trim() === "") {
+      apiKey = generateApiKey(user.id);
+      await user.update({ apikey: apiKey });
+    }
+
     const userData = {
       id: user.id,
       name: user.name,
       email: user.email,
       phone: user.phone,
+      apikey: apiKey,
+      language: user.language, // ✅ include language (useful for frontend i18n)
+      createdAt: user.createdAt,
     };
 
     res.status(200).json({ message: 'api.login.success', token, user: userData });
@@ -97,6 +121,7 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'api.login.serverError', error: error.message });
   }
 };
+
 
 
 // LOGOUT

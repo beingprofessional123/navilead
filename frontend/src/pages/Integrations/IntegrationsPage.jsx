@@ -1,7 +1,94 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import MobileHeader from '../../components/common/MobileHeader';
+import { AuthContext } from '../../context/AuthContext';
+import { toast } from 'react-toastify';
+import api from '../../utils/api';
 
 const IntegrationsPage = () => {
+  const [selectedIntegration, setSelectedIntegration] = useState(null);
+  const { authToken, user } = useContext(AuthContext);
+  const [loading, setLoading] = useState(true);
+  const [rateLimits, setRateLimits] = useState({
+    requestsToday: 0,
+    dailyLimit: 0,
+    usedPercentage: 0,
+  });
+
+  const baseUrl = process.env.REACT_APP_API_BASE_URL;
+
+  // Fetch user's API usage limits
+  const fetchDailyRateLimits = async () => {
+    if (!authToken) {
+      setLoading(false);
+      toast.error('Authentication required');
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await api.get('/integrations/rate-Limits', {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setRateLimits(response.data);
+    } catch (error) {
+      console.error('Error fetching rate limits:', error);
+      toast.error(error.response?.data?.error || 'Failed to fetch rate limits');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDailyRateLimits();
+  }, [authToken]);
+
+
+    const handleConnect = (name) => {
+        // Construct dynamic API URL
+        const apiUrl = `${baseUrl}/public-leads?apikey=${user.apikey}&email=secondary@example.com&fullName=John&companyName=Acme&phone=123456789&notifyOnFollowUp=true&tags=vip,priority&address=123 Street&cvrNumber=12345678&leadSource=${name}&internalNote=Test note&customerComment=Test comment&followUpDate=2025-08-25&value=1000`;
+
+        // Update the state
+        setSelectedIntegration({
+            name,
+            description: `Integration with ${name}`,
+            apiUrl,
+        });
+    };
+
+    const handleCopyApiUrl = () => {
+        if (selectedIntegration?.apiUrl) {
+            navigator.clipboard.writeText(selectedIntegration.apiUrl)
+                .then(() => {
+                    toast.success('API URL copied to clipboard!');
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    toast.error('Failed to copy. Please try again.'); // 😟 Show an error toast
+                });
+        } else {
+            navigator.clipboard.writeText(user.apikey)
+                .then(() => {
+                    toast.success('API Key copied to clipboard!');
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    toast.error('Failed to copy. Please try again.'); // 😟 Show an error toast
+                });
+
+        }
+    };
+    // Assuming you have a utility function or component for icons
+    const renderIcon = (name) => {
+        switch (name) {
+            case 'Facebook Ads':
+                return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-facebook" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>;
+            case 'Zapier':
+                return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>;
+            case 'WordPress':
+                return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-globe" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>;
+            default:
+                return null;
+        }
+    };
 
     return (
         <>
@@ -40,7 +127,7 @@ const IntegrationsPage = () => {
                                                 <h5>Marketing</h5>
                                             </div>
                                             <p>Import leads directly from your Facebook ad campaigns</p>
-                                            <a href="#" className="btn btn-send" data-bs-toggle="modal" data-bs-target="#myModal4"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Connect</a>
+                                            <a href="#" className="btn btn-send" data-bs-toggle="modal" data-bs-target="#myModal4" onClick={() => handleConnect("Facebook Ads")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Connect</a>
                                         </div>
                                     </div>
                                     <div className="col-md-4">
@@ -49,10 +136,10 @@ const IntegrationsPage = () => {
                                                 <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap text-primary" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg></span>
                                                 <h4>Zapier</h4>
                                                 <h5>Automation</h5>
-                                                <div className="status status3">Connected</div>
+                                                {/* <div className="status status3">Connected</div> */}
                                             </div>
                                             <p>Automate workflows between Navilead and 5000+ other apps</p>
-                                            <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>Configure</a>
+                                            <a href="#" className="btn btn-send" data-bs-toggle="modal" data-bs-target="#myModal4" onClick={() => handleConnect("Zapier")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Connect</a>
                                         </div>
                                     </div>
                                     <div className="col-md-4">
@@ -63,7 +150,7 @@ const IntegrationsPage = () => {
                                                 <h5>Web</h5>
                                             </div>
                                             <p>Import leads directly from your Facebook ad campaigns</p>
-                                            <a href="#" className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Connect</a>
+                                            <a href="#" className="btn btn-send" data-bs-toggle="modal" data-bs-target="#myModal4" onClick={() => handleConnect("WordPress")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Connect</a>
                                         </div>
                                     </div>
                                     <div className="col-md-4">
@@ -153,15 +240,22 @@ const IntegrationsPage = () => {
                                             <ul className="apikeys">
                                                 <li>
                                                     <div className="apikeys-left">
-                                                        <h3>Production Key</h3>
-                                                        <p>Created Dec 15, 2024</p>
+                                                        <h3>API Key</h3>
+                                                        <p>
+                                                            Created{" "}
+                                                            {new Date(user.createdAt).toLocaleDateString("en-US", {
+                                                                month: "short",
+                                                                day: "numeric",
+                                                                year: "numeric",
+                                                            })}
+                                                        </p>
                                                     </div>
                                                     <div className="apikeys-right">
-                                                        <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy m-0" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></a>
-                                                        <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings m-0" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg></a>
+                                                        <a href="#" className="btn btn-add" onClick={handleCopyApiUrl}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy m-0" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></a>
+                                                        {/* <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings m-0" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg></a> */}
                                                     </div>
                                                 </li>
-                                                <li>
+                                                {/* <li>
                                                     <div className="apikeys-left">
                                                         <h3>Development Key</h3>
                                                         <p>Created Dec 10, 2024</p>
@@ -170,9 +264,9 @@ const IntegrationsPage = () => {
                                                         <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy m-0" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></a>
                                                         <a href="#" className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings m-0" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg></a>
                                                     </div>
-                                                </li>
+                                                </li> */}
                                             </ul>
-                                            <a href="#" className="btn btn-send w-100"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Generate new key</a>
+                                            {/* <a href="#" className="btn btn-send w-100"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Generate new key</a> */}
                                         </div>
                                     </div>
                                     <div className="col-md-6">
@@ -181,7 +275,7 @@ const IntegrationsPage = () => {
                                             <p>Learn how to integrate with the Navilead API and automate your workflows.</p>
                                             <a href="#" className="btn btn-add w-100 text-start mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-external-link" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>API Documentation</a>
                                             <a href="#" className="btn btn-add w-100 text-start mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>API Examples</a>
-                                            <a href="#" className="btn btn-add w-100 text-start "><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>SDK Download</a>
+                                            {/* <a href="#" className="btn btn-add w-100 text-start "><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>SDK Download</a> */}
                                         </div>
                                     </div>
                                 </div>
@@ -191,24 +285,25 @@ const IntegrationsPage = () => {
                                     <div className="row">
                                         <div className="col-md-4">
                                             <div className="carddesign">
-                                                <h3 className="text-primary">1,847</h3>
+                                                <h3 className="text-primary">{loading ? '...' : rateLimits.requestsToday}</h3>
                                                 <p>Requests today</p>
                                             </div>
                                         </div>
                                         <div className="col-md-4">
                                             <div className="carddesign">
-                                                <h3>5,000</h3>
+                                                <h3>{loading ? '...' : rateLimits.dailyLimit}</h3>
                                                 <p>Daily limit</p>
                                             </div>
                                         </div>
                                         <div className="col-md-4">
                                             <div className="carddesign">
-                                                <h3 className="text-green-500">37%</h3>
+                                                <h3 className="text-green-500">{loading ? '...' : rateLimits.usedPercentage}%</h3>
                                                 <p>Used</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
 
 
                             </div>
@@ -224,9 +319,12 @@ const IntegrationsPage = () => {
                     <div className="modal-content">
 
                         <div className="modal-header">
-                            <h4 className="modal-title"><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-facebook" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></span>Facebook Ads</h4>
-                            <p>Import leads directly from your Facebook ad campaigns</p>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+                            <h4 className="modal-title">
+                                <span>{renderIcon(selectedIntegration?.name)}</span>
+                                {selectedIntegration?.name}
+                            </h4>
+                            <p>Import leads directly from your {selectedIntegration?.name} campaigns</p>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
                         </div>
 
                         <div className="modal-body">
@@ -236,18 +334,20 @@ const IntegrationsPage = () => {
                                         <div className="form-group mb-2">
                                             <label>API Keys</label>
                                             <div className="input-group">
-                                                <input type="text" className="form-control" id="" placeholder="eg: http://me@example.com/myresource/ ..." readonly="" />
-                                                <button className="btn btn-send" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-copy m-0" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button>
+                                                <input type="text" className="form-control" id="" placeholder={selectedIntegration?.name} value={selectedIntegration?.apiUrl || ""} readOnly />
+                                                <button className="btn btn-send" type="button" onClick={handleCopyApiUrl}>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy m-0" aria-hidden="true">
+                                                        <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                                                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </div>
-                                        <p className="connectbox-note">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                                            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                                            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                                            consequat.</p>
+                                        <p className="connectbox-note">{selectedIntegration?.description}</p>
                                     </div>
 
                                     <div className="modalfooter btn-right">
-                                        <a href="#" className="btn btn-add">Annuller</a>
+                                        <a href="#" className="btn btn-add" data-bs-dismiss="modal">Close</a>
                                     </div>
                                 </form>
                             </div>
@@ -258,7 +358,6 @@ const IntegrationsPage = () => {
                     </div>
                 </div>
             </div>
-
         </>
     );
 };

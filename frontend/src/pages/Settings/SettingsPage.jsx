@@ -6,38 +6,36 @@ import { AuthContext } from '../../context/AuthContext';
 import api from '../../utils/api';
 import MobileHeader from '../../components/common/MobileHeader';
 import { useTranslation } from "react-i18next";
+import 'react-toastify/dist/ReactToastify.css';
 
 const SettingsPage = () => {
     const { authToken } = useContext(AuthContext);
     const { t: translate } = useTranslation();
-
-    // State for Account & Profile
-    const [companyName, setCompanyName] = useState('');
-    const [contactEmail, setContactEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [website, setWebsite] = useState('');
+    const [currencies, setCurrencies] = useState([]);
+    
+    // Consolidated formData state to include all fields
+    const [formData, setFormData] = useState({
+        companyName: "",
+        email: "",
+        phone: "",
+        websiteUrl: "",
+        timezone: "",
+        currency: "",
+        language: "en", // Default to English as per the original code
+        emailSignature: "",
+        primaryColor: "#00ffff", // Default values
+        secondaryColor: "#1a1a2e", // Default values
+    });
 
     // State for Notifications
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [smsNotifications, setSmsNotifications] = useState(false);
     const [desktopNotifications, setDesktopNotifications] = useState(true);
 
-    // State for Region & Language
-    const [timezone, setTimezone] = useState('Europa/København');
-    const [currency, setCurrency] = useState('DKK (Danske kroner)');
-    const [language, setLanguage] = useState('Dansk');
-
-    // State for Email Signature
-    const [emailSignature, setEmailSignature] = useState('');
-
     // State for Corporate Branding (Logo)
     const [companyLogoFile, setCompanyLogoFile] = useState(null);
-    const [currentLogo, setCurrentLogo] = useState({ name: 'navilead-logo.png', uploaded: '2 days ago' }); // Mock existing logo
+    const [currentLogo, setCurrentLogo] = useState(null);
     const logoFileInputRef = useRef(null);
-
-    // State for Corporate Branding (Colors)
-    const [primaryColor, setPrimaryColor] = useState('#00ffff');
-    const [secondaryColor, setSecondaryColor] = useState('#1a1a2e');
 
     // Mock Users Data (replace with API calls in a real app)
     const mockUsers = [
@@ -48,41 +46,92 @@ const SettingsPage = () => {
     const activeUsers = mockUsers.filter(user => user.status === translate('settingsPage.userStatusActive')).length;
     const totalAllowedUsers = 5; // Mock total allowed users
 
-    // --- Placeholder API Functions ---
+    // --- API Functions ---
     const fetchSettings = async () => {
-        // In a real app, you would fetch all these settings from your backend
-        // For now, they are initialized to their default/mock states.
-        // setLoading(true);
-        // try {
-        //   const response = await api.get('/settings', { headers: { Authorization: `Bearer ${authToken}` } });
-        //   setCompanyName(response.data.companyName);
-        //   setContactEmail(response.data.contactEmail);
-        //   setPhone(response.data.phone);
-        //   setWebsite(response.data.website);
-        //   setEmailNotifications(response.data.emailNotifications);
-        //   // ... populate all other states
-        // } catch (error) {
-        //   toast.error(translate('api.settings.fetchError'));
-        // } finally {
-        //   setLoading(false);
-        // }
+        try {
+            const response = await api.get("/settings", {
+                headers: { Authorization: `Bearer ${authToken}` }
+            });
+
+            const data = response.data;
+            setFormData({
+                companyName: data.companyName || "",
+                email: data.email || "",
+                phone: data.phone || "",
+                websiteUrl: data.websiteUrl || "",
+                timezone: data.timezone || "",
+                currency: data.currency || "",
+                language: data.language || "en",
+                emailSignature: data.emailSignature || "",
+                primaryColor: data.primaryColor || "#00ffff", // Assuming API returns this
+                secondaryColor: data.secondaryColor || "#1a1a2e", // Assuming API returns this
+            });
+
+            // Set logo state if it exists
+           if (data.companyLogo) {
+            const logoUrl = data.companyLogo; // Already full URL
+            setCurrentLogo({
+                url: logoUrl,
+                name: logoUrl.split("/").pop(), // extract filename like 1756718625055-26.jpeg
+                uploaded: translate("settingsPage.systemLastUpdated")
+            });
+            } else {
+            setCurrentLogo(null);
+            }
+
+
+        } catch (error) {
+            toast.error("Failed to fetch settings.");
+        }
     };
 
     useEffect(() => {
+        const fetchCurrencies = async () => {
+            try {
+                const response = await api.get('/currencies');
+                setCurrencies(response.data);
+            } catch (error) {
+                console.error("Error fetching currencies:", error);
+                toast.error(translate('api.currencies.fetchError'));
+            }
+        };
+        fetchCurrencies();
         fetchSettings();
-    }, [authToken, translate]); // Added translate to dependencies
+    }, [authToken, translate]);
 
+    // Handle input changes for all form fields
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // Save all changes
     const handleSaveChanges = async () => {
-        // This function would send all updated settings to the backend
-        // For now, it's a placeholder.
-        console.log("Saving changes...");
-        // try {
-        //   await api.put('/settings', { companyName, contactEmail, phone, website, /* ... all other settings */ }, { headers: { Authorization: `Bearer ${authToken}` } });
-        //   toast.success(translate('api.settings.saveSuccess'));
-        // } catch (error) {
-        //   toast.error(translate('api.settings.saveError'));
-        // }
-        toast.success(translate('api.settings.saveSuccess'));
+        try {
+            // Only send non-empty and non-default fields
+            const updateData = {};
+            Object.keys(formData).forEach((key) => {
+                if (formData[key] !== "" && formData[key] !== null) {
+                    updateData[key] = formData[key];
+                }
+            });
+
+            if (Object.keys(updateData).length === 0) {
+                toast.warn("No changes to update.");
+                return;
+            }
+
+            await api.put("/settings", updateData, {
+                headers: { Authorization: `Bearer ${authToken}` }
+            });
+
+            toast.success("Settings updated successfully!");
+        } catch (error) {
+            toast.error("Failed to update settings.");
+        }
     };
 
     const handleLogoUpload = async (e) => {
@@ -95,21 +144,24 @@ const SettingsPage = () => {
         setCompanyLogoFile(file);
         setCurrentLogo({ name: file.name, uploaded: translate('settingsPage.systemLastUpdated') });
 
-        // In a real app, you would upload the file to your backend/storage
-        // const formData = new FormData();
-        // formData.append('logo', file);
-        // try {
-        //     await api.post('/settings/upload-logo', formData, { headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'multipart/form-data' } });
-        //     toast.success(translate('api.settings.logoUploadSuccess'));
-        //     // Update currentLogo state with actual backend response data (e.g., filename, URL)
-        // } catch (error) {
-        //     toast.error(translate('api.settings.logoUploadError'));
-        // }
-        toast.success(translate('api.settings.logoUploadSuccess'));
+        const formData = new FormData();
+        formData.append('logo', file);
+        try {
+            await api.post('/settings/upload-logo', formData, {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            toast.success(translate('api.settings.logoUploadSuccess'));
+            // Refetch settings to get the actual path from the backend
+            fetchSettings(); 
+        } catch (error) {
+            toast.error(translate('api.settings.logoUploadError'));
+        }
     };
 
     const handleRemoveLogo = async () => {
-        // In a real app, you would send a request to delete the logo from backend/storage
         Swal.fire({
             title: translate('emailSmsPage.areYouSure'),
             text: translate('emailSmsPage.revertWarning'),
@@ -126,13 +178,12 @@ const SettingsPage = () => {
                 if (logoFileInputRef.current) {
                     logoFileInputRef.current.value = null; // Clear file input
                 }
-                // try {
-                //     await api.delete('/settings/remove-logo', { headers: { Authorization: `Bearer ${authToken}` } });
-                //     toast.success(translate('api.settings.logoRemoveSuccess'));
-                // } catch (error) {
-                //     toast.error(translate('api.settings.logoRemoveError'));
-                // }
-                toast.success(translate('api.settings.logoRemoveSuccess'));
+                try {
+                    await api.delete('/settings/remove-logo', { headers: { Authorization: `Bearer ${authToken}` } });
+                    toast.success(translate('api.settings.logoRemoveSuccess'));
+                } catch (error) {
+                    toast.error(translate('api.settings.logoRemoveError'));
+                }
             }
         });
     };
@@ -140,22 +191,12 @@ const SettingsPage = () => {
     const handlePreviewSignature = () => {
         Swal.fire({
             title: translate('settingsPage.previewButton'),
-            html: `<pre style="white-space: pre-wrap; text-align: left; color: #fff; background: #212529; padding: 15px; border-radius: 8px;">${emailSignature || translate('settingsPage.defaultEmailSignaturePlaceholder')}</pre>`,
+            html: `<pre style="white-space: pre-wrap; text-align: left; color: #fff; background: #212529; padding: 15px; border-radius: 8px;">${formData.emailSignature || translate('settingsPage.defaultEmailSignaturePlaceholder')}</pre>`,
             confirmButtonText: translate('emailSmsPage.cancel'),
             customClass: {
                 popup: 'swal2-dark'
             }
         });
-    };
-
-    const handleSaveSignature = async () => {
-        // try {
-        //     await api.put('/settings/email-signature', { signature: emailSignature }, { headers: { Authorization: `Bearer ${authToken}` } });
-        //     toast.success(translate('api.settings.signatureSaveSuccess'));
-        // } catch (error) {
-        //     toast.error(translate('api.settings.signatureSaveError'));
-        // }
-        toast.success(translate('api.settings.signatureSaveSuccess'));
     };
 
     const handleInviteUser = async () => {
@@ -165,14 +206,14 @@ const SettingsPage = () => {
             inputLabel: translate('settingsPage.contactEmailLabel'),
             inputPlaceholder: translate('settingsPage.contactEmailPlaceholder'),
             showCancelButton: true,
-            confirmButtonText: translate('emailSmsPage.send'), // Reusing "Send"
+            confirmButtonText: translate('emailSmsPage.send'),
             cancelButtonText: translate('emailSmsPage.cancel'),
             inputValidator: (value) => {
                 if (!value) {
-                    return translate('offerPage.askQuestionInputValidator'); // Reusing "You need to write something!"
+                    return translate('offerPage.askQuestionInputValidator');
                 }
                 if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                    return 'Please enter a valid email address.'; // This specific validation might not need i18n if it's generic
+                    return 'Please enter a valid email address.';
                 }
                 return null;
             },
@@ -182,26 +223,24 @@ const SettingsPage = () => {
         });
 
         if (email) {
-            // try {
-            //     await api.post('/users/invite', { email }, { headers: { Authorization: `Bearer ${authToken}` } });
-            //     toast.success(translate('api.settings.userInviteSuccess'));
-            // } catch (error) {
-            //     toast.error(translate('api.settings.userInviteError'));
-            // }
-            toast.success(translate('api.settings.userInviteSuccess', { email }));
+            try {
+                await api.post('/settings/invite-user', { email }, { headers: { Authorization: `Bearer ${authToken}` } });
+                toast.success(translate('api.settings.userInviteSuccess', { email }));
+            } catch (error) {
+                toast.error(translate('api.settings.userInviteError'));
+            }
         }
     };
 
     const handleEditUser = (userId) => {
         console.log(`Editing user ${userId}`);
-        // Implement logic to open a modal or navigate to edit user details
         toast.info(`Feature to edit user ${userId} coming soon!`);
     };
 
     return (
         <div className="mainbody">
             <div className="container-fluid">
-                <MobileHeader /> {/* This component handles the mobile header from your input */}
+                <MobileHeader />
                 <div className="row top-row">
                     <div className="col-md-6">
                         <div className="dash-heading">
@@ -231,13 +270,13 @@ const SettingsPage = () => {
                                 <div className="col-md-6">
                                     <div className="form-group">
                                         <label>{translate('settingsPage.companyNameLabel')}</label>
-                                        <input type="text" className="form-control" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder={translate('settingsPage.companyNamePlaceholder')} />
+                                        <input type="text" className="form-control" name="companyName" value={formData.companyName} onChange={handleChange} placeholder={translate('settingsPage.companyNamePlaceholder')} />
                                     </div>
                                 </div>
                                 <div className="col-md-6">
                                     <div className="form-group">
                                         <label>{translate('settingsPage.contactEmailLabel')}</label>
-                                        <input type="text" className="form-control" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder={translate('settingsPage.contactEmailPlaceholder')} />
+                                        <input type="text" className="form-control" name="email" value={formData.email} onChange={handleChange} placeholder={translate('settingsPage.contactEmailPlaceholder')} />
                                     </div>
                                 </div>
                             </div>
@@ -245,13 +284,13 @@ const SettingsPage = () => {
                                 <div className="col-md-6">
                                     <div className="form-group mb-2">
                                         <label>{translate('settingsPage.phoneLabel')}</label>
-                                        <input type="text" className="form-control" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={translate('settingsPage.phonePlaceholder')} />
+                                        <input type="text" className="form-control" name="phone" value={formData.phone} onChange={handleChange} placeholder={translate('settingsPage.phonePlaceholder')} />
                                     </div>
                                 </div>
                                 <div className="col-md-6">
                                     <div className="form-group mb-2">
                                         <label>{translate('settingsPage.websiteLabel')}</label>
-                                        <input type="text" className="form-control" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder={translate('settingsPage.websitePlaceholder')} />
+                                        <input type="text" className="form-control" name="websiteUrl" value={formData.websiteUrl} onChange={handleChange} placeholder={translate('settingsPage.websitePlaceholder')} />
                                     </div>
                                 </div>
                             </div>
@@ -317,7 +356,7 @@ const SettingsPage = () => {
                                 <div className="form-group mb-1">
                                     <label>{translate('settingsPage.timezoneLabel')}</label>
                                     <div className="inputselect">
-                                        <select className="form-select" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+                                        <select className="form-select" name="timezone" value={formData.timezone} onChange={handleChange}>
                                             <option>{translate('settingsPage.timezoneCopenhagen')}</option>
                                             <option>{translate('settingsPage.timezoneStockholm')}</option>
                                             <option>{translate('settingsPage.timezoneOslo')}</option>
@@ -331,12 +370,18 @@ const SettingsPage = () => {
                                 <div className="form-group mb-1">
                                     <label>{translate('settingsPage.currencyLabel')}</label>
                                     <div className="inputselect">
-                                        <select className="form-select" value={currency} onChange={(e) => setCurrency(e.target.value)}>
-                                            <option>{translate('settingsPage.currencyDKK')}</option>
-                                            <option>{translate('settingsPage.currencySEK')}</option>
-                                            <option>{translate('settingsPage.currencyNOK')}</option>
-                                            <option>{translate('settingsPage.currencyEUR')}</option>
-                                            <option>{translate('settingsPage.currencyUSD')}</option>
+                                        <select
+                                            className="form-select"
+                                            id="currencySelect"
+                                            name="currency"
+                                            value={formData.currency}
+                                            onChange={handleChange}
+                                        >
+                                            {currencies.map(c => (
+                                                <option key={c.id} value={c.id}>
+                                                    {c.code} ({c.symbol})
+                                                </option>
+                                            ))}
                                         </select>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                                     </div>
@@ -346,11 +391,9 @@ const SettingsPage = () => {
                                 <div className="form-group mb-1">
                                     <label>{translate('settingsPage.languageLabel')}</label>
                                     <div className="inputselect">
-                                        <select className="form-select" value={language} onChange={(e) => setLanguage(e.target.value)}>
-                                            <option>{translate('settingsPage.languageDanish')}</option>
-                                            <option>{translate('settingsPage.languageSwedish')}</option>
-                                            <option>{translate('settingsPage.languageNorwegian')}</option>
-                                            <option>{translate('settingsPage.languageEnglish')}</option>
+                                        <select className="form-select" name="language" value={formData.language} onChange={handleChange}>
+                                            <option value="da">{translate('settingsPage.languageDanish')}</option>
+                                            <option value="en">{translate('settingsPage.languageEnglish')}</option>
                                         </select>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                                     </div>
@@ -369,7 +412,7 @@ const SettingsPage = () => {
                     <div className="formdesign">
                         <div className="form-group">
                             <label>{translate('settingsPage.defaultEmailSignatureLabel')}</label>
-                            <textarea className="form-control" rows="7" value={emailSignature} onChange={(e) => setEmailSignature(e.target.value)} placeholder={translate('settingsPage.defaultEmailSignaturePlaceholder')}></textarea>
+                            <textarea className="form-control" rows="7" name="emailSignature" value={formData.emailSignature} onChange={handleChange} placeholder={translate('settingsPage.defaultEmailSignaturePlaceholder')}></textarea>
                             <span className="inputnote">{translate('settingsPage.emailSignatureNote')}</span>
                         </div>
                         <div className="modalfooter">
@@ -377,9 +420,9 @@ const SettingsPage = () => {
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
                                 {translate('settingsPage.previewButton')}
                             </button>
-                            <button className="btn btn-send" onClick={handleSaveSignature}>
+                            <button className="btn btn-send" onClick={handleSaveChanges}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-save" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path><path d="M7 3v4a1 1 0 0 0 1 1h7"></path></svg>
-                                {translate('settingsPage.saveSignatureButton')}
+                                {translate('settingsPage.saveChangesButton')}
                             </button>
                         </div>
                     </div>
@@ -445,8 +488,6 @@ const SettingsPage = () => {
                                         </span>
                                     </label>
                                     <h3 className="dynamic-message">{translate('settingsPage.logoFileFormats')}</h3>
-                                    {/* The "Vælg fil" button in the original HTML is redundant given the label.
-                                        Keeping it as a button for direct click functionality if desired by user, otherwise the label handles it. */}
                                     <button type="button" className="btn btn-add" onClick={() => logoFileInputRef.current?.click()}>
                                         {translate('settingsPage.chooseFileButton')}
                                     </button>
@@ -458,11 +499,19 @@ const SettingsPage = () => {
                                 <div className="carddesign uploadview mt-3">
                                     <div className="uploadview-left">
                                         <span className="uploadview-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image text-primary" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>
+                                            <img
+                                            src={currentLogo.url}
+                                            alt="Company Logo"
+                                            style={{ width: "42px", height: "42px", borderRadius: "8px" }}
+                                            />
+
+                                            {!currentLogo && (
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image text-primary" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>
+                                            )}
                                         </span>
                                         <div className="uploadview-info">
                                             <h4>{companyLogoFile ? companyLogoFile.name : currentLogo.name}</h4>
-                                            <h5>{translate('settingsPage.currentLogoUploadDate')}</h5> {/* Mocked upload date */}
+                                            <h5>{translate('settingsPage.currentLogoUploadDate')}</h5>
                                         </div>
                                     </div>
                                     <button className="btn btn-add" onClick={handleRemoveLogo}>
@@ -484,9 +533,9 @@ const SettingsPage = () => {
                                         <div className="form-group">
                                             <label>{translate('settingsPage.primaryColorLabel')}</label>
                                             <div className="standardcolors-main">
-                                                <div className="standardcolorbox" style={{ backgroundColor: primaryColor }}></div>
-                                                <input type="color" className="form-control" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} style={{ maxWidth: '94px', height: '36px' }} />
-                                                <input type="text" className="form-control" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} placeholder="#00FFFF" />
+                                                <div className="standardcolorbox" style={{ backgroundColor: formData.primaryColor }}></div>
+                                                <input type="color" className="form-control" name="primaryColor" value={formData.primaryColor} onChange={handleChange} style={{ maxWidth: '94px', height: '36px' }} />
+                                                <input type="text" className="form-control" name="primaryColor" value={formData.primaryColor} onChange={handleChange} placeholder="#00FFFF" />
                                             </div>
                                         </div>
                                     </div>
@@ -494,9 +543,9 @@ const SettingsPage = () => {
                                         <div className="form-group">
                                             <label>{translate('settingsPage.secondaryColorLabel')}</label>
                                             <div className="standardcolors-main">
-                                                <div className="standardcolorbox" style={{ backgroundColor: secondaryColor }}></div>
-                                                <input type="color" className="form-control" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} style={{ maxWidth: '94px', height: '36px' }} />
-                                                <input type="text" className="form-control" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} placeholder="#1A1A2E" />
+                                                <div className="standardcolorbox" style={{ backgroundColor: formData.secondaryColor }}></div>
+                                                <input type="color" className="form-control" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} style={{ maxWidth: '94px', height: '36px' }} />
+                                                <input type="text" className="form-control" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} placeholder="#1A1A2E" />
                                             </div>
                                         </div>
                                     </div>
@@ -527,7 +576,6 @@ const SettingsPage = () => {
                     </ul>
                 </div>
             </div>
-            <ToastContainer position="top-center" autoClose={3000} />
         </div>
     );
 };
