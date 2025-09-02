@@ -24,6 +24,38 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    companyName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    websiteUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    timezone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    currency: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    language: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    emailSignature: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    companyLogo: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    apikey: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   }, {
     tableName: 'users',
     timestamps: true,
@@ -44,6 +76,7 @@ module.exports = (sequelize, DataTypes) => {
       as: 'emailTemplates',
     });
     User.hasMany(models.UserVariable, { foreignKey: 'userId', as: 'variables' });
+    User.hasMany(models.ApiLog, { foreignKey: "userId", as: "apiLogs" });
 
   };
 

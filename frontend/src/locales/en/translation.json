@@ -162,6 +162,8 @@
     "leadSourceLinkedIn": "LinkedIn",
     "leadSourceTradeShow": "Trade Show",
     "leadSourceColdOutreach": "Cold Outreach",
+    "leadSourceZapier": "Zapier",
+    "leadSourceWordPress": "WordPress",
     "leadSourceOther": "Other",
     "statusLabel": "Status",
     "tagsLabel": "Tags",
@@ -561,6 +563,9 @@
     "systemStatusOnline": "Online",
     "systemLastUpdated": "Last updated: just now",
     "logoUploadClick": "Click to upload file",
-    "logoUploadDragDrop": "or drag and drop here"
+    "standardColorsLabel": "Standard Colors",
+    "standardColorsNote": "Select your company’s standard colors",
+    "primaryColorLabel": "Primary Color",
+    "secondaryColorLabel": "Secondary Color"
   }
 }

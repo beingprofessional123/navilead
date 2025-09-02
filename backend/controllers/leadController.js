@@ -1,6 +1,7 @@
 require('dotenv').config();
 const db = require("../models");
-const { Lead, Status, User } = db;
+const { Lead, Status, User ,ApiLog ,Settings } = db;
+const { Op } = require("sequelize");
 
 const BACKEND_URL = process.env.BACKEND_URL;
 
@@ -15,7 +16,7 @@ const generateLeadNumber = async () => {
 // Helper to get Pending statusId dynamically
 const getPendingStatusId = async () => {
   const pendingStatus = await Status.findOne({
-    where: { name: "Sent", statusFor: "Lead" }
+    where: { name: "New", statusFor: "Lead" }
   });
   return pendingStatus ? pendingStatus.id : null;
 };
@@ -243,131 +244,202 @@ exports.deleteLead = async (req, res) => {
   }
 };
 
-
+// Main controller function
 exports.createPublicLead = async (req, res) => {
   try {
-    const query = req.query;
+    // Determine data source based on request method
     const data = req.method === "GET" ? req.query : req.body;
+    const apikey = req.headers["x-api-key"] || req.query.apikey;
 
-    if (req.method === "GET" && req.body && req.body.attachments) {
+    // Prevent GET with file uploads
+    if (req.method === "GET" && req.body && data.attachments) {
       return res.status(400).json({
         success: false,
-        message: "api.leads.publicLeadAttachmentsGetMethod"
+        message: "Attachments are not allowed with GET method.",
       });
     }
 
-
-    // Extract userId
-    const userId = query.userId;
-    const email = query.email;
-
+    // Validation functions
     const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
     const isValidPhone = (phone) => /^[0-9+\-\s]{6,20}$/.test(phone);
     const isValidCVR = (cvr) => /^[0-9]{8}$/.test(cvr);
 
-     if (!userId) {
-      return res.status(400).json({ success: false, message: "api.leads.publicLeadUserIdRequired" });
-    }
-    if (email && !isValidEmail(email)) {
-      return res.status(400).json({ success: false, message: "api.leads.publicLeadInvalidEmail" });
-    }
-
-    // Determine user
+    // --- Authentication ---
     let user;
-    if (userId) {
-      user = await User.findByPk(userId);
+    if (apikey) {
+      user = await User.findOne({
+        where: {
+          apikey
+        }
+      });
       if (!user) {
-        return res.status(400).json({ success: false, message: "api.leads.publicLeadUserNotFound" });
+        return res.status(401).json({
+          success: false,
+          message: "Invalid API key. Please provide a valid key in the header (x-api-key) or URL query (?apikey=).",
+        });
       }
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Authentication required. Pass the API key in the header (x-api-key) or as a query parameter (?apikey=).",
+      });
     }
 
-    // Validate required lead fields
-    if (!query.fullName || query.fullName.trim() === "") {
-      return res.status(400).json({ success: false, message: "api.leads.publicLeadFullNameRequired" });
+    // --- Required fields ---
+    if (!data.fullName || data.fullName.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Full name is required.",
+      });
     }
-    if (!query.phone || !isValidPhone(query.phone)) {
-      return res.status(400).json({ success: false, message: "api.leads.publicLeadPhoneRequired" });
+
+    // --- Optional field validation ---
+    if (data.email && !isValidEmail(data.email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format.",
+      });
     }
-    if (!query.companyName || query.companyName.trim() === "") {
-      return res.status(400).json({ success: false, message: "api.leads.publicLeadCompanyNameRequired" });
+    if (data.phone && !isValidPhone(data.phone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number format.",
+      });
+    }
+    if (data.cvrNumber && !isValidCVR(data.cvrNumber)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid CVR number (must be 8 digits).",
+      });
     }
 
     const allowedLeadSources = [
-      "Facebook Ads",
-      "Google Ads",
-      "Website Form",
-      "Phone Call",
-      "Email",
-      "Referral",
-      "LinkedIn",
-      "Trade Show",
-      "Cold Outreach",
-      "Other",
+      "Facebook Ads", "Google Ads", "Website Form", "Phone Call",
+      "Email", "Referral", "LinkedIn", "Trade Show",
+      "Cold Outreach", "Zapier", "WordPress", "Other",
     ];
-
-    if (query.leadSource && !allowedLeadSources.includes(query.leadSource)) {
+    if (data.leadSource && !allowedLeadSources.includes(data.leadSource)) {
       return res.status(400).json({
         success: false,
-        message: "api.leads.publicLeadInvalidSource",
+        message: "Invalid lead source provided.",
       });
     }
 
-    // Check for duplicate lead
-    const existingLead = await Lead.findOne({
+    // --- Daily API Limit Check ---
+
+    // Get the daily limit from the settings table.
+    const dailyLimitSetting = await Settings.findOne({
+      where: {
+        key: "api_Daily_limit"
+      },
+    });
+    const dailyLimit = dailyLimitSetting ? Number(dailyLimitSetting.value) : 5;
+
+    // Get the start and end of the current day.
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    // Count API hits for the current user today.
+    const hitCount = await ApiLog.count({
       where: {
         userId: user.id,
-        fullName: query.fullName ? query.fullName.trim() : null,
-        attName: query.attName ? query.attName.trim() : null,
-        phone: query.phone ? query.phone.trim() : null,
-        email: query.email ? query.email.trim().toLowerCase() : null,
-        companyName: query.companyName ? query.companyName.trim() : null,
-        cvrNumber: query.cvrNumber ? query.cvrNumber.trim() : null,
-        leadSource: query.leadSource ? query.leadSource.trim() : null,
+        createdAt: {
+          [Op.between]: [todayStart, todayEnd],
+        },
       },
     });
 
-
-    if (existingLead) {
-      const existingStatus = await Status.findByPk(existingLead.statusId);
-
-      return res.status(409).json({
+    if (hitCount >= dailyLimit) {
+      return res.status(429).json({
         success: false,
-        message: "api.leads.publicLeadDuplicate",
-        lead: {
-          ...existingLead.toJSON(),
-          status: existingStatus ? existingStatus.name : null,  // replace statusId with status name
-        }
+        message: "Daily API request limit reached.",
       });
     }
 
-    // Default status
-    const statusId = await getPendingStatusId();
-    if (!statusId) {
-      return res.status(400).json({ success: false, message: "api.leads.publicLeadDefaultStatusNotFound" });
+    // --- Duplicate Lead Check ---
+    const duplicateConditions = [];
+    if (data.email) {
+      duplicateConditions.push({
+        email: data.email.trim().toLowerCase()
+      });
+    }
+    if (data.phone) {
+      duplicateConditions.push({
+        phone: data.phone.trim()
+      });
+    }
+    if (data.fullName && data.companyName) {
+      duplicateConditions.push({
+        fullName: data.fullName.trim(),
+        companyName: data.companyName.trim(),
+      });
     }
 
-    // Optional fields validation
+    let existingLead = null;
+    if (duplicateConditions.length > 0) {
+      existingLead = await Lead.findOne({
+        where: {
+          userId: user.id,
+          [Op.or]: duplicateConditions,
+        },
+      });
+    }
+
+    if (existingLead) {
+      const existingStatus = await Status.findByPk(existingLead.statusId);
+      return res.status(409).json({
+        success: false,
+        message: "Duplicate lead already exists.",
+        lead: {
+          ...existingLead.toJSON(),
+          status: existingStatus ? existingStatus.name : null,
+        },
+      });
+    }
+
+    // --- Prepare Data for New Lead ---
+    const statusId = await getPendingStatusId();
+    if (!statusId) {
+      return res.status(400).json({
+        success: false,
+        message: "Default pending status not found.",
+      });
+    }
+
     let followUpDate = null;
-    if (query.followUpDate) {
-      const date = new Date(query.followUpDate);
-      if (isNaN(date.getTime())) return res.status(400).json({ success: false, message: "api.leads.publicLeadInvalidFollowUpDate" });
+    if (data.followUpDate) {
+      const date = new Date(data.followUpDate);
+      if (isNaN(date.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid follow-up date.",
+        });
+      }
       followUpDate = date;
     }
 
-    const notifyOnFollowUp = query.notifyOnFollowUp === "true";
+    const notifyOnFollowUp = data.notifyOnFollowUp === "true";
 
     let tags = null;
-    if (query.tags && typeof query.tags === "string") {
-      tags = query.tags.split(",").map(tag => tag.trim()).filter(tag => tag.length > 0);
+    if (data.tags && typeof data.tags === "string") {
+      tags = data.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0);
     }
 
-    const value = query.value ? Number(query.value) : null;
-    if (query.value && isNaN(value)) return res.status(400).json({ success: false, message: "api.leads.publicLeadValueNotNumber" });
+    const value = data.value ? Number(data.value) : null;
+    if (data.value && isNaN(value)) {
+      return res.status(400).json({
+        success: false,
+        message: "Value must be a number.",
+      });
+    }
 
-    // Generate lead number
     const leadNumber = await generateLeadNumber();
 
-    // Handle attachments only if POST (files uploaded)
     let attachments = [];
     if (req.method === "POST" && req.files && req.files.length > 0) {
       attachments = req.files.map((file) => ({
@@ -376,28 +448,33 @@ exports.createPublicLead = async (req, res) => {
         mimetype: file.mimetype,
         size: file.size,
         path: file.path,
-        url: `${BACKEND_URL}/${file.path.replace(/\\/g, "/")}`, // ensure forward slashes
+        url: `${BACKEND_URL}/${file.path.replace(/\\/g, "/")}`,
       }));
     }
 
-
     const status = await Status.findByPk(statusId);
 
-    // Create new lead
+    // --- Create New API Log Entry ---
+    await ApiLog.create({
+      userId: user.id,
+      url: req.originalUrl,
+    });
+
+    // --- Create New Lead ---
     const newLead = await Lead.create({
       userId: user.id,
       leadNumber,
-      fullName: query.fullName.trim(),
-      attName: query.attName || "",
-      phone: query.phone.trim(),
-      email: email || "",
-      address: query.address || "",
-      companyName: query.companyName.trim(),
-      cvrNumber: query.cvrNumber || "",
-      leadSource: query.leadSource || "",
+      fullName: data.fullName.trim(),
+      attName: data.attName || "",
+      phone: data.phone || "",
+      email: data.email ? data.email.toLowerCase() : "",
+      address: data.address || "",
+      companyName: data.companyName || "",
+      cvrNumber: data.cvrNumber || "",
+      leadSource: data.leadSource || "",
       tags,
-      internalNote: query.internalNote || "",
-      customerComment: query.customerComment || "",
+      internalNote: data.internalNote || "",
+      customerComment: data.customerComment || "",
       followUpDate,
       notifyOnFollowUp,
       attachments,
@@ -407,16 +484,18 @@ exports.createPublicLead = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "api.leads.publicLeadCreateSuccess",
+      message: "Lead created successfully.",
       lead: {
         ...newLead.toJSON(),
-        status: status ? status.name : null,  // replace statusId with status name
+        status: status ? status.name : null,
       },
     });
-
-
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while creating the lead.",
+      error: err.message,
+    });
   }
 };

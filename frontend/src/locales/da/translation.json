@@ -162,6 +162,8 @@
     "leadSourceLinkedIn": "LinkedIn",
     "leadSourceTradeShow": "Messe",
     "leadSourceColdOutreach": "Koldt Opsøgende",
+     "leadSourceZapier": "Zapier",
+    "leadSourceWordPress": "WordPress",
     "leadSourceOther": "Andet",
     "statusLabel": "Status",
     "tagsLabel": "Tags",
@@ -561,6 +563,10 @@
     "systemStatusOnline": "Online",
     "systemLastUpdated": "Sidst opdateret: lige nu",
     "logoUploadClick": "Klik for at uploade fil",
-    "logoUploadDragDrop": "eller træk og slip her"
+    "logoUploadDragDrop": "eller træk og slip her",
+    "standardColorsLabel": "Standardfarver",
+    "standardColorsNote": "Vælg din virksomheds standardfarver",
+    "primaryColorLabel": "Primærfarve",
+    "secondaryColorLabel": "Sekundærfarve"
   }
 }
