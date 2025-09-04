@@ -26,17 +26,4 @@ router.put('/:id', workflowController.updateWorkflow);
 // Delete a workflow
 router.delete('/:id', workflowController.deleteWorkflow);
 
-// -------------------
-// Workflow Step Routes
-// -------------------
-
-// Add a new step to a workflow
-router.post('/:workflowId/steps', workflowController.addStepToWorkflow);
-
-// Update a step in a workflow
-router.put('/:workflowId/steps/:stepId', workflowController.updateStepInWorkflow);
-
-// Delete a step from a workflow
-router.delete('/:workflowId/steps/:stepId', workflowController.deleteStepFromWorkflow);
-
 module.exports = router;

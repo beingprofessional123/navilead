@@ -717,5 +717,110 @@
     "saveWorkflow": "Gem Workflow",
     "createWorkflow": "Opret arbejdsgang",
     "createWorkflowDescription": "Opret arbejdsgangsbeskrivelse"
+  },
+  "integrationsPage": {
+    "title": "Integrationer",
+    "subtitle": "Forbind Navilead med dine foretrukne værktøjer",
+    "tabs": {
+      "browse": "Gennemse integrationer",
+      "webhooks": "Webhooks",
+      "apiAccess": "API-adgang"
+    },
+    "integrations": {
+      "facebookAds": {
+        "name": "Facebook Ads",
+        "category": "Markedsføring",
+        "description": "Importer leads direkte fra dine Facebook-annoncekampagner"
+      },
+      "zapier": {
+        "name": "Zapier",
+        "category": "Automatisering",
+        "description": "Automatiser arbejdsgange mellem Navilead og 5000+ andre apps"
+      },
+      "wordpress": {
+        "name": "WordPress",
+        "category": "Web",
+        "description": "Importer leads direkte fra dine hjemmesideformularer"
+      },
+      "comingSoon": "Kommer snart",
+      "previsto": {
+        "name": "Previsto",
+        "category": "CRM",
+        "description": "Synkroniser leads og kundedata med Previsto CRM-platformen"
+      },
+      "fenster": {
+        "name": "Fenster",
+        "category": "Byggeri",
+        "description": "Forbind forespørgsler om vinduescitater fra Fenster-platformen"
+      },
+      "skvizbizz": {
+        "name": "Skvizbizz",
+        "category": "Erhverv",
+        "description": "Importer erhvervsleads fra Skvizbizz-markedspladsen"
+      }
+    },
+    "buttons": {
+      "connect": "Forbind",
+      "newWebhook": "Ny webhook",
+      "test": "Test",
+      "copy": "Kopiér",
+      "close": "Luk"
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "description": "Modtag realtidsnotifikationer, når der sker ændringer",
+      "leadCreated": "Webhook for oprettet lead",
+      "offerAccepted": "Webhook for accepteret tilbud",
+      "status": {
+        "active": "Aktiv"
+      }
+    },
+    "apiAccess": {
+      "title": "API-adgang",
+      "description": "Administrer dine API-nøgler og dokumentation",
+      "apiKeys": {
+        "title": "API-nøgler",
+        "description": "Oprettet"
+      },
+      "apiDocs": {
+        "title": "API-dokumentation",
+        "description": "Lær at integrere med Navilead API'en og automatiser dine arbejdsgange.",
+        "link": "API-dokumentation",
+        "examples": "API-eksempler"
+      },
+      "rateLimits": {
+        "title": "Rategrænser",
+        "requestsToday": "Anmodninger i dag",
+        "dailyLimit": "Daglig grænse",
+        "used": "Brugt"
+      }
+    },
+    "modal": {
+      "title": "API-nøgler",
+      "note": {
+        "facebookAdsTitle": "Facebook Lead Ads (via Zapier, ved brug af GET)",
+        "facebookAdsText": "I Zapier skal du oprette en Zap:",
+        "facebookAdsTrigger": "Trigger: Facebook Lead Ads → Ny Lead (vælg Side + Formular)",
+        "facebookAdsAction": "Handling: Webhooks af Zapier → GET",
+        "facebookAdsUrl": "URL: https://navilead-backend.onrender.com/api/public-leads",
+        "facebookAdsParams": "Query String Params:",
+        "facebookAdsParamsTip": "Tip: Brug af “GET” med “Query String Params” er sikrere end at bygge en kæmpe URL-streng; Zapier håndterer automatisk kodning.",
+        "otherAppsTitle": "Andre apps (Zapier → GET)",
+        "otherAppsTrigger": "Trigger: Din app (Google Forms, Typeform, Webflow, etc.)",
+        "otherAppsAction": "Handling: Webhooks af Zapier → GET",
+        "otherAppsSettings": "Samme indstillinger som ovenfor (URL + Query String Params mappet fra dine formularfelter)",
+        "otherAppsTest": "Test & slå til",
+        "wordpressTitle": "WordPress (Contact Form 7) → GET",
+        "wordpressInstall": "Installer CF7 til API / WP Webhooks (eller lignende)",
+        "wordpressConfigure": "Konfigurer den til at sende GET til:",
+        "wordpressAddParams": "Tilføj alle parametre (plugin'et vil automatisk URL-kode)"
+      }
+    },
+    "toasts": {
+      "copiedApiUrl": "API-URL kopieret til udklipsholderen!",
+      "copiedApiKey": "API-nøgle kopieret til udklipsholderen!",
+      "failedToCopy": "Kunne ikke kopiere. Prøv venligst igen.",
+      "authRequired": "Autentificering påkrævet"
+    }
   }
 }

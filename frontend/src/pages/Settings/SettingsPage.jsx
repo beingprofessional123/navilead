@@ -520,7 +520,7 @@ const SettingsPage = () => {
                             )}
                         </div>
 
-                        <div className="standardcolors">
+                        {/* <div className="standardcolors">
                             <div className="formdesign">
                                 <div className="form-group">
                                     <label>{translate('settingsPage.standardColorsLabel')}
@@ -550,7 +550,7 @@ const SettingsPage = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
 

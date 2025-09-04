@@ -36,11 +36,11 @@ const FloatingLanguageToggle = () => {
     }
 
     // ✅ Show toast regardless
-    toast.success(
-      lang === "da"
-        ? "Sprog ændret til Dansk 🇩🇰"
-        : "Language changed to English 🇬🇧"
-    );
+    // toast.success(
+    //   lang === "da"
+    //     ? "Sprog ændret til Dansk 🇩🇰"
+    //     : "Language changed to English 🇬🇧"
+    // );
   };
 
   return (
