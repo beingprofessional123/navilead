@@ -163,6 +163,19 @@
       "signatureSaveError": "Failed to save email signature.",
       "userInviteSuccess": "User invite sent successfully!",
       "userInviteError": "Failed to send user invite."
-    }
+    },
+     "workflows": {
+    "updatedSuccessfully": "Workflow saved successfully!",
+    "createdSuccessfully": "Workflow created successfully!",
+    "updateFailed": "Failed to update workflow!",
+    "creationFailed": "Failed to create workflow!",
+    "statusUpdated": "Workflow status updated successfully!",
+    "confirmDeleteTitle": "Confirm workflow deletion",
+    "confirmDeleteMessage": "Are you sure you want to delete this workflow?",
+    "delete": "Confirm workflow deletion",
+    "deletedSuccessfully": "Workflow deleted successfully!",
+    "deleteFailed": "Failed to delete workflow.",
+    "cancel": "Are you sure you want to cancel deletion?"
+  }
   }
 }

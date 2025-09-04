@@ -715,6 +715,111 @@
     "cancel": "Cancel",
     "saveWorkflow": "Save Workflow",
     "createWorkflow": "Create workflow",
-    "createWorkflowDescription": "Create workflow description"
+    "createWorkflowDescription": "Configure your automation settings and steps."
+  },
+  "integrationsPage": {
+    "title": "Integrations",
+    "subtitle": "Connect Navilead with your favorite tools",
+    "tabs": {
+      "browse": "Browse Integrations",
+      "webhooks": "Webhooks",
+      "apiAccess": "API Access"
+    },
+    "integrations": {
+      "facebookAds": {
+        "name": "Facebook Ads",
+        "category": "Marketing",
+        "description": "Import leads directly from your Facebook ad campaigns"
+      },
+      "zapier": {
+        "name": "Zapier",
+        "category": "Automation",
+        "description": "Automate workflows between Navilead and 5000+ other apps"
+      },
+      "wordpress": {
+        "name": "WordPress",
+        "category": "Web",
+        "description": "Import leads directly from your website forms"
+      },
+      "comingSoon": "Coming Soon",
+      "previsto": {
+        "name": "Previsto",
+        "category": "CRM",
+        "description": "Sync leads and customer data with Previsto CRM platform"
+      },
+      "fenster": {
+        "name": "Fenster",
+        "category": "Construction",
+        "description": "Connect window quote requests from Fenster platform"
+      },
+      "skvizbizz": {
+        "name": "Skvizbizz",
+        "category": "Business",
+        "description": "Import business leads from Skvizbizz marketplace"
+      }
+    },
+    "buttons": {
+      "connect": "Connect",
+      "newWebhook": "New webhook",
+      "test": "Test",
+      "copy": "Copy",
+      "close": "Close"
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "description": "Receive real-time notifications when changes occur",
+      "leadCreated": "Lead Created Webhook",
+      "offerAccepted": "Offer Accepted Webhook",
+      "status": {
+        "active": "Active"
+      }
+    },
+    "apiAccess": {
+      "title": "API Access",
+      "description": "Manage your API keys and documentation",
+      "apiKeys": {
+        "title": "API Keys",
+        "description": "Created"
+      },
+      "apiDocs": {
+        "title": "API Documentation",
+        "description": "Learn how to integrate with the Navilead API and automate your workflows.",
+        "link": "API Documentation",
+        "examples": "API Examples"
+      },
+      "rateLimits": {
+        "title": "Rate Limits",
+        "requestsToday": "Requests today",
+        "dailyLimit": "Daily limit",
+        "used": "Used"
+      }
+    },
+    "modal": {
+      "title": "API Keys",
+      "note": {
+        "facebookAdsTitle": "Facebook Lead Ads (via Zapier, using GET)",
+        "facebookAdsText": "In Zapier, create a Zap:",
+        "facebookAdsTrigger": "Trigger: Facebook Lead Ads → New Lead (choose Page + Form)",
+        "facebookAdsAction": "Action: Webhooks by Zapier → GET",
+        "facebookAdsUrl": "URL: https://navilead-backend.onrender.com/api/public-leads",
+        "facebookAdsParams": "Query String Params:",
+        "facebookAdsParamsTip": "Tip: Using “GET” with “Query String Params” is safer than building one giant URL string; Zapier handles encoding automatically.",
+        "otherAppsTitle": "Other Apps (Zapier → GET)",
+        "otherAppsTrigger": "Trigger: Your app (Google Forms, Typeform, Webflow, etc.)",
+        "otherAppsAction": "Action: Webhooks by Zapier → GET",
+        "otherAppsSettings": "Same settings as above (URL + Query String Params mapped from your form fields)",
+        "otherAppsTest": "Test & turn on",
+        "wordpressTitle": "WordPress (Contact Form 7) → GET",
+        "wordpressInstall": "Install CF7 to API / WP Webhooks (or similar)",
+        "wordpressConfigure": "Configure it to Send GET to:",
+        "wordpressAddParams": "Add all params (the plugin will URL-encode automatically)"
+      }
+    },
+    "toasts": {
+      "copiedApiUrl": "API URL copied to clipboard!",
+      "copiedApiKey": "API Key copied to clipboard!",
+      "failedToCopy": "Failed to copy. Please try again.",
+      "authRequired": "Authentication required"
+    }
   }
 }
