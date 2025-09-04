@@ -19,6 +19,8 @@ const SmsTemplate = require('./smsTemplate');
 const SendSms = require('./sendSms');
 const ApiLog = require('./ApiLog');
 const Settings = require('./Settings');
+const Workflow = require('./workflow');
+const WorkflowStep = require('./WorkflowStep');
 
 
 const db = {};
@@ -43,6 +45,8 @@ db.SmsTemplate = SmsTemplate(sequelize, DataTypes);
 db.SendSms = SendSms(sequelize, DataTypes);
 db.ApiLog = ApiLog(sequelize, DataTypes);
 db.Settings = Settings(sequelize, DataTypes);
+db.Workflow = Workflow(sequelize, DataTypes);
+db.WorkflowStep = WorkflowStep(sequelize, DataTypes);
 
 
 // Setup associations

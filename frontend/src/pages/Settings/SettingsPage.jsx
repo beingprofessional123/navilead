@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../utils/api';
 import MobileHeader from '../../components/common/MobileHeader';
 import { useTranslation } from "react-i18next";
-import 'react-toastify/dist/ReactToastify.css';
 
 const SettingsPage = () => {
     const { authToken } = useContext(AuthContext);
