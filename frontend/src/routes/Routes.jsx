@@ -14,6 +14,7 @@ import LeadsPage from '../pages/Leads/LeadsPage';
 import LeadViewPage from '../pages/Leads/LeadViewPage'; 
 import IntegrationsPage from '../pages/Integrations/IntegrationsPage'; 
 import SettingsPage from '../pages/Settings/SettingsPage'; 
+import WorkflowsPage from '../pages/Workflows/WorkflowsPage'; 
 
 const RouterSetup = () => {
   return (
@@ -69,7 +70,7 @@ const RouterSetup = () => {
         element={
           <ProtectedRoute>
             <PublicLayout>
-              <Dashboard /> {/* Placeholder, replace with actual WorkflowsPage if available */}
+              <WorkflowsPage /> {/* Placeholder, replace with actual WorkflowsPage if available */}
             </PublicLayout>
           </ProtectedRoute>
         }

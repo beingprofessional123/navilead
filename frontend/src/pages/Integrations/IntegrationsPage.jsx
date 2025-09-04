@@ -5,41 +5,41 @@ import { toast } from 'react-toastify';
 import api from '../../utils/api';
 
 const IntegrationsPage = () => {
-  const [selectedIntegration, setSelectedIntegration] = useState(null);
-  const { authToken, user } = useContext(AuthContext);
-  const [loading, setLoading] = useState(true);
-  const [rateLimits, setRateLimits] = useState({
-    requestsToday: 0,
-    dailyLimit: 0,
-    usedPercentage: 0,
-  });
+    const [selectedIntegration, setSelectedIntegration] = useState(null);
+    const { authToken, user } = useContext(AuthContext);
+    const [loading, setLoading] = useState(true);
+    const [rateLimits, setRateLimits] = useState({
+        requestsToday: 0,
+        dailyLimit: 0,
+        usedPercentage: 0,
+    });
 
-  const baseUrl = process.env.REACT_APP_API_BASE_URL;
+    const baseUrl = process.env.REACT_APP_API_BASE_URL;
 
-  // Fetch user's API usage limits
-  const fetchDailyRateLimits = async () => {
-    if (!authToken) {
-      setLoading(false);
-      toast.error('Authentication required');
-      return;
-    }
-    setLoading(true);
-    try {
-      const response = await api.get('/integrations/rate-Limits', {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      setRateLimits(response.data);
-    } catch (error) {
-      console.error('Error fetching rate limits:', error);
-      toast.error(error.response?.data?.error || 'Failed to fetch rate limits');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Fetch user's API usage limits
+    const fetchDailyRateLimits = async () => {
+        if (!authToken) {
+            setLoading(false);
+            toast.error('Authentication required');
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await api.get('/integrations/rate-Limits', {
+                headers: { Authorization: `Bearer ${authToken}` },
+            });
+            setRateLimits(response.data);
+        } catch (error) {
+            console.error('Error fetching rate limits:', error);
+            toast.error(error.response?.data?.error || 'Failed to fetch rate limits');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  useEffect(() => {
-    fetchDailyRateLimits();
-  }, [authToken]);
+    useEffect(() => {
+        fetchDailyRateLimits();
+    }, [authToken]);
 
 
     const handleConnect = (name) => {
@@ -49,7 +49,7 @@ const IntegrationsPage = () => {
         // Update the state
         setSelectedIntegration({
             name,
-            description: `Integration with ${name}`,
+            description: `${name}`,
             apiUrl,
         });
     };
@@ -343,7 +343,70 @@ const IntegrationsPage = () => {
                                                 </button>
                                             </div>
                                         </div>
-                                        <p className="connectbox-note">{selectedIntegration?.description}</p>
+                                        <div className="connectbox-note">
+                                            {selectedIntegration?.description === 'Facebook Ads' && (
+                                                 <div className='mt-3'>
+                                                    <h5>Facebook Lead Ads (via Zapier, using GET)</h5>
+                                                    <p>In Zapier, create a Zap:</p>
+                                                    <ul className='small ps-3'>
+                                                        <li><strong>Trigger:</strong> Facebook Lead Ads → New Lead (choose Page + Form)</li>
+                                                        <li><strong>Action:</strong> Webhooks by Zapier → GET</li>
+                                                        <li><strong>URL:</strong> https://navilead-backend.onrender.com/api/public-leads</li>
+                                                        <li>
+                                                            <strong>Query String Params:</strong>
+                                                            <ul className='small ps-3'>
+                                                                <li>apikey → YOUR_KEY</li>
+                                                                <li>firstName → {"{{First Name}}"}</li>
+                                                                <li>lastName → {"{{Last Name}}"}</li>
+                                                                <li>email → {"{{Email}}"}</li>
+                                                                <li>phone → {"{{Phone Number}}"}</li>
+                                                                <li>address → {"{{Full Address or City}}"}</li>
+                                                                <li>cvrNumber → {"{{Your custom field if present}}"}</li>
+                                                                <li>leadSource → Facebook Ads</li>
+                                                                <li>internalNote → {"{{Custom Question or leave blank}}"}</li>
+                                                                <li>customerComment → {"{{Another field or blank}}"}</li>
+                                                                <li>followUpDate → {"{{yyyy-mm-dd or leave blank}}"}</li>
+                                                                <li>value → {"{{Lead Value or 0}}"}</li>
+                                                            </ul>
+                                                        </li>
+                                                        <li><strong>Test → Publish</strong></li>
+                                                    </ul>
+                                                    <p>
+                                                        <em>
+                                                            Tip: Using “GET” with “Query String Params” is safer than building one giant URL string; Zapier
+                                                            handles encoding automatically.
+                                                        </em>
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            {selectedIntegration?.description === 'Zapier' && (
+                                                <div className='mt-3'>
+                                                    <h5>Other Apps (Zapier → GET)</h5>
+                                                    <ul className='small ps-3'>
+                                                        <li><strong>Trigger:</strong> Your app (Google Forms, Typeform, Webflow, etc.)</li>
+                                                        <li><strong>Action:</strong> Webhooks by Zapier → GET</li>
+                                                        <li>Same settings as above (URL + Query String Params mapped from your form fields)</li>
+                                                        <li><strong>Test & turn on</strong></li>
+                                                    </ul>
+                                                </div>
+                                            )}
+
+                                            {selectedIntegration?.description === 'WordPress' && (
+                                                <div className='mt-3'>
+                                                    <h5>WordPress (Contact Form 7) → GET</h5>
+                                                    <ul className='small ps-3'>
+                                                        <li>Install <strong>CF7 to API</strong> / <strong>WP Webhooks</strong> (or similar)</li>
+                                                        <li>
+                                                            Configure it to Send GET to:{" "}
+                                                            <code>https://navilead-backend.onrender.com/api/public-leads</code>
+                                                        </li>
+                                                        <li>Add all params (the plugin will URL-encode automatically)</li>
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+
                                     </div>
 
                                     <div className="modalfooter btn-right">
