@@ -190,13 +190,17 @@ const SettingsPage = () => {
     const handlePreviewSignature = () => {
         Swal.fire({
             title: translate('settingsPage.previewButton'),
-            html: `<pre style="white-space: pre-wrap; text-align: left; color: #fff; background: #212529; padding: 15px; border-radius: 8px;">${formData.emailSignature || translate('settingsPage.defaultEmailSignaturePlaceholder')}</pre>`,
+            html: `<pre style="white-space: pre-wrap; text-align: left; color: #fff;">${formData.emailSignature || translate('settingsPage.defaultEmailSignaturePlaceholder')}</pre>`,
             confirmButtonText: translate('emailSmsPage.cancel'),
             customClass: {
-                popup: 'swal2-dark'
+                popup: 'custom-swal-popup',
+                title: 'custom-swal-title',
+                confirmButton: 'custom-swal-button'
             }
         });
     };
+
+
 
     const handleInviteUser = async () => {
         const { value: email } = await Swal.fire({

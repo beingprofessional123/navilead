@@ -385,13 +385,13 @@ const IntegrationsPage = () => {
                                                 <div className='mt-3'>
                                                     <h5>{t('integrationsPage.modal.note.facebookAdsTitle')}</h5>
                                                     <p>{t('integrationsPage.modal.note.facebookAdsText')}</p>
-                                                    <ul className='small ps-3'>
+                                                    <ul className='ps-3'>
                                                         <li><strong>{t('integrationsPage.modal.note.facebookAdsTrigger')}</strong></li>
                                                         <li><strong>{t('integrationsPage.modal.note.facebookAdsAction')}</strong></li>
                                                         <li><strong>{t('integrationsPage.modal.note.facebookAdsUrl')}</strong></li>
                                                         <li>
                                                             <strong>{t('integrationsPage.modal.note.facebookAdsParams')}</strong>
-                                                            <ul className='small ps-3'>
+                                                            <ul className='ps-3'>
                                                                 <li>apikey → YOUR_KEY</li>
                                                                 <li>firstName → {"{{First Name}}"}</li>
                                                                 <li>lastName → {"{{Last Name}}"}</li>
@@ -418,7 +418,7 @@ const IntegrationsPage = () => {
                                             {selectedIntegration?.name === 'Zapier' && (
                                                 <div className='mt-3'>
                                                     <h5>{t('integrationsPage.modal.note.otherAppsTitle')}</h5>
-                                                    <ul className='small ps-3'>
+                                                    <ul className='ps-3'>
                                                         <li><strong>{t('integrationsPage.modal.note.otherAppsTrigger')}</strong></li>
                                                         <li><strong>{t('integrationsPage.modal.note.otherAppsAction')}</strong></li>
                                                         <li><strong>{t('integrationsPage.modal.note.otherAppsSettings')}</strong></li>
@@ -429,7 +429,7 @@ const IntegrationsPage = () => {
                                             {selectedIntegration?.name === 'WordPress' && (
                                                 <div className='mt-3'>
                                                     <h5>{t('integrationsPage.modal.note.wordpressTitle')}</h5>
-                                                    <ul className='small ps-3'>
+                                                    <ul className='ps-3'>
                                                         <li><strong>{t('integrationsPage.modal.note.wordpressInstall')}</strong></li>
                                                         <li>
                                                             <strong>{t('integrationsPage.modal.note.wordpressConfigure')}</strong>{" "}

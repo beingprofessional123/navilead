@@ -186,11 +186,11 @@ const WorkflowsPage = () => {
             if (formData.id) {
                 // Update existing workflow
                 await api.put(`/workflows/${formData.id}`, payload, config);
-                toast.success(t("workflows.updatedSuccessfully"));
+                toast.success(t("api.workflows.updatedSuccessfully"));
             } else {
                 // Create new workflow
                 await api.post("/workflows", payload, config);
-                toast.success(t("workflows.createdSuccessfully"));
+                toast.success(t("api.workflows.createdSuccessfully"));
             }
 
             fetchWorkflows();
@@ -201,7 +201,7 @@ const WorkflowsPage = () => {
             setIsEditing(false);
         } catch (err) {
             console.error("Error saving workflow:", err);
-            toast.error(formData.id ? t("workflows.updateFailed") : t("workflows.creationFailed"));
+            toast.error(formData.id ? t("api.workflows.updateFailed") : t("api.workflows.creationFailed"));
         }
     };
 
@@ -767,13 +767,24 @@ const WorkflowsPage = () => {
                 prev.map(w => (w.id === workflowId ? { ...w, isActive } : w))
             );
 
-            toast.success(t("workflows.statusUpdated"));
+            toast.success(t("api.workflows.statusUpdated"));
         } catch (err) {
             console.error("Error updating workflow status:", err);
-            toast.error(t("workflows.updateFailed"));
+            toast.error(t("api.workflows.updateFailed"));
         }
     };
 
+
+    const openCreateModal = () => {
+        setIsEditing(false); // we are creating
+        setFormData({
+            name: "",
+            triggerEvent: "",
+            description: "",
+            isActive: true,
+        });
+        setSteps([]);
+    };
 
 
     const openEditModal = (workflow) => {
@@ -788,14 +799,13 @@ const WorkflowsPage = () => {
         setSteps(workflow.steps || []);
     };
 
+
     const handleDeleteWorkflow = async (workflowId) => {
         const result = await Swal.fire({
-            title: t("workflows.confirmDeleteTitle"),
-            text: t("workflows.confirmDeleteMessage"),
+            title: t("api.workflows.confirmDeleteTitle"),
+            text: t("api.workflows.confirmDeleteMessage"),
             icon: "warning",
             showCancelButton: true,
-            confirmButtonText: t("workflows.delete"),
-            cancelButtonText: t("workflows.cancel"),
             reverseButtons: true,
         });
 
@@ -810,7 +820,7 @@ const WorkflowsPage = () => {
             setWorkflows(prev => prev.filter(w => w.id !== workflowId));
 
             Swal.fire({
-                title: t("workflows.deletedSuccessfully"),
+                title: t("api.workflows.deletedSuccessfully"),
                 icon: "success",
                 timer: 2000,
                 showConfirmButton: false,
@@ -818,7 +828,7 @@ const WorkflowsPage = () => {
             } catch (err) {
             console.error("Error deleting workflow:", err);
             Swal.fire({
-                title: t("workflows.deleteFailed"),
+                title: t("api.workflows.deleteFailed"),
                 icon: "error",
                 timer: 2000,
                 showConfirmButton: false,
@@ -844,7 +854,7 @@ const WorkflowsPage = () => {
                         </div>
                         <div className="col-md-6">
                             <div className="dashright">
-                                <Link to="#" className="btn btn-send" data-bs-toggle="modal" data-bs-target="#myModal3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{t('workflows.newWorkflowButton')}</Link>
+                                <Link to="#"     onClick={() => openCreateModal()} className="btn btn-send" data-bs-toggle="modal" data-bs-target="#myModal3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{t('workflows.newWorkflowButton')}</Link>
                             </div>
                         </div>
                     </div>

@@ -93,7 +93,7 @@
       "deleteError": "Kunne ikke slette skabelon.",
       "authError": "Godkendelsestoken ikke fundet."
     },
-     "currencies": {
+    "currencies": {
       "fetchError": "Kunne ikke hente valutaer."
     },
     "pricingTemplateModal": {
@@ -163,6 +163,19 @@
       "signatureSaveError": "Kunne ikke gemme email signatur.",
       "userInviteSuccess": "Brugerinvitation sendt succesfuldt!",
       "userInviteError": "Kunne ikke sende brugerinvitation."
+    },
+    "workflows": {
+      "updatedSuccessfully": "Arbejdsgang gemt succesfuldt!",
+      "createdSuccessfully": "Arbejdsgang oprettet succesfuldt!",
+      "updateFailed": "Fejl ved opdatering af arbejdsgang!",
+      "creationFailed": "Fejl ved oprettelse af arbejdsgang!",
+      "statusUpdated": "Arbejdsgang status opdateret med succes!",
+      "confirmDeleteTitle": "Bekræft sletning af arbejdsgang",
+      "confirmDeleteMessage": "Er du sikker på, at du vil slette denne arbejdsgang?",
+      "delete": "Bekræft sletning af arbejdsgang",
+      "deletedSuccessfully": "Arbejdsgang slettet med succes!",
+      "deleteFailed": "Kunne ikke slette arbejdsgang.",
+      "cancel": "Er du sikker på, at du vil annullere sletning?"
     }
   }
 }

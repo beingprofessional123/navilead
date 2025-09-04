@@ -715,7 +715,7 @@
     "cancel": "Cancel",
     "saveWorkflow": "Save Workflow",
     "createWorkflow": "Create workflow",
-    "createWorkflowDescription": "Create workflow description"
+    "createWorkflowDescription": "Configure your automation settings and steps."
   },
   "integrationsPage": {
     "title": "Integrations",

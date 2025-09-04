@@ -716,7 +716,7 @@
     "cancel": "Annuller",
     "saveWorkflow": "Gem Workflow",
     "createWorkflow": "Opret arbejdsgang",
-    "createWorkflowDescription": "Opret arbejdsgangsbeskrivelse"
+    "createWorkflowDescription": "Konfigurer din automatiserings indstillinger og trin."
   },
   "integrationsPage": {
     "title": "Integrationer",
