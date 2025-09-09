@@ -1,7 +1,8 @@
 require('dotenv').config();
 const db = require("../models");
-const { Lead, Status, User ,ApiLog ,Settings } = db;
+const { Lead, Status, User, ApiLog, Settings } = db;
 const { Op } = require("sequelize");
+const { runWorkflows } = require('../utils/runWorkflows');
 
 const BACKEND_URL = process.env.BACKEND_URL;
 
@@ -109,10 +110,11 @@ exports.createLead = async (req, res) => {
     };
 
     const lead = await Lead.create(leadData);
+    await runWorkflows("newLeadCreated", { lead, user: req.user });
     res.status(201).json({ message: "api.leads.createSuccess", lead });
   } catch (err) {
     console.error(err);
-     res.status(400).json({ message: "api.leads.createError", error: err.message });
+    res.status(400).json({ message: "api.leads.createError", error: err.message });
   }
 };
 
@@ -158,6 +160,7 @@ exports.updateLead = async (req, res) => {
       statusId = await getQualifiedStatusId();
     }
 
+
     let followUpDate = req.body.followUpDate;
     if (!followUpDate || followUpDate === "" || followUpDate === "Invalid date") {
       followUpDate = null;
@@ -184,6 +187,12 @@ exports.updateLead = async (req, res) => {
       where: { id: req.params.id, userId: req.user.id },
     });
 
+    // ✅ Run "leadStatusChanged" ONLY if status actually changed
+    if (lead.statusId !== statusId) {
+      await runWorkflows("leadStatusChanged", { lead, user: req.user });
+    }
+
+    await runWorkflows("leadUpdated", { lead, user: req.user });
     const updatedLead = await Lead.findOne({
       where: { id: req.params.id },
       include: [{ model: Status, as: "status" }],
@@ -218,7 +227,7 @@ exports.getLeadById = async (req, res) => {
       where: { id: req.params.id, userId: req.user.id },
       include: [{ model: Status, as: "status" }],
     });
-     if (!lead) {
+    if (!lead) {
       return res.status(404).json({ message: "api.leads.notFound" });
     }
     res.json(lead);
@@ -316,12 +325,13 @@ exports.createPublicLead = async (req, res) => {
     const allowedLeadSources = [
       "Facebook Ads", "Google Ads", "Website Form", "Phone Call",
       "Email", "Referral", "LinkedIn", "Trade Show",
-      "Cold Outreach", "Zapier", "WordPress", "Other",
+      "Cold Outreach", "Zapier", "WordPress", "API", "Other",
     ];
     if (data.leadSource && !allowedLeadSources.includes(data.leadSource)) {
       return res.status(400).json({
         success: false,
         message: "Invalid lead source provided.",
+        allowedLeadSources: allowedLeadSources,
       });
     }
 
@@ -461,7 +471,7 @@ exports.createPublicLead = async (req, res) => {
     });
 
     // --- Create New Lead ---
-    const newLead = await Lead.create({
+    const lead = await Lead.create({
       userId: user.id,
       leadNumber,
       fullName: data.fullName.trim(),
@@ -482,20 +492,31 @@ exports.createPublicLead = async (req, res) => {
       value,
     });
 
-    return res.status(201).json({
-      success: true,
-      message: "Lead created successfully.",
-      lead: {
-        ...newLead.toJSON(),
-        status: status ? status.name : null,
-      },
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({
-      success: false,
-      message: "An error occurred while creating the lead.",
-      error: err.message,
-    });
-  }
-};
+
+    if (data.leadSource === 'API') {
+      await runWorkflows("leadCreatedViaAPI", { lead, user });
+    } else if (data.leadSource === 'Website Form') {
+      await runWorkflows("leadCreatedViaWebsite", { lead, user });
+    } else if (data.leadSource === 'Facebook Ads') {
+      await runWorkflows("leadCreatedViaFacebook", { lead, user });
+    }
+
+
+
+      return res.status(201).json({
+        success: true,
+        message: "Lead created successfully.",
+        lead: {
+          ...lead.toJSON(),
+          status: status ? status.name : null,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        success: false,
+        message: "An error occurred while creating the lead.",
+        error: err.message,
+      });
+    }
+  };

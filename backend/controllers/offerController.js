@@ -1,6 +1,7 @@
 const db = require('../models');
 const { sendMail } = require('../utils/mail');
 const AskQuestionsTemplate = require('../EmailTemplate/AskQuestionsTemplate');
+const { runWorkflows } = require('../utils/runWorkflows');
 
 const Quote = db.Quote;
 const QuoteService = db.QuoteService;
@@ -75,11 +76,15 @@ exports.getOfferByQuoteId = async (req, res) => {
       });
 
       if (lostStatus && offer.leadId) {
+        const lead = await Lead.findByPk(offer.leadId);
+        await runWorkflows("leadMarkedAsLost", { lead, user: req.user });
         await db.Lead.update(
           { statusId: lostStatus.id },
           { where: { id: offer.leadId } }
         );
       }
+
+      
 
       return res.status(400).json({ message: 'This offer has expired.' });
     }
@@ -207,10 +212,13 @@ exports.acceptOffer = async (req, res) => {
     // Also update the lead status to "Won"
     const quote = await Quote.findByPk(quoteId);
     if (quote && quote.leadId) {
+      const lead = await Lead.findByPk(quote.leadId);
+      await runWorkflows("leadMarkedAsLost", { lead, user: req.user });
       await db.Lead.update(
         { statusId: wonStatus.id },
         { where: { id: quote.leadId } }
       );
+
     }
 
     res.status(200).json({
