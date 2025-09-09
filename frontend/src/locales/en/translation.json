@@ -164,6 +164,7 @@
     "leadSourceColdOutreach": "Cold Outreach",
     "leadSourceZapier": "Zapier",
     "leadSourceWordPress": "WordPress",
+    "leadSourceAPI": "API",
     "leadSourceOther": "Other",
     "statusLabel": "Status",
     "tagsLabel": "Tags",

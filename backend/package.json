@@ -19,6 +19,7 @@
         "express": "^5.1.0",
         "express-rate-limit": "^8.0.1",
         "gatewayapi": "^2.0.0",
+        "html-to-text": "^9.0.5",
         "jsonwebtoken": "^9.0.2",
         "multer": "^2.0.2",
         "node-fetch": "^2.7.0",

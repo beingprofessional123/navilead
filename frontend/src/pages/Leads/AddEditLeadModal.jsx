@@ -17,14 +17,14 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
     address: '',
     companyName: '',
     cvrNumber: '',
-    leadSource: '',
+    leadSource: 'Website Form',
     tags: [], // Tags stored as an array
     internalNote: '',
     customerComment: '',
     followUpDate: '',
     notifyOnFollowUp: false,
     value: '',
-    statusId: '',
+    statusId: '1',
     reminderTime: '08:00', // Default reminder time
   });
   const [attachments, setAttachments] = useState([]); // Array of existing file objects (from leadData) or new File objects
@@ -76,14 +76,14 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
         address: leadData.address || '',
         companyName: leadData.companyName || '',
         cvrNumber: leadData.cvrNumber || '',
-        leadSource: leadData.leadSource || '',
+        leadSource: leadData.leadSource || 'Website Form',
         tags: parsedTags, // Use the parsed tags
         internalNote: leadData.internalNote || '',
         customerComment: leadData.customerComment || '',
         followUpDate: leadData.followUpDate ? leadData.followUpDate.split('T')[0] : null,
         notifyOnFollowUp: leadData.notifyOnFollowUp ? leadData.notifyOnFollowUp : null,
         value: leadData.value || '',
-        statusId: leadData.statusId || '',
+        statusId: leadData.statusId || '1',
         reminderTime: leadData.reminderTime || '08:00', // Set reminder time if exists
       });
       // Set existing attachments from lead data
@@ -98,14 +98,14 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
         address: '',
         companyName: '',
         cvrNumber: '',
-        leadSource: '',
+        leadSource: 'Website Form',
         tags: [],
         internalNote: '',
         customerComment: '',
         followUpDate: '',
         notifyOnFollowUp: false,
         value: '',
-        statusId: statuses.length > 0 ? statuses[0].id : '', // Set default status if available
+        statusId: statuses.length > 0 ? statuses[0].id : '1', // Set default status if available
         reminderTime: '08:00',
       });
       setAttachments([]);
@@ -331,6 +331,7 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
                             <option value="Cold Outreach">{t('addEditLeadModal.leadSourceColdOutreach')}</option>
                             <option value="Zapier">{t('addEditLeadModal.leadSourceZapier')}</option>
                             <option value="WordPress">{t('addEditLeadModal.leadSourceWordPress')}</option>
+                            <option value="API">{t('addEditLeadModal.leadSourceAPI')}</option>
                             <option value="Other">{t('addEditLeadModal.leadSourceOther')}</option>
                           </select>
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>

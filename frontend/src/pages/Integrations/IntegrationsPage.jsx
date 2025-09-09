@@ -46,7 +46,7 @@ const IntegrationsPage = () => {
 
     const handleConnect = (name) => {
         const apiUrl = `${baseUrl}/public-leads?apikey=${user.apikey}&email=secondary@example.com&fullName=John&companyName=Acme&phone=123456789&notifyOnFollowUp=true&tags=vip,priority&address=123 Street&cvrNumber=12345678&leadSource=${name}&internalNote=Test note&customerComment=Test comment&followUpDate=2025-08-25&value=1000`;
-        
+
         let description = "";
         switch (name) {
             case 'Facebook Ads':
@@ -393,17 +393,24 @@ const IntegrationsPage = () => {
                                                             <strong>{t('integrationsPage.modal.note.facebookAdsParams')}</strong>
                                                             <ul className='ps-3'>
                                                                 <li>apikey → YOUR_KEY</li>
-                                                                <li>firstName → {"{{First Name}}"}</li>
-                                                                <li>lastName → {"{{Last Name}}"}</li>
+                                                                <li>fullName → {"{{Full Name}}"}</li>
                                                                 <li>email → {"{{Email}}"}</li>
                                                                 <li>phone → {"{{Phone Number}}"}</li>
                                                                 <li>address → {"{{Full Address or City}}"}</li>
+                                                                <li>companyName → {"{{Company Name}}"}</li>
                                                                 <li>cvrNumber → {"{{Your custom field if present}}"}</li>
-                                                                <li>leadSource → Facebook Ads</li>
+                                                                <li>leadSource → Facebook Ads </li>
+                                                                <li>tags → {"{{Tags (comma separated)}}"}</li>
                                                                 <li>internalNote → {"{{Custom Question or leave blank}}"}</li>
                                                                 <li>customerComment → {"{{Another field or blank}}"}</li>
                                                                 <li>followUpDate → {"{{yyyy-mm-dd or leave blank}}"}</li>
                                                                 <li>value → {"{{Lead Value or 0}}"}</li>
+                                                                <li>attachments →
+                                                                    <ul className="ps-3">
+                                                                        <li>First upload files using <code>POST</code> method</li>
+                                                                        <li>Allowed formats: <code>png</code>, <code>jpg</code>, <code>jpeg</code>, <code>pdf</code></li>
+                                                                    </ul>
+                                                                </li>
                                                             </ul>
                                                         </li>
                                                         <li><strong>Test → Publish</strong></li>
