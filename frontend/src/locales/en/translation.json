@@ -676,6 +676,7 @@
     "duration": "Duration",
     "unit": "Unit",
     "unitOptions": {
+      "chooseTime": "Choose Time",
       "minutes": "Minutes",
       "hours": "Hours",
       "days": "Days"

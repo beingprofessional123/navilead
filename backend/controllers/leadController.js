@@ -110,6 +110,27 @@ exports.createLead = async (req, res) => {
     };
 
     const lead = await Lead.create(leadData);
+
+    // // --- 📌 Create Workflow Logs (all steps as pending) ---
+    // const workflows = await db.Workflow.findAll({
+    //   where: { triggerEvent: "newLeadCreated", isActive: true, userId: req.user.id },
+    //   include: [{ model: db.WorkflowStep, as: "steps" }],
+    // });
+
+    // for (const workflow of workflows) {
+    //   for (const step of workflow.steps) {
+    //     await db.WorkflowLog.create({
+    //       userId: req.user.id,
+    //       workflowId: workflow.id,
+    //       leadId: lead.id,
+    //       stepId: step.id,
+    //       orderNo: step.order,
+    //       status: "pending",
+    //       executedAt: null,
+    //     });
+    //   }
+    // }
+    
     await runWorkflows("newLeadCreated", { lead, user: req.user });
     res.status(201).json({ message: "api.leads.createSuccess", lead });
   } catch (err) {
@@ -175,12 +196,21 @@ exports.updateLead = async (req, res) => {
       notifyOnFollowUp = false;
     }
 
+     let value = req.body.value;
+    if (value === "" || value === null || value === undefined) {
+      value = null;
+    } else {
+      value = parseFloat(value);
+      if (isNaN(value)) value = null; // safeguard
+    }
+
     const updateData = {
       ...req.body,
       followUpDate,
       notifyOnFollowUp,
       attachments: newAttachments,
       statusId,
+      value
     };
 
     await Lead.update(updateData, {

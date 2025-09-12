@@ -30,6 +30,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'workflowId',
       as: 'workflow',
     });
+    WorkflowStep.hasMany(models.WorkflowLog, {
+      foreignKey: "stepId",
+      as: "logs",
+    });
   };
 
   return WorkflowStep;

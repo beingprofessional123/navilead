@@ -21,6 +21,7 @@ const publicLeadRoutes = require('./routes/publicLeadRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const integrationRoutes = require('./routes/integrationRoutes');
 const workflowRoutes = require('./routes/workflowRoutes');
+const publicWorkflowRoutes = require('./routes/publicWorkflowRoutes');
 
 
 
@@ -52,6 +53,8 @@ app.use('/api/workflows', workflowRoutes);
 
 // Public leads route (no auth required)
 app.use('/api/public-leads', publicLeadRoutes);
+app.use('/api/public-workflows', publicWorkflowRoutes);
+
 
 
 

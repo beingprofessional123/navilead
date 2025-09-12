@@ -39,6 +39,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'userId',
       as: 'user',
     });
+    Workflow.hasMany(models.WorkflowLog, {
+      foreignKey: "workflowId",
+      as: "logs",
+    });
   };
 
   return Workflow;

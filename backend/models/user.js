@@ -78,7 +78,7 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.UserVariable, { foreignKey: 'userId', as: 'variables' });
     User.hasMany(models.ApiLog, { foreignKey: "userId", as: "apiLogs" });
     User.hasMany(models.Workflow, { foreignKey: 'userId', as: 'workflows' });
-
+    User.hasMany(models.WorkflowLog, { foreignKey: "userId", as: "workflowLogs" });
   };
 
   return User;
