@@ -21,6 +21,7 @@ const ApiLog = require('./ApiLog');
 const Settings = require('./Settings');
 const Workflow = require('./workflow');
 const WorkflowStep = require('./WorkflowStep');
+const WorkflowLog = require('./WorkflowLog');
 
 
 const db = {};
@@ -47,6 +48,7 @@ db.ApiLog = ApiLog(sequelize, DataTypes);
 db.Settings = Settings(sequelize, DataTypes);
 db.Workflow = Workflow(sequelize, DataTypes);
 db.WorkflowStep = WorkflowStep(sequelize, DataTypes);
+db.WorkflowLog = WorkflowLog(sequelize, DataTypes);
 
 
 // Setup associations

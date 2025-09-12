@@ -238,6 +238,7 @@ const WorkflowsPage = () => {
 
 
 
+
     const renderStep = (step, index) => {
         const selectedEmailTemplate = emailTemplates.find(t => t.id === step.config?.emailTemplateId) || null;
 
@@ -622,6 +623,7 @@ const WorkflowsPage = () => {
                                                     value={step.config?.unit || "minutes"}
                                                     onChange={(e) => updateStepConfig(step.id, "unit", e.target.value)}
                                                 >
+                                                    <option value="">{t('workflows.unitOptions.chooseTime')}</option>
                                                     <option value="minutes">{t('workflows.unitOptions.minutes')}</option>
                                                     <option value="hours">{t('workflows.unitOptions.hours')}</option>
                                                     <option value="days">{t('workflows.unitOptions.days')}</option>
@@ -788,16 +790,30 @@ const WorkflowsPage = () => {
 
 
     const openEditModal = (workflow) => {
-        setIsEditing(true); // we are editing
         setFormData({
             id: workflow.id,
-            name: workflow.name || "",
-            triggerEvent: workflow.triggerEvent || "",
-            description: workflow.description || "",
-            isActive: workflow.isActive || false,
+            name: workflow.name,
+            triggerEvent: workflow.triggerEvent,
+            description: workflow.description,
+            isActive: workflow.isActive,
         });
-        setSteps(workflow.steps || []);
+
+        // ✅ Sort steps by order before setting
+        const sortedSteps = [...(workflow.steps || [])].sort((a, b) => a.order - b.order);
+
+        // If backend steps don’t have `uuid`, assign one for React rendering
+        const mappedSteps = sortedSteps.map(step => ({
+            id: step.id || uuidv4(),
+            type: step.type,
+            config: step.config || {},
+            order: step.order
+        }));
+
+        setSteps(mappedSteps);
+
+        setIsEditing(true);
     };
+
 
 
     const handleDeleteWorkflow = async (workflowId) => {

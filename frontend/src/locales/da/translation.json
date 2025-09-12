@@ -677,6 +677,7 @@
     "duration": "Varighed",
     "unit": "Enhed",
     "unitOptions": {
+      "chooseTime": "Vælg Tid",
       "minutes": "Minutter",
       "hours": "Timer",
       "days": "Dage"
