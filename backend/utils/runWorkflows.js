@@ -3,6 +3,8 @@ const { sendMail } = require("../utils/mail");
 const { sendSms } = require("../utils/sms");
 const { htmlToText } = require("html-to-text");
 const UserVariable = db.UserVariable;
+const cronLog = db.cronLog;
+const StatusUpdateLog = db.StatusUpdateLog;
 
 /**
  * Safely parse step config (string or object)
@@ -140,6 +142,10 @@ async function executeSingleStep(logRow, stepRow, configObj, variablesMap, baseT
     }
     await db.Lead.update({ statusId: configObj.statusId }, { where: { id: logRow.leadId } });
     await logRow.update({ status: "done", executedAt: now });
+    await StatusUpdateLog.create({
+      leadId: logRow.leadId,
+      statusId: configObj.statusId,
+    });
     console.log(`🔄 Step ${logRow.orderNo} updateStatus executed for lead ${logRow.leadId}`);
     return { executed: true, ready: true };
   }
@@ -263,13 +269,31 @@ async function runWorkflows(triggerEvent, contextData = {}) {
  * Call this from your router (GET or POST), or run from cron.
  */
 async function executeWorkflowCron(req, res) {
+  let cronLog = null;
+  let processedLeadsCount = 0;
+  let processedStepsCount = 0;
+
+
   try {
+    cronLog = await db.CronLog.create({
+      startedAt: new Date(),
+      status: "started",
+    });
+
+
     const pendingLogs = await db.WorkflowLog.findAll({
       where: { status: "pending" },
       order: [["workflowId", "ASC"], ["leadId", "ASC"], ["orderNo", "ASC"]],
     });
 
     if (!pendingLogs.length) {
+      // update cron log as completed with zero processed
+      await cronLog.update({
+        finishedAt: new Date(),
+        status: "completed",
+        processedLeads: 0,
+        processedSteps: 0,
+      });
       console.log("No pending workflow logs.");
       if (res) return res.json({ message: "No pending workflow logs." });
       return;
@@ -290,11 +314,16 @@ async function executeWorkflowCron(req, res) {
       });
 
       console.log(`\n📝 Pending Workflow Logs for leadId=${leadId} (ordered):`);
+      let leadTouched = false;
+
 
       for (let i = 0; i < allLogs.length; i++) {
         const log = allLogs[i];
 
         if (log.status !== "pending") continue; // skip already executed
+
+        leadTouched = true; // we have at least one step processed/attempted
+        processedStepsCount++;
 
         const fullStep = await db.WorkflowStep.findOne({
           where: { id: log.stepId, workflowId: log.workflowId },
@@ -349,7 +378,7 @@ async function executeWorkflowCron(req, res) {
             variablesMap[variableName] = variableValue;
           });
 
-          
+
           if (fullStep.type === "sendEmail") {
             const lead = await db.Lead.findByPk(log.leadId);
 
@@ -416,26 +445,44 @@ async function executeWorkflowCron(req, res) {
           );
         }
       }
+      if (leadTouched) processedLeadsCount++;
     }
 
+
+    await cronLog.update({
+      finishedAt: new Date(),
+      status: "completed",
+      processedLeads: processedLeadsCount,
+      processedSteps: processedStepsCount,
+    });
+
     console.log("Workflow cron run completed.");
+    // update cron log as completed
+
     if (res)
       return res.json({
         message: "Workflow cron executed successfully for all leads",
       });
   } catch (err) {
     console.error("❌ executeWorkflowCron failed:", err);
+
+    // update cron log as failed with error message
+    if (cronLog) {
+      await cronLog.update({
+        finishedAt: new Date(),
+        status: "failed",
+        errorMessage: err.message || String(err),
+        processedLeads: processedLeadsCount,
+        processedSteps: processedStepsCount,
+      });
+    }
+
     if (res)
       return res
         .status(500)
         .json({ message: "Workflow cron failed", error: err.message });
   }
 }
-
-
-
-
-
 
 
 module.exports = { runWorkflows, executeWorkflowCron, executeSingleStep };

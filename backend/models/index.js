@@ -22,6 +22,8 @@ const Settings = require('./Settings');
 const Workflow = require('./workflow');
 const WorkflowStep = require('./WorkflowStep');
 const WorkflowLog = require('./WorkflowLog');
+const CronLog = require('./cronlog');
+const StatusUpdateLog = require('./statusUpdateLog');
 
 
 const db = {};
@@ -49,7 +51,8 @@ db.Settings = Settings(sequelize, DataTypes);
 db.Workflow = Workflow(sequelize, DataTypes);
 db.WorkflowStep = WorkflowStep(sequelize, DataTypes);
 db.WorkflowLog = WorkflowLog(sequelize, DataTypes);
-
+db.CronLog = CronLog(sequelize, DataTypes);
+db.StatusUpdateLog = StatusUpdateLog(sequelize, DataTypes);
 
 // Setup associations
 Object.keys(db).forEach(modelName => {

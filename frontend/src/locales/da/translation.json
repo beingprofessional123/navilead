@@ -596,6 +596,9 @@
     "workflowNamePlaceholder": "f.eks. Velkomst til nye leads",
     "triggerEvent": "Trigger Event *",
     "selectTrigger": "Vælg trigger event",
+    "totalMessagesSent": "Samlede beskeder sendt",
+    "totalSmsSent": "Samlede SMS'er",
+    "totalEmailsSent": "Samlede e-mails",
     "triggerOptions": {
       "newLeadCreated": "New lead created",
       "leadCreatedViaFacebook": "Lead created via Facebook",
