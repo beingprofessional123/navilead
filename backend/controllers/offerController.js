@@ -14,6 +14,7 @@ const Status = db.Status;
 const Lead = db.Lead; 
 const AskQuestion = db.AskQuestion;
 const User = db.User;
+const StatusUpdateLog = db.StatusUpdateLog;
 
 exports.getOfferByQuoteId = async (req, res) => {
   try {
@@ -82,6 +83,10 @@ exports.getOfferByQuoteId = async (req, res) => {
           { statusId: lostStatus.id },
           { where: { id: offer.leadId } }
         );
+        await StatusUpdateLog.create({
+          leadId: lead.id,
+          statusId: lostStatus.id,
+        });
       }
 
       
@@ -218,7 +223,10 @@ exports.acceptOffer = async (req, res) => {
         { statusId: wonStatus.id },
         { where: { id: quote.leadId } }
       );
-
+          await StatusUpdateLog.create({
+            leadId: lead.id,
+            statusId: wonStatus.id,
+          });
     }
 
     res.status(200).json({
@@ -270,6 +278,10 @@ exports.askedQuestion = async (req, res) => {
     });
     if (inDialogueStatus) {
       await lead.update({ statusId: inDialogueStatus.id });
+      await StatusUpdateLog.create({
+        leadId: lead.id,
+        statusId: inDialogueStatus.id,
+      });
     }
 
     console.log(lead.user?.email);

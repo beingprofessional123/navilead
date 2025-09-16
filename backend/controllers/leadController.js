@@ -1,6 +1,6 @@
 require('dotenv').config();
 const db = require("../models");
-const { Lead, Status, User, ApiLog, Settings } = db;
+const { Lead, Status, User, ApiLog, Settings, StatusUpdateLog } = db;
 const { Op } = require("sequelize");
 const { runWorkflows } = require('../utils/runWorkflows');
 
@@ -111,25 +111,10 @@ exports.createLead = async (req, res) => {
 
     const lead = await Lead.create(leadData);
 
-    // // --- 📌 Create Workflow Logs (all steps as pending) ---
-    // const workflows = await db.Workflow.findAll({
-    //   where: { triggerEvent: "newLeadCreated", isActive: true, userId: req.user.id },
-    //   include: [{ model: db.WorkflowStep, as: "steps" }],
-    // });
-
-    // for (const workflow of workflows) {
-    //   for (const step of workflow.steps) {
-    //     await db.WorkflowLog.create({
-    //       userId: req.user.id,
-    //       workflowId: workflow.id,
-    //       leadId: lead.id,
-    //       stepId: step.id,
-    //       orderNo: step.order,
-    //       status: "pending",
-    //       executedAt: null,
-    //     });
-    //   }
-    // }
+    await StatusUpdateLog.create({
+      leadId: lead.id,
+      statusId: statusId,
+    });
     
     await runWorkflows("newLeadCreated", { lead, user: req.user });
     res.status(201).json({ message: "api.leads.createSuccess", lead });
@@ -179,6 +164,10 @@ exports.updateLead = async (req, res) => {
     let statusId = req.body.statusId || lead.statusId;
     if (req.body.status === "Qualified") {
       statusId = await getQualifiedStatusId();
+      await StatusUpdateLog.create({
+        leadId: lead.id,
+        statusId: statusId,
+      });
     }
 
 
@@ -219,6 +208,10 @@ exports.updateLead = async (req, res) => {
 
     // ✅ Run "leadStatusChanged" ONLY if status actually changed
     if (lead.statusId !== statusId) {
+      await StatusUpdateLog.create({
+        leadId: lead.id,
+        statusId: statusId,
+      });
       await runWorkflows("leadStatusChanged", { lead, user: req.user });
     }
 
@@ -520,6 +513,11 @@ exports.createPublicLead = async (req, res) => {
       attachments,
       statusId,
       value,
+    });
+
+     await StatusUpdateLog.create({
+      leadId: lead.id,
+      statusId: statusId,
     });
 
 

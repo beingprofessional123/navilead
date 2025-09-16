@@ -1,23 +1,49 @@
 const db = require('../models');
-const { Workflow, WorkflowStep } = db;
+const { Workflow, WorkflowStep, WorkflowLog } = db;
 
-// -----------------------------
-// Workflows CRUD
-// -----------------------------
-
-// Get all workflows with their steps
 exports.getWorkflows = async (req, res) => {
   try {
     const workflows = await Workflow.findAll({
-      include: [{ model: WorkflowStep, as: 'steps' }],
-      order: [['createdAt', 'DESC']]
+      include: [
+        {
+          model: WorkflowStep,
+          as: "steps",
+          required: false, // only include step config
+        },
+        {
+          model: WorkflowLog,
+          as: "logs",
+          required: false, // workflow-level logs
+        },
+      ],
+      order: [
+        ["createdAt", "DESC"], // order workflows
+        [{ model: WorkflowStep, as: "steps" }, "order", "ASC"], // order steps by step.order
+        [{ model: WorkflowLog, as: "logs" }, "createdAt", "ASC"], // order logs by createdAt
+      ],
     });
-    res.status(200).json(workflows);
+
+    // Convert to JSON and filter steps & logs by workflowId (just to be safe)
+    const formattedWorkflows = workflows.map((wf) => {
+      const workflow = wf.toJSON();
+
+      workflow.steps = workflow.steps.filter((step) => step.workflowId === workflow.id);
+      workflow.logs = workflow.logs.filter((log) => log.workflowId === workflow.id);
+
+      return workflow;
+    });
+
+    res.status(200).json(formattedWorkflows);
   } catch (err) {
-    console.error('Error fetching workflows:', err);
-    res.status(500).json({ message: 'Error fetching workflows', error: err.message });
+    console.error("Error fetching workflows:", err);
+    res.status(500).json({
+      message: "Error fetching workflows",
+      error: err.message,
+    });
   }
 };
+
+
 
 // Get single workflow by ID
 exports.getWorkflowById = async (req, res) => {

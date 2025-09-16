@@ -595,6 +595,9 @@
     "workflowNamePlaceholder": "e.g., Welcome to new leads",
     "triggerEvent": "Trigger Event *",
     "selectTrigger": "Select trigger event",
+    "totalMessagesSent": "Total Messages Sent",
+    "totalSmsSent": "Total SMS",
+    "totalEmailsSent": "Total Emails",
     "triggerOptions": {
       "newLeadCreated": "New lead created",
       "leadCreatedViaFacebook": "Lead created via Facebook",

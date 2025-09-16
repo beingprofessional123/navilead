@@ -20,20 +20,14 @@ const WorkflowsPage = () => {
     const [leads, setLeads] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
     const totalWorkflows = workflows.length;
-    const activeWorkflows = workflows.filter(w => w.isActive).length;
-    const executionsToday = workflows.reduce((acc, w) => acc + (w.executionsToday || 0), 0);
-    const executionsYesterday = workflows.reduce((acc, w) => acc + (w.executionsYesterday || 0), 0);
 
-    const successRate =
-    workflows.length > 0
-        ? (
-            workflows.reduce((acc, w) => acc + (w.successRate || 100), 0) / workflows.length
-        ).toFixed(1)
-        : 0;
-        
-    const totalTimeSaved = workflows.reduce((acc, w) => acc + (w.timeSaved || 0), 0);
-
-
+    // stats states
+    const [totalSms, setTotalSms] = useState(0);
+    const [totalEmails, setTotalEmails] = useState(0);
+    const [totalTimeSaved, setTotalTimeSaved] = useState({ minutes: 0, hours: 0 });
+    const [executionsToday, setExecutionsToday] = useState(0);
+    const [executionsYesterday, setExecutionsYesterday] = useState(0);
+    const [activeWorkflows, setActiveWorkflows] = useState(0);
 
     // Form data
     const [formData, setFormData] = useState({
@@ -45,6 +39,24 @@ const WorkflowsPage = () => {
         steps: [],
     });
 
+    function formatTimeSaved(totalMinutes) {
+        if (!totalMinutes || isNaN(totalMinutes)) {
+            return "0m";
+        }
+
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+
+        if (hours === 0) {
+            return `${minutes}m`;
+        } else if (minutes === 0) {
+            return `${hours}h`;
+        } else {
+            return `${hours}h ${minutes}m`;
+        }
+    }
+
+
     // Fetch Workflows
     const fetchWorkflows = async () => {
         try {
@@ -52,7 +64,71 @@ const WorkflowsPage = () => {
             const res = await api.get(`/workflows`, {
                 headers: { Authorization: `Bearer ${authToken}` },
             });
-            setWorkflows(res.data);
+
+            const workflowsData = res.data;
+
+            let totalSmsCount = 0;
+            let totalEmailCount = 0;
+
+            let executionsTodayCount = 0;
+            let executionsYesterdayCount = 0;
+
+            const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+            // --- Add executionCount, totalEmails, totalSms per workflow ---
+            const workflowsWithCounts = workflowsData.map(wf => {
+                let executionCount = 0;
+                let totalEmails = 0;
+                let totalSms = 0;
+
+                // Count workflow executions (any step done)
+                executionCount = wf.logs?.filter(log => log.status === "done").length || 0;
+
+                // Loop over steps to count email/sms specifically
+                wf.steps?.forEach(step => {
+                    if (step.type === "sendEmail") {
+                        const stepEmailCount = wf.logs?.filter(log => log.stepId === step.id && log.status === "done").length || 0;
+                        totalEmails += stepEmailCount;
+                        totalEmailCount += stepEmailCount; // aggregate across all workflows
+                    }
+
+                    if (step.type === "sendSms") {
+                        const stepSmsCount = wf.logs?.filter(log => log.stepId === step.id && log.status === "done").length || 0;
+                        totalSms += stepSmsCount;
+                        totalSmsCount += stepSmsCount; // aggregate across all workflows
+                    }
+
+                    // Count executions today/yesterday
+                    wf.logs?.forEach(log => {
+                        if (log.status === "done" && log.executedAt) {
+                            const logDate = log.executedAt.slice(0, 10);
+                            if (logDate === todayStr) executionsTodayCount++;
+                            if (logDate === yesterdayStr) executionsYesterdayCount++;
+                        }
+                    });
+                });
+
+                return {
+                    ...wf,
+                    executionCount,
+                    totalEmails,
+                    totalSms
+                };
+            });
+
+          
+            // Update state
+            setWorkflows(workflowsWithCounts);
+            setTotalSms(totalSmsCount);
+            setTotalEmails(totalEmailCount);
+            setTotalTimeSaved(totalEmailCount + totalSmsCount); // assuming 1 min saved per email/SMS
+            setActiveWorkflows(workflowsData.filter(wf => wf.isActive).length);
+            setExecutionsToday(executionsTodayCount);
+            setExecutionsYesterday(executionsYesterdayCount);
+
         } catch (err) {
             console.error(err);
             toast.error(t("Failed to load workflows"));
@@ -60,6 +136,8 @@ const WorkflowsPage = () => {
             setLoading(false);
         }
     };
+
+
 
     // --- Fetching Templates Functions ---
     const fetchEmailTemplates = async () => {
@@ -827,31 +905,31 @@ const WorkflowsPage = () => {
 
         if (result.isConfirmed) {
             try {
-            const config = {
-                headers: { Authorization: `Bearer ${authToken}` },
-            };
-            await api.delete(`/workflows/${workflowId}`, config);
+                const config = {
+                    headers: { Authorization: `Bearer ${authToken}` },
+                };
+                await api.delete(`/workflows/${workflowId}`, config);
 
-            // Remove the workflow from UI
-            setWorkflows(prev => prev.filter(w => w.id !== workflowId));
+                // Remove the workflow from UI
+                setWorkflows(prev => prev.filter(w => w.id !== workflowId));
 
-            Swal.fire({
-                title: t("api.workflows.deletedSuccessfully"),
-                icon: "success",
-                timer: 2000,
-                showConfirmButton: false,
-            });
+                Swal.fire({
+                    title: t("api.workflows.deletedSuccessfully"),
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
             } catch (err) {
-            console.error("Error deleting workflow:", err);
-            Swal.fire({
-                title: t("api.workflows.deleteFailed"),
-                icon: "error",
-                timer: 2000,
-                showConfirmButton: false,
-            });
+                console.error("Error deleting workflow:", err);
+                Swal.fire({
+                    title: t("api.workflows.deleteFailed"),
+                    icon: "error",
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
             }
         }
-        };
+    };
 
 
 
@@ -870,7 +948,7 @@ const WorkflowsPage = () => {
                         </div>
                         <div className="col-md-6">
                             <div className="dashright">
-                                <Link to="#"     onClick={() => openCreateModal()} className="btn btn-send" data-bs-toggle="modal" data-bs-target="#myModal3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{t('workflows.newWorkflowButton')}</Link>
+                                <Link to="#" onClick={() => openCreateModal()} className="btn btn-send" data-bs-toggle="modal" data-bs-target="#myModal3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{t('workflows.newWorkflowButton')}</Link>
                             </div>
                         </div>
                     </div>
@@ -893,17 +971,37 @@ const WorkflowsPage = () => {
                         </div>
                         <div className="col-md-3">
                             <div className="carddesign cardinfo">
-                                <span className="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play h-4 w-4 text-muted-foreground" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg></span>
-                                <h3>{t('workflows.successRate')}</h3>
-                                <h5>{successRate}%</h5>
-                                <h6>{t('workflows.fromLastWeek', { count: successRate })}</h6>
+                                <span className="card-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                                        className="lucide lucide-mail h-4 w-4 text-muted-foreground"
+                                        aria-hidden="true">
+                                        <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect>
+                                        <polyline points="3,7 12,13 21,7"></polyline>
+                                    </svg>
+                                </span>
+                                <h3>{t('workflows.totalMessagesSent')}</h3>
+                                {/* <h3>{totalSms + totalEmails}</h3> */}
+                                <div className="d-flex justify-content-between">
+                                    <div>
+                                        <h5>{totalSms}</h5>
+                                        <h6 className="mb-0">{t('workflows.totalSmsSent')}</h6>
+                                    </div>
+                                    <div>
+                                        <h5>{totalEmails}</h5>
+                                        <h6 className="mb-0">{t('workflows.totalEmailsSent')}</h6>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+
                         <div className="col-md-3">
                             <div className="carddesign cardinfo">
                                 <span className="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-workflow h-4 w-4 text-muted-foreground" aria-hidden="true"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></svg></span>
                                 <h3>{t('workflows.timeSaved')}</h3>
-                                <h5>{totalTimeSaved}h</h5>
+                                <h5>{formatTimeSaved(totalTimeSaved)}</h5>
                                 <h6 className="activenot">{t('workflows.thisWeek')}</h6>
                             </div>
                         </div>
@@ -936,7 +1034,7 @@ const WorkflowsPage = () => {
                                                         </div>
                                                         <h4>{wf.name}{' '} <div className="badge">{t('workflows.stepsBadge', { count: wf.steps?.length || 0 })}</div><div className={`status ${wf.isActive ? 'status3' : 'status4'}`}> {wf.isActive ? t('workflows.statusActive') : t('workflows.statusInactive')}</div></h4>
                                                         <h5>{wf.description}</h5>
-                                                        <h5><span>{t('workflows.trigger')} {wf.triggerEvent ? wf.triggerEvent.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()) : ''}</span><span>{wf.lastRun && (<span> {t('workflows.lastRun')} {wf.lastRun} </span>)}</span><span>{t('workflows.executions', { count: wf.executions || 0 })}</span></h5>
+                                                        <h5><span>{t('workflows.trigger')} {wf.triggerEvent ? wf.triggerEvent.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()) : ''}</span><span>{wf.lastRun && (<span> {t('workflows.lastRun')} {wf.lastRun} </span>)}</span><span>{t('workflows.executions', { count: wf.executionCount || 0 })}</span></h5>
                                                     </div>
                                                     <div className="leadlist-action">
                                                         <div className="switchbtn">
@@ -953,7 +1051,7 @@ const WorkflowsPage = () => {
                                                         </div>
                                                         <Link to="#" className="action-icon" data-bs-toggle="modal" data-bs-target="#myModal3" onClick={() => openEditModal(wf)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen w-4 h-4" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></Link>
                                                         <Link to="#" className="action-icon" onClick={() => handleDeleteWorkflow(wf.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></Link>
-                                                     </div>
+                                                    </div>
                                                 </div>
                                             </li>
                                         ))}
@@ -1037,10 +1135,10 @@ const WorkflowsPage = () => {
                                                             <li><Link className="dropdown-item" to="#" onClick={() => addStep("sendEmail")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg></div><label>{t('workflows.stepTypes.sendEmail')} <span>{t('workflows.stepTypes.sendEmailDescription')}</span></label></Link></li>
                                                             <li><Link className="dropdown-item" to="#" onClick={() => addStep("sendSms")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg></div><label>{t('workflows.stepTypes.sendSms')} <span>{t('workflows.stepTypes.sendSmsDescription')}</span></label></Link></li>
                                                             <li><Link className="dropdown-item" to="#" onClick={() => addStep("updateStatus")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-target" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div><label>{t('workflows.stepTypes.updateStatus')} <span>{t('workflows.stepTypes.updateStatusDescription')}</span></label></Link></li>
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("assignUser")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-plus" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg></div><label>{t('workflows.stepTypes.assignUser')} <span>{t('workflows.stepTypes.assignUserDescription')}</span></label></Link></li>
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("addTags")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-tag" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg></div><label>{t('workflows.stepTypes.addTags')} <span>{t('workflows.stepTypes.addTagsDescription')}</span></label></Link></li>
                                                             <li><Link className="dropdown-item" to="#" onClick={() => addStep("waitDelay")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg></div><label>{t('workflows.stepTypes.waitDelay')} <span>{t('workflows.stepTypes.waitDelayDescription')}</span></label></Link></li>
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("condition")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-alert" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg></div><label>{t('workflows.stepTypes.condition')} <span>{t('workflows.stepTypes.conditionDescription')}</span></label></Link></li>
+                                                             {/* <li><Link className="dropdown-item" to="#" onClick={() => addStep("assignUser")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-plus" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg></div><label>{t('workflows.stepTypes.assignUser')} <span>{t('workflows.stepTypes.assignUserDescription')}</span></label></Link></li>
+                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("addTags")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-tag" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg></div><label>{t('workflows.stepTypes.addTags')} <span>{t('workflows.stepTypes.addTagsDescription')}</span></label></Link></li>
+                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("condition")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-alert" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg></div><label>{t('workflows.stepTypes.condition')} <span>{t('workflows.stepTypes.conditionDescription')}</span></label></Link></li>*/} 
                                                         </ul>
                                                     </div>
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
