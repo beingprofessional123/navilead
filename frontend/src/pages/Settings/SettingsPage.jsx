@@ -108,30 +108,57 @@ const SettingsPage = () => {
     };
 
     // Save all changes
-    const handleSaveChanges = async () => {
-        try {
-            // Only send non-empty and non-default fields
-            const updateData = {};
-            Object.keys(formData).forEach((key) => {
-                if (formData[key] !== "" && formData[key] !== null) {
-                    updateData[key] = formData[key];
-                }
-            });
-
-            if (Object.keys(updateData).length === 0) {
-                toast.warn("No changes to update.");
-                return;
+const handleSaveChanges = async () => {
+    try {
+        // Prepare data to send
+        const updateData = {};
+        Object.keys(formData).forEach((key) => {
+            if (formData[key] !== "" && formData[key] !== null) {
+                updateData[key] = formData[key];
             }
+        });
 
-            await api.put("/settings", updateData, {
-                headers: { Authorization: `Bearer ${authToken}` }
-            });
-
-            toast.success("Settings updated successfully!");
-        } catch (error) {
-            toast.error("Failed to update settings.");
+        if (Object.keys(updateData).length === 0) {
+            toast.warn("No changes to update.");
+            return;
         }
-    };
+
+        // Send update request
+        const response = await api.put("/settings", updateData, {
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+
+        const updatedUser = response.data.user;
+        console.log("Updated user from API:", updatedUser);
+
+        if (updatedUser) {
+            // Get existing user from localStorage
+            const existingUser = JSON.parse(localStorage.getItem("user")) || {};
+
+            // Only update specific fields from API user object
+            const newUser = {
+                ...existingUser,
+                name: updatedUser.name,
+                phone: updatedUser.phone,
+                currency: updatedUser.currency,
+                language: updatedUser.language,
+                companyName: updatedUser.companyName,
+                companyLogo: updatedUser.companyLogo,
+            };
+
+            // Save back to localStorage
+            localStorage.setItem("user", JSON.stringify(newUser));
+            localStorage.setItem("i18nextLng", newUser.language || "en");
+        }
+        toast.success("Settings updated successfully!");
+        window.location.reload();
+    } catch (error) {
+        console.error(error);
+        toast.error("Failed to update settings.");
+    }
+};
+
+
 
     const handleLogoUpload = async (e) => {
         const file = e.target.files[0];
@@ -202,43 +229,43 @@ const SettingsPage = () => {
 
 
 
-    const handleInviteUser = async () => {
-        const { value: email } = await Swal.fire({
-            title: translate('settingsPage.inviteUserButton'),
-            input: 'email',
-            inputLabel: translate('settingsPage.contactEmailLabel'),
-            inputPlaceholder: translate('settingsPage.contactEmailPlaceholder'),
-            showCancelButton: true,
-            confirmButtonText: translate('emailSmsPage.send'),
-            cancelButtonText: translate('emailSmsPage.cancel'),
-            inputValidator: (value) => {
-                if (!value) {
-                    return translate('offerPage.askQuestionInputValidator');
-                }
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                    return 'Please enter a valid email address.';
-                }
-                return null;
-            },
-            customClass: {
-                popup: 'swal2-dark'
-            }
-        });
+    // const handleInviteUser = async () => {
+    //     const { value: email } = await Swal.fire({
+    //         title: translate('settingsPage.inviteUserButton'),
+    //         input: 'email',
+    //         inputLabel: translate('settingsPage.contactEmailLabel'),
+    //         inputPlaceholder: translate('settingsPage.contactEmailPlaceholder'),
+    //         showCancelButton: true,
+    //         confirmButtonText: translate('emailSmsPage.send'),
+    //         cancelButtonText: translate('emailSmsPage.cancel'),
+    //         inputValidator: (value) => {
+    //             if (!value) {
+    //                 return translate('offerPage.askQuestionInputValidator');
+    //             }
+    //             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    //                 return 'Please enter a valid email address.';
+    //             }
+    //             return null;
+    //         },
+    //         customClass: {
+    //             popup: 'swal2-dark'
+    //         }
+    //     });
 
-        if (email) {
-            try {
-                await api.post('/settings/invite-user', { email }, { headers: { Authorization: `Bearer ${authToken}` } });
-                toast.success(translate('api.settings.userInviteSuccess', { email }));
-            } catch (error) {
-                toast.error(translate('api.settings.userInviteError'));
-            }
-        }
-    };
+    //     if (email) {
+    //         try {
+    //             await api.post('/settings/invite-user', { email }, { headers: { Authorization: `Bearer ${authToken}` } });
+    //             toast.success(translate('api.settings.userInviteSuccess', { email }));
+    //         } catch (error) {
+    //             toast.error(translate('api.settings.userInviteError'));
+    //         }
+    //     }
+    // };
 
-    const handleEditUser = (userId) => {
-        console.log(`Editing user ${userId}`);
-        toast.info(`Feature to edit user ${userId} coming soon!`);
-    };
+    // const handleEditUser = (userId) => {
+    //     console.log(`Editing user ${userId}`);
+    //     toast.info(`Feature to edit user ${userId} coming soon!`);
+    // };
 
     return (
         <div className="mainbody">
@@ -432,7 +459,7 @@ const SettingsPage = () => {
                 </div>
 
                 {/* Users */}
-                <div className="carddesign cserscard">
+                {/* <div className="carddesign cserscard">
                     <div className="workflowsadd">
                         <h2 className="card-title">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users text-primary" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
@@ -466,7 +493,7 @@ const SettingsPage = () => {
                     <div className="modalfooter">
                         <span className="inputnote">{translate('settingsPage.activeUsersNote', { active: activeUsers, total: totalAllowedUsers })}</span>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Corporate Branding */}
                 <div className="carddesign corporate-branding">

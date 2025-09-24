@@ -70,7 +70,7 @@ module.exports = (sequelize, DataTypes) => {
     Quote.belongsTo(models.Status, { foreignKey: "statusId", as: "status" });
     Quote.belongsTo(models.PricingTemplate, { foreignKey: 'pricingTemplateId', as: 'pricingTemplate' });
     Quote.hasMany(models.QuoteService, { foreignKey: 'quoteId', as: 'services' });
-    Quote.hasMany(models.AcceptedOffer, { foreignKey: 'quoteId', as: 'acceptedOffers' });
+    Quote.hasMany(models.AcceptedOffer, { foreignKey: 'quoteId', as: 'acceptedOffers',onDelete: "CASCADE", });
     Quote.hasMany(models.AskQuestion, { foreignKey: 'quoteId', as: 'questions' });
   };
 

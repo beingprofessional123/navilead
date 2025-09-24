@@ -92,8 +92,10 @@ exports.updateGeneralSettings = async (req, res) => {
       transaction: t
     });
 
+     const updatedUser = await User.findByPk(req.user.id, { transaction: t });
+
     await t.commit();
-    res.status(200).json({ message: "Settings updated successfully." });
+    res.status(200).json({ message: "Settings updated successfully.", user: updatedUser });
   } catch (error) {
     await t.rollback();
     res.status(500).json({

@@ -20,6 +20,7 @@ const sendSmsQuoteRoutes = require('./routes/sendSmsQuoteRoutes');
 const publicLeadRoutes = require('./routes/publicLeadRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const integrationRoutes = require('./routes/integrationRoutes');
+const offersTemplatesRoutes = require('./routes/offersTemplatesRoutes');
 const workflowRoutes = require('./routes/workflowRoutes');
 const publicWorkflowRoutes = require('./routes/publicWorkflowRoutes');
 
@@ -50,6 +51,7 @@ app.use('/api/send-sms-quotes', sendSmsQuoteRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/integrations', integrationRoutes);
 app.use('/api/workflows', workflowRoutes);
+app.use('/api/offers-templates', offersTemplatesRoutes);
 
 // Public leads route (no auth required)
 app.use('/api/public-leads', publicLeadRoutes);

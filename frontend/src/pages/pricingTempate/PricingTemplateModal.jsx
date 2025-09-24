@@ -5,7 +5,7 @@ import api from '../../utils/api';
 import { useTranslation } from "react-i18next"; // Import useTranslation
 
 const PricingTemplateModal = ({ show, onHide, template, onSave }) => {
-    const { authToken } = useContext(AuthContext);
+    const { authToken ,user } = useContext(AuthContext);
     const { t: translate } = useTranslation(); // Initialize the translation hook
 
     const [formData, setFormData] = useState({
@@ -13,7 +13,7 @@ const PricingTemplateModal = ({ show, onHide, template, onSave }) => {
         title: '',
         description: '',
         terms: '',
-        currencyId: 1,
+        currencyId: user.currency,
         choiceType: 'multiple',
         services: [],
     });
@@ -24,9 +24,12 @@ const PricingTemplateModal = ({ show, onHide, template, onSave }) => {
         const fetchCurrencies = async () => {
             try {
                 const response = await api.get('/currencies');
-                setCurrencies(response.data);
-                if (!template && !formData.currencyId && response.data.length > 0) {
-                    setFormData(prev => ({ ...prev, currencyId: response.data[0].id }));
+                // Ensure IDs are numbers
+                const currenciesData = response.data.map(c => ({ ...c, id: Number(c.id) }));
+                setCurrencies(currenciesData);
+
+                if (!template && !formData.currencyId && currenciesData.length > 0) {
+                    setFormData(prev => ({ ...prev, currencyId: currenciesData[0].id }));
                 }
             } catch (error) {
                 console.error("Error fetching currencies:", error);
@@ -34,7 +37,7 @@ const PricingTemplateModal = ({ show, onHide, template, onSave }) => {
             }
         };
         fetchCurrencies();
-    }, [translate]); // Added translate to dependencies
+    }, [translate]);
 
     useEffect(() => {
         if (template) {
@@ -53,12 +56,12 @@ const PricingTemplateModal = ({ show, onHide, template, onSave }) => {
                 title: '',
                 description: '',
                 terms: '',
-                currencyId: currencies.length > 0 ? currencies[0].id : 1,
+                currencyId: user.currency || (currencies.length > 0 ? currencies[0].id : 1), // Use user currency first
                 choiceType: 'multiple',
                 services: [{ name: '', description: '', price: 0, quantity: 1, isRequired: true, id: Date.now() }],
             });
         }
-    }, [template, currencies, translate]); // Added translate to dependencies
+    }, [template, currencies, translate, user.currency ]); // Added translate to dependencies
 
     useEffect(() => {
         if (show) {
@@ -133,7 +136,7 @@ const PricingTemplateModal = ({ show, onHide, template, onSave }) => {
 
     const maximumTotalValue = formData.services.reduce((total, s) => total + (s.price * s.quantity), 0);
 
-    const selectedCurrency = currencies.find(c => c.id === formData.currencyId);
+    const selectedCurrency = currencies.find(c => c.id === Number(formData.currencyId));
     const currencyCode = selectedCurrency?.code || 'USD';
     const currencySymbol = selectedCurrency?.symbol || '$';
 
