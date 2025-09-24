@@ -80,7 +80,8 @@ exports.getOfferByQuoteId = async (req, res) => {
 
       if (lostStatus && offer.leadId) {
         const lead = await Lead.findByPk(offer.leadId);
-        await runWorkflows("leadMarkedAsLost", { lead, user: req.user });
+        const user = await User.findByPk(offer.userId);
+        await runWorkflows("leadMarkedAsLost", { lead, user });
         await db.Lead.update(
           { statusId: lostStatus.id },
           { where: { id: offer.leadId } }
@@ -228,7 +229,8 @@ exports.acceptOffer = async (req, res) => {
     const quote = await Quote.findByPk(quoteId);
     if (quote && quote.leadId) {
       const lead = await Lead.findByPk(quote.leadId);
-      await runWorkflows("leadMarkedAsLost", { lead, user: req.user });
+      const user = await User.findByPk(quote.userId);
+      await runWorkflows("leadMarkedAsWon", { lead, user });
       await db.Lead.update(
         { statusId: wonStatus.id },
         { where: { id: quote.leadId } }
