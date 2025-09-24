@@ -1,13 +1,20 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
+// Decide whether to use SSL (port 465) or TLS (port 587)
+const secure = process.env.MAIL_ENCRYPTION.toLowerCase() === 'ssl';
+const port = Number(process.env.MAIL_PORT);
+
 const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
-  port: Number(process.env.MAIL_PORT),
-  secure: process.env.MAIL_ENCRYPTION.toLowerCase() === 'ssl', // true for port 465 (SSL)
+  port: port,
+  secure: secure, // true for SSL (465), false for TLS (587)
   auth: {
     user: process.env.MAIL_USERNAME,
     pass: process.env.MAIL_PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: false, // allows self-signed certs; safe on Render
   },
 });
 

@@ -166,6 +166,7 @@ async function executeSingleStep(logRow, stepRow, configObj, variablesMap, baseT
  */
 async function runWorkflows(triggerEvent, contextData = {}) {
   try {
+    console.log("contextData".contextData);
     const workflows = await db.Workflow.findAll({
       where: { triggerEvent, isActive: true, userId: contextData.user?.id },
       include: [{ model: db.WorkflowStep, as: "steps" }],
