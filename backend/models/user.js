@@ -79,6 +79,7 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.ApiLog, { foreignKey: "userId", as: "apiLogs" });
     User.hasMany(models.Workflow, { foreignKey: 'userId', as: 'workflows' });
     User.hasMany(models.WorkflowLog, { foreignKey: "userId", as: "workflowLogs" });
+    User.hasMany(models.OfferTemplate, { foreignKey: "userId", as: "offerTemplates" });
   };
 
   return User;

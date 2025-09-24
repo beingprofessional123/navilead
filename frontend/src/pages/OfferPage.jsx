@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import api from '../utils/api';
 import FullPageLoader from '../components/common/FullPageLoader';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.css';
 import { useTranslation } from 'react-i18next';
+import OfferHtmlRenderer from './OfferHtmlRenderer';
 
 const OfferPage = () => {
   const { id } = useParams();
@@ -16,12 +17,16 @@ const OfferPage = () => {
   const [selectedServiceIds, setSelectedServiceIds] = useState(new Set());
   const [isOfferExpired, setIsOfferExpired] = useState(false);
   const [customerNotes, setCustomerNotes] = useState('');
+  const [offerTemplate, setOfferTemplate] = useState('');
+  const [AcceptedOffer, setAcceptedOffer] = useState('');
+
 
   const fetchOffer = async () => {
     setLoading(true);
     try {
       const response = await api.get(`/offers/${id}`);
       const fetchedOffer = response.data;
+      setOfferTemplate(fetchedOffer.offerTemplate);
 
       const createdAtDate = new Date(fetchedOffer.createdAt);
       const validUntilDate = new Date(createdAtDate);
@@ -52,9 +57,10 @@ const OfferPage = () => {
 
       if (fetchedOffer.status?.name === 'Accepted') {
         setAcceptTerms(true);
-      }
-      if (fetchedOffer.rememberNotes) {
-        setCustomerNotes(fetchedOffer.rememberNotes);
+        setAcceptedOffer(fetchedOffer.acceptedOffers);
+        setCustomerNotes(fetchedOffer.acceptedOffers.rememberNotes);
+        const acceptedServices = JSON.parse(fetchedOffer.acceptedOffers.chosenServices);
+        acceptedServices.forEach(service => initialSelectedServices.add(service.id));
       }
 
       setOffer({ ...fetchedOffer, services: processedServices });
@@ -110,7 +116,7 @@ const OfferPage = () => {
   };
 
   const handleAcceptQuote = async () => {
-     if (!acceptTerms) {
+    if (!acceptTerms) {
       toast.error(translate('api.offers.termsNotAccepted')); // Translated
       return;
     }
@@ -230,130 +236,156 @@ const OfferPage = () => {
 
   return (
     <>
-      <section className="navpublic">
-        <div className="container">
-          <div className="row">
-            <div className="col-md-12">
-              <div className="logo">
-                <Link to="#"><img src="/assets/images/logo.svg" className="img-fluid" alt="" /></Link>
+      {offerTemplate?.htmlCode && offerTemplate?.customHtml ? (
+       <OfferHtmlRenderer
+        offer={offer}
+        htmlCode={offerTemplate.htmlCode}
+        handleAcceptQuote={handleAcceptQuote}
+        handleAskQuestion={handleAskQuestion}
+        interactionDisabled={interactionDisabled}
+        acceptTerms={acceptTerms}
+        setAcceptTerms={setAcceptTerms}
+        selectedServiceIds={selectedServiceIds}
+        setSelectedServiceIds={setSelectedServiceIds}
+        customerNotes={customerNotes}
+        setCustomerNotes={setCustomerNotes}
+        AcceptedOffer={AcceptedOffer}
+      />
+
+
+      ) : (
+        <>
+          <section className="navpublic" style={{ backgroundColor: offerTemplate.mainBgColor }}>
+            <div className="container">
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="logo">
+                    <Link to="#"><img src={offerTemplate?.companyLogo || offer.users?.companyLogo || "/assets/images/logo.svg"} className="img-fluid" alt="" /></Link>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-md-7">
-              <div className="carddesign">
-                <div className="offer-title d-flex justify-content-between align-items-center">
-                  <h1 className="tilbud-title">{translate('offerPage.offerTitle', { title: title })}</h1> 
-                  {offer.status && (
-                    <div className={`badge ${offer.status.name === "Accepted" ? "bg-success" : ""} ${offer.status.name === "In Dialogue" ? "bg-warning text-dark" : ""} ${offer.status.name === "Viewed by customer" ? "bg-info" : ""}`}>
-                      <span>
-                        {offer.status.name === "Viewed by customer"
-                          ? translate('offerPage.offerViewedBadge') // Translated
-                          : offer.status.name === "Accepted"
-                            ? translate('offerPage.offerAcceptedBadge') // Translated
-                            : translate('offerPage.offerStatusBadge', { statusName: offer.status.name })} {/* Translated */}
-                      </span>
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="companyname text-center">
+                    <h5 style={{ color: offerTemplate.textColor }}>{offerTemplate?.companyName || "NaviLead"}</h5>
+                  </div>
+                </div>
+              </div>
+              <div className="row">
+                <div className="col-md-7">
+                  <div className="carddesign" style={{ backgroundColor: offerTemplate.leftCardBgColor }}>
+                    <div className="offer-title d-flex justify-content-between align-items-center">
+                      <h1 className="tilbud-title" style={{ color: offerTemplate.textColor }}>{translate('offerPage.offerTitle', { title: title })}</h1>
+                      {offer.status && (
+                        <div className={`badge ${offer.status.name === "Accepted" ? "bg-success" : ""} ${offer.status.name === "In Dialogue" ? "bg-warning text-dark" : ""} ${offer.status.name === "Viewed by customer" ? "bg-info" : ""}`}>
+                          <span>
+                            {offer.status.name === "Viewed by customer"
+                              ? translate('offerPage.offerViewedBadge') // Translated
+                              : offer.status.name === "Accepted"
+                                ? translate('offerPage.offerAcceptedBadge') // Translated
+                                : translate('offerPage.offerStatusBadge', { statusName: offer.status.name })} {/* Translated */}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="intro">
-                  <p>{translate('offerPage.introDescription', { description: description })}</p> {/* Translated */}
-                  <p className="muted">{translate('offerPage.introMutedText')}</p> {/* Translated */}
-                </div>
-                <div className="items">
-                  {services.map(service => (
-                    <div className="item" key={service.id}>
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={selectedServiceIds.has(service.id)}
-                        onChange={() => handleItemToggle(service.id, service.isRequired)}
-                        disabled={interactionDisabled || service.isRequired}
-                      />
-                      <div>
-                        <div className="title">{service.name}</div>
-                        <div className="desc">{service.description}</div>
+                    <div className="intro">
+                      <p style={{ color: offerTemplate.textColor }}>{translate('offerPage.introDescription', { description: description })}</p> {/* Translated */}
+                      <p className="muted" style={{ color: offerTemplate.subTextColor }}>{translate('offerPage.introMutedText')}</p> {/* Translated */}
+                    </div>
+                    <div className="items">
+                      {services.map(service => (
+                        <div className="item" key={service.id}>
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={selectedServiceIds.has(service.id)}
+                            onChange={() => handleItemToggle(service.id, service.isRequired)}
+                            disabled={interactionDisabled || service.isRequired}
+                          />
+                          <div>
+                            <div className="title" style={{ color: offerTemplate.textColor }}>{service.name}</div>
+                            <div className="desc" style={{ color: offerTemplate.subTextColor }}>{service.description}</div>
+                          </div>
+                          <div className="price" style={{ color: offerTemplate.textColor }}>{service.price} {offer.pricingTemplate?.currency?.symbol}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="totals">
+                      <div className="totalsrow">
+                        <span style={{ color: offerTemplate.textColor }}>{translate('offerPage.subtotal')}</span>
+                        <strong style={{ color: offerTemplate.textColor }}>{currentSubtotal} {offer.pricingTemplate?.currency?.symbol}</strong>
                       </div>
-                      <div className="price">{service.price} {offer.pricingTemplate?.currency?.symbol}</div>
+                      <div className="totalsrow">
+                        <span style={{ color: offerTemplate.textColor }}>{translate('offerPage.vat', { vatRate: vatRate * 100 })}</span> {/* Translated */}
+                        <strong style={{ color: offerTemplate.textColor }}>{vat} {offer.pricingTemplate?.currency?.symbol}</strong>
+                      </div>
+                      {offer.overallDiscount > 0 && (
+                        <div className="totalsrow">
+                          <span style={{ color: offerTemplate.textColor }}>{translate('offerPage.discount', { overallDiscount: offer.overallDiscount })}</span> {/* Translated */}
+                          <strong style={{ color: offerTemplate.textColor }}>-{currentSubtotal * offer.overallDiscount / 100} {offer.pricingTemplate?.currency?.symbol}</strong>
+                        </div>
+                      )}
+                      <div className="totalsrow">
+                        <span style={{ color: offerTemplate.textColor, fontWeight: 700 }}>{translate('offerPage.total')}</span> {/* Translated */}
+                        <strong style={{ fontSize: '16px', color: offerTemplate.textColor }}>{totalWithVat} {offer.pricingTemplate?.currency?.symbol}</strong>
+                      </div>
                     </div>
-                  ))}
-                </div>
-                <div className="totals">
-                  <div className="totalsrow">
-                    <span>{translate('offerPage.subtotal')}</span>
-                    <strong>{currentSubtotal} {offer.pricingTemplate?.currency?.symbol}</strong>
-                  </div>
-                  <div className="totalsrow">
-                    <span>{translate('offerPage.vat', { vatRate: vatRate * 100 })}</span> {/* Translated */}
-                    <strong>{vat} {offer.pricingTemplate?.currency?.symbol}</strong>
-                  </div>
-                  {offer.overallDiscount > 0 && (
-                    <div className="totalsrow">
-                      <span>{translate('offerPage.discount', { overallDiscount: offer.overallDiscount })}</span> {/* Translated */}
-                      <strong>-{currentSubtotal * offer.overallDiscount / 100} {offer.pricingTemplate?.currency?.symbol}</strong>
+                    <div className="publicbottom">
+                      <div className="publicbottom-heading">
+                        <h2 className="card-title" style={{ color: offerTemplate.textColor }}>{translate('offerPage.termsTitle')}</h2> {/* Translated */}
+                        <p style={{ color: offerTemplate.subTextColor }}>{terms}</p>
+                      </div>
+                      <div className="terms-row">
+                        <input
+                          id="acceptTerms"
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={acceptTerms}
+                          onChange={() => setAcceptTerms(!acceptTerms)}
+                          disabled={interactionDisabled}
+                        />
+                        <label htmlFor="acceptTerms" style={{ color: offerTemplate.textColor }}>I accept the <Link href="#" target="_blank" rel="noopener" style={{ color: offerTemplate.subTextColor }}>Terms & Conditions</Link>.</label>
+                      </div>
+                      <div className="mb-4 form-group">
+                        <label htmlFor="customerNotes" className="form-label">{translate('offerPage.notesLabel')}</label>
+                        <textarea
+                          id="customerNotes"
+                          className="form-control customerNotes text-white"
+                          rows="3"
+                          value={customerNotes}
+                          onChange={(e) => setCustomerNotes(e.target.value)}
+                          disabled={interactionDisabled}
+                        ></textarea>
+                      </div>
                     </div>
-                  )}
-                  <div className="totalsrow">
-                    <span style={{ fontWeight: 700 }}>{translate('offerPage.total')}</span> {/* Translated */}
-                    <strong style={{ fontSize: '16px' }}>{totalWithVat} {offer.pricingTemplate?.currency?.symbol}</strong>
+                    <div className="modalfooter">
+                      <button className="btn btn-add" onClick={handleAcceptQuote} disabled={interactionDisabled}>
+                        {interactionDisabled ? translate('offerPage.offerAcceptedButton') : translate('offerPage.acceptQuoteButton')} {/* Translated */}
+                      </button>
+                      <button className="btn btn-send" onClick={handleAskQuestion} disabled={interactionDisabled}>
+                        {translate('offerPage.askQuestionButton')} {/* Translated */}
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="publicbottom">
-                  <div className="publicbottom-heading">
-                    <h2 className="card-title">{translate('offerPage.termsTitle')}</h2> {/* Translated */}
-                    <p>{terms}</p>
+                <div className="col-md-5" >
+                  <div className="carddesign" style={{ backgroundColor: offerTemplate.rightCardBgColor }}>
+                    <div className="about-media">
+                      <Link href="#"><img src={offerTemplate?.aboutUsLogo || "/assets/images/blog3.jpg"} className="img-fluid" alt="" /></Link>
+                    </div>
+                    <div className="publicbottom-heading">
+                      <h2 className="card-title">{translate('offerPage.aboutUsTitle')}</h2> {/* Translated */}
+                      <div dangerouslySetInnerHTML={{
+                        __html: offerTemplate.aboutUsDescription || "About Us Description will appear here..."
+                      }} />
+                    </div>
                   </div>
-                  <div className="terms-row">
-                    <input
-                      id="acceptTerms"
-                      type="checkbox"
-                      className="form-check-input"
-                      checked={acceptTerms}
-                      onChange={() => setAcceptTerms(!acceptTerms)}
-                      disabled={interactionDisabled}
-                    />
-                    <label htmlFor="acceptTerms">I accept the <Link href="#" target="_blank" rel="noopener">Terms & Conditions</Link>.</label>
-                  </div>
-                  <div className="mb-4 form-group">
-                    <label htmlFor="customerNotes" className="form-label">{translate('offerPage.notesLabel')}</label>
-                    <textarea
-                      id="customerNotes"
-                      className="form-control customerNotes"
-                      rows="3"
-                      value={customerNotes}
-                      onChange={(e) => setCustomerNotes(e.target.value)}
-                      disabled={interactionDisabled}
-                    ></textarea>
-                  </div>
-                </div>
-                <div className="modalfooter">
-                  <button className="btn btn-add" onClick={handleAcceptQuote} disabled={interactionDisabled}>
-                    {interactionDisabled ? translate('offerPage.offerAcceptedButton') : translate('offerPage.acceptQuoteButton')} {/* Translated */}
-                  </button>
-                  <button className="btn btn-send" onClick={handleAskQuestion} disabled={interactionDisabled}>
-                    {translate('offerPage.askQuestionButton')} {/* Translated */}
-                  </button>
                 </div>
               </div>
             </div>
-            <div className="col-md-5">
-              <div className="carddesign">
-                <div className="about-media">
-                  <Link href="#"><img src="/assets/images/blog3.jpg" className="img-fluid" alt="" /></Link>
-                </div>
-                <div className="publicbottom-heading">
-                  <h2 className="card-title">{translate('offerPage.aboutUsTitle')}</h2> {/* Translated */}
-                  <p>{translate('offerPage.aboutUsParagraph1')}</p> {/* Translated */}
-                  <p>{translate('offerPage.aboutUsParagraph2')}</p> {/* Translated */}
-                  <p>{translate('offerPage.aboutUsParagraph3')}</p> {/* Translated */}
-                  <p>{translate('offerPage.aboutUsParagraph4')}</p> {/* Translated */}
-                  <p>{translate('offerPage.aboutUsParagraph5')}</p> {/* Translated */}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        </>
+      )}
     </>
   );
 };

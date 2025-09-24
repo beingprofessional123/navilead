@@ -41,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   AcceptedOffer.associate = (models) => {
-    AcceptedOffer.belongsTo(models.Quote, { foreignKey: 'quoteId', as: 'quote' });
+    AcceptedOffer.belongsTo(models.Quote, { foreignKey: 'quoteId', as: 'quote',onDelete: "CASCADE", });
   };
 
   return AcceptedOffer;

@@ -8,13 +8,15 @@ import RegisterPage from '../pages/Auth/RegisterPage';
 import OfferPage from '../pages/OfferPage';
 import ErrorPage from '../pages/Error/ErrorPage';
 import Dashboard from '../pages/Dashboard';
-import EmailSMSPage from '../pages/Template/EmailSMSPage';
+import EmailSMSPage from '../pages/emailTemplate/EmailSMSPage';
 import PricingTemplatesPage from '../pages/pricingTempate/PricingTemplatesPage';
+import OffersTemplatesPage from '../pages/offersTempate/OffersTemplatesPage';
 import LeadsPage from '../pages/Leads/LeadsPage';
 import LeadViewPage from '../pages/Leads/LeadViewPage'; 
 import IntegrationsPage from '../pages/Integrations/IntegrationsPage'; 
 import SettingsPage from '../pages/Settings/SettingsPage'; 
 import WorkflowsPage from '../pages/Workflows/WorkflowsPage'; 
+import CustomizeTemplatesPage from '../pages/offersTempate/CustomizeTemplatesPage'; 
 
 const RouterSetup = () => {
   return (
@@ -96,11 +98,21 @@ const RouterSetup = () => {
         }
       />
       <Route
-        path="/offers"
+        path="/templatesoffers"
         element={
           <ProtectedRoute>
             <PublicLayout>
-              <Dashboard /> {/* Placeholder, replace with actual OfferTemplatesPage if available */}
+              <OffersTemplatesPage /> {/* Placeholder, replace with actual OfferTemplatesPage if available */}
+            </PublicLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customize-templates"
+        element={
+          <ProtectedRoute>
+            <PublicLayout>
+              <CustomizeTemplatesPage /> {/* Placeholder, replace with actual CustomizeTemplatesPage if available */}
             </PublicLayout>
           </ProtectedRoute>
         }

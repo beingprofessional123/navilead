@@ -2,6 +2,7 @@ const db = require('../models');
 const { sendMail } = require('../utils/mail');
 const AskQuestionsTemplate = require('../EmailTemplate/AskQuestionsTemplate');
 const { runWorkflows } = require('../utils/runWorkflows');
+const user = require('../models/user');
 
 const Quote = db.Quote;
 const QuoteService = db.QuoteService;
@@ -11,10 +12,11 @@ const PricingTemplateService = db.PricingTemplateService;
 const Currency = db.Currency;
 const AcceptedOffer = db.AcceptedOffer;
 const Status = db.Status;
-const Lead = db.Lead; 
+const Lead = db.Lead;
 const AskQuestion = db.AskQuestion;
 const User = db.User;
 const StatusUpdateLog = db.StatusUpdateLog;
+const OfferTemplate = db.OfferTemplate;
 
 exports.getOfferByQuoteId = async (req, res) => {
   try {
@@ -54,7 +56,7 @@ exports.getOfferByQuoteId = async (req, res) => {
           model: Status,
           as: 'status',
           attributes: ['id', 'name', 'statusFor'],
-        }
+        },
       ],
     });
 
@@ -89,7 +91,7 @@ exports.getOfferByQuoteId = async (req, res) => {
         });
       }
 
-      
+
 
       return res.status(400).json({ message: 'This offer has expired.' });
     }
@@ -129,15 +131,21 @@ exports.getOfferByQuoteId = async (req, res) => {
     const replaceVars = (text) =>
       text
         ? text.replace(/\{\{(\w+)\}\}/g, (match, varName) =>
-            variablesMap[varName] !== undefined ? variablesMap[varName] : match
-          )
+          variablesMap[varName] !== undefined ? variablesMap[varName] : match
+        )
         : '';
 
     const replacedDescription = replaceVars(offer.description);
     const replacedTerms = replaceVars(offer.terms);
+    const offerTemplate = await OfferTemplate.findOne({ where: { userId: offer.userId } });
+    const acceptedOffers = await AcceptedOffer.findOne({ where: { quoteId } });
+    const users = await User.findOne({ where: { id: offer.userId } });
+    
 
     res.json({
       id: offer.id,
+      userId: offer.userId,
+      users,
       leadId: offer.leadId,
       title: offer.title,
       description: replacedDescription,
@@ -147,24 +155,26 @@ exports.getOfferByQuoteId = async (req, res) => {
       total: offer.total,
       createdAt: offer.createdAt,
       services: offer.services,
+      offerTemplate: offerTemplate,
+      acceptedOffers,
       pricingTemplate: offer.pricingTemplate
         ? {
-            id: offer.pricingTemplate.id,
-            name: offer.pricingTemplate.name,
-            title: offer.pricingTemplate.title,
-            description: offer.pricingTemplate.description,
-            choiceType: offer.pricingTemplate.choiceType,
-            terms: offer.pricingTemplate.terms,
-            services: offer.pricingTemplate.services,
-            currency: offer.pricingTemplate.currency,
-          }
+          id: offer.pricingTemplate.id,
+          name: offer.pricingTemplate.name,
+          title: offer.pricingTemplate.title,
+          description: offer.pricingTemplate.description,
+          choiceType: offer.pricingTemplate.choiceType,
+          terms: offer.pricingTemplate.terms,
+          services: offer.pricingTemplate.services,
+          currency: offer.pricingTemplate.currency,
+        }
         : null,
       status: offer.status
         ? {
-            id: offer.status.id,
-            name: offer.status.name,
-            statusFor: offer.status.statusFor,
-          }
+          id: offer.status.id,
+          name: offer.status.name,
+          statusFor: offer.status.statusFor,
+        }
         : null,
     });
   } catch (error) {
@@ -223,10 +233,10 @@ exports.acceptOffer = async (req, res) => {
         { statusId: wonStatus.id },
         { where: { id: quote.leadId } }
       );
-          await StatusUpdateLog.create({
-            leadId: lead.id,
-            statusId: wonStatus.id,
-          });
+      await StatusUpdateLog.create({
+        leadId: lead.id,
+        statusId: wonStatus.id,
+      });
     }
 
     res.status(200).json({
@@ -288,7 +298,7 @@ exports.askedQuestion = async (req, res) => {
 
     // Send email to assigned sales rep
     if (lead.user?.email) {
-    const emailHtml =
+      const emailHtml =
         AskQuestionsTemplate({
           firstName: lead.user.name || "",
           customerFullName: lead.fullName || "",

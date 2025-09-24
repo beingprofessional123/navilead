@@ -2,7 +2,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const db = require('../models');
-const { User, UserVariable } = db;
+const { where } = require('sequelize');
+const { User, UserVariable, OfferTemplate } = db;
 
 function generateApiKey(userId) {
   return crypto
@@ -25,6 +26,15 @@ exports.register = async (req, res) => {
       password: hashedPassword,
     });
 
+    await OfferTemplate.create({
+      userId: user.id,
+      title: "Default Template",
+      companyName: null,
+      companyLogo: null,
+      aboutUsDescription: null,
+      aboutUsLogo: null,
+    });
+
     const apiKey = generateApiKey(user.id);
     await user.update({ apikey: apiKey });
 
@@ -38,7 +48,7 @@ exports.register = async (req, res) => {
       { variableName: 'last_name', variableValue: lastName },
       { variableName: 'full_name', variableValue: name },
       { variableName: 'email', variableValue: email },
-      { variableName: "offer_link", variableValue: `${process.env.FRONTEND_URL}/offer/:quoteId`}
+      { variableName: "offer_link", variableValue: `${process.env.FRONTEND_URL}/offer/:quoteId` }
     ];
 
     await UserVariable.bulkCreate(
@@ -52,6 +62,10 @@ exports.register = async (req, res) => {
       email: user.email,
       phone: user.phone,
       apikey: user.apikey,
+      language: user.language,
+      currency: user.currency,
+      companyName: user.companyName,
+      companyLogo: user.companyLogo,
       createdAt: user.createdAt,
     };
 
@@ -110,10 +124,24 @@ exports.login = async (req, res) => {
       email: user.email,
       phone: user.phone,
       apikey: apiKey,
-      language: user.language, // ✅ include language (useful for frontend i18n)
+      language: user.language,
+      currency: user.currency,
+      companyName: user.companyName,
+      companyLogo: user.companyLogo,
       createdAt: user.createdAt,
     };
 
+    const existingTemplate = await OfferTemplate.findOne({ where: { userId: user.id } });
+    if (!existingTemplate) {
+      await OfferTemplate.create({
+        userId: user.id,
+        title: "Offer Template",
+        companyName: null,
+        companyLogo: null,
+        aboutUsDescription: null,
+        aboutUsLogo: null,
+      });
+    }
     res.status(200).json({ message: 'api.login.success', token, user: userData });
 
   } catch (error) {
