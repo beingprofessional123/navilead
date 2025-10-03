@@ -59,64 +59,62 @@ const validatePaymentMethod = (data, type) => {
 exports.getPaymentMethods = async (req, res) => {
   try {
     const user = req.user;
-    if (!user || !user.stripeCustomerId) {
-      return res.status(400).json({ message: 'User not linked to Stripe customer' });
-    }
-
-    // 1️⃣ Fetch latest payment method from Stripe
-    const pmList = await stripe.paymentMethods.list({
-      customer: user.stripeCustomerId,
-      type: 'card',
-      limit: 1,
-    });
-
-    const latestStripePM = pmList.data.length ? pmList.data[0] : null;
-    if (!latestStripePM) {
-      return res.status(404).json({ message: 'No payment method found on Stripe.' });
-    }
 
     let dbRecord = await PaymentMethod.findOne({ where: { userId: user.id } });
+    let latestStripePM = null;
 
-    // 2️⃣ Extract required details
-    const cardNumberMasked = latestStripePM.card.last4;
-    const expiryDate = `${latestStripePM.card.exp_month}/${latestStripePM.card.exp_year}`;
-    const cardholderName = latestStripePM.billing_details.name || dbRecord.cardholderName;
-    const cardType = latestStripePM.card.brand;
-    const companyName = dbRecord.companyName || user.companyName;
-    const address = `${latestStripePM.billing_details.address.line1}, ${latestStripePM.billing_details.address.line2}` || dbRecord.address;
-    const cityPostalCode = latestStripePM.billing_details?.postal_code || dbRecord.cityPostalCode;
-    const stripepaymentid = latestStripePM.id;
+    if (user?.stripeCustomerId) {
 
-
-    if (dbRecord) {
-      await dbRecord.update({
-        cardNumber: cardNumberMasked,
-        expiryDate,
-        cardholderName,
-        cardType,
-        companyName,
-        address,
-        cityPostalCode,
-        stripePaymentMethodId: stripepaymentid,
+      // 1️⃣ Fetch latest payment method from Stripe
+      const pmList = await stripe.paymentMethods.list({
+        customer: user.stripeCustomerId,
+        type: 'card',
+        limit: 1,
       });
-    } else {
-      dbRecord = await PaymentMethod.create({
-        userId: user.id,
-        cardNumber: cardNumberMasked,
-        expiryDate,
-        cvc: '***', // never store real CVC
-        cardholderName,
-        cardType,
-        companyName,
-        address,
-        cityPostalCode,
-        stripePaymentMethodId: stripepaymentid,
-      });
+
+      latestStripePM = pmList.data.length ? pmList.data[0] : null;
+      if (latestStripePM) {
+        // 2️⃣ Extract required details
+        const cardNumberMasked = latestStripePM.card.last4;
+        const expiryDate = `${latestStripePM.card.exp_month}/${latestStripePM.card.exp_year}`;
+        const cardholderName = latestStripePM.billing_details.name || dbRecord.cardholderName;
+        const cardType = latestStripePM.card.brand;
+        const companyName = dbRecord.companyName || user.companyName;
+        const address = `${latestStripePM.billing_details.address.line1}, ${latestStripePM.billing_details.address.line2}` || dbRecord.address;
+        const cityPostalCode = latestStripePM.billing_details?.postal_code || dbRecord.cityPostalCode;
+        const stripepaymentid = latestStripePM.id;
+
+        if (dbRecord) {
+          await dbRecord.update({
+            cardNumber: cardNumberMasked,
+            expiryDate,
+            cardholderName,
+            cardType,
+            companyName,
+            address,
+            cityPostalCode,
+            stripePaymentMethodId: stripepaymentid,
+          });
+        } else {
+          dbRecord = await PaymentMethod.create({
+            userId: user.id,
+            cardNumber: cardNumberMasked,
+            expiryDate,
+            cvc: '***', // never store real CVC
+            cardholderName,
+            cardType,
+            companyName,
+            address,
+            cityPostalCode,
+            stripePaymentMethodId: stripepaymentid,
+          });
+        }
+      }
     }
 
     // 4️⃣ Return the single payment method
     res.status(200).json({
-      paymentMethods: [dbRecord],
+      paymentMethods: dbRecord ? [dbRecord] : null,
       latestStripePaymentMethod: latestStripePM,
     });
 

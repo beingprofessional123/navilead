@@ -38,3 +38,4 @@ out/
 *.sln
 *.sw?
 .DS_Store
+.env
