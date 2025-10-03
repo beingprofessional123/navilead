@@ -137,7 +137,7 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
                       {userPlan?.plan?.id === plan.id ? t('button.currentPlan') : t('button.upgradePlan')}
                     </Link>
 
-                    {userPlan?.plan?.id === plan.id && (
+                    {userPlan?.plan?.id === plan.id && userPlan.plan.billing_type !== 'free' && (
                       <button
                         className="btn btn-add"
                         onClick={() => handleCancelPlan(plan)}
