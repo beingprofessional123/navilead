@@ -96,11 +96,6 @@ const BillingPage = () => {
     return <div className="loading-state p-5 text-center">{t('loading')}...</div>;
   }
 
-
-  if (!plans) {
-    return <div className="no-data-state p-5 text-center">{t('noData')}</div>;
-  }
-
   return (
     <div className="mainbody">
       <div className="container-fluid">

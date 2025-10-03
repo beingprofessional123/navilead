@@ -14,8 +14,7 @@ exports.checkout = async (req, res) => {
     const plan = await Plan.findByPk(planId);
     const PaymentMethods = await PaymentMethod.findOne({ where: { userId: userId } });
     if (!plan) return res.status(404).json({ message: 'Plan not found' });
-    if (!PaymentMethods) return res.status(404).json({ message: 'Billing details not found' });
-
+    
     // If plan is free, assign directly
     if (plan.billing_type === 'free') {
       const userPlan = await UserPlan.create({
@@ -46,13 +45,13 @@ exports.checkout = async (req, res) => {
         email: req.user.email,
         name: req.user.name,
         address: {
-          line1: PaymentMethods.address,
-          postal_code: PaymentMethods.cityPostalCode,
+          line1: PaymentMethods.address || null,
+          postal_code: PaymentMethods.cityPostalCode || null,
           country: 'DKk' // Denmark
         },
         metadata: {
-          companyName:PaymentMethods.companyName,
-          cvrNumber:PaymentMethods.cvrNumber,
+          companyName:PaymentMethods.companyName || null,
+          cvrNumber:PaymentMethods.cvrNumber || null,
         }
       });
 
@@ -65,14 +64,14 @@ exports.checkout = async (req, res) => {
       await stripe.customers.update(stripeCustomerId, {
         name: req.user.name,
          address: {
-          line1: PaymentMethods.address,
-          postal_code: PaymentMethods.cityPostalCode,
-          country: 'DKk' // Denmark
+          line1: PaymentMethods.address || null,
+          postal_code: PaymentMethods.cityPostalCode || null,
+          country: 'DKk'
         },
         metadata: {
-          companyName:PaymentMethods.companyName,
-          cvrNumber:PaymentMethods.cvrNumber,
-        } 
+          companyName:PaymentMethods.companyName || null,
+          cvrNumber:PaymentMethods.cvrNumber || null,
+        }
       });
     }
 
