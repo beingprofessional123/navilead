@@ -40,7 +40,7 @@ exports.checkout = async (req, res) => {
     const PaymentMethods = await PaymentMethod.findOne({ where: { userId: userId } });
 
     // Create or update Stripe customer if user has billing info
-    if (!stripeCustomerId && PaymentMethods) {
+    if (!stripeCustomerId) {
       const customer = await stripe.customers.create({
         email: req.user.email,
         name: req.user.name,
@@ -57,7 +57,7 @@ exports.checkout = async (req, res) => {
 
       stripeCustomerId = customer.id;
       await User.update({ stripeCustomerId }, { where: { id: userId } });
-    } else if (stripeCustomerId && PaymentMethods) {
+    } else if (stripeCustomerId) {
       await stripe.customers.update(stripeCustomerId, {
         name: req.user.name,
         address: {
