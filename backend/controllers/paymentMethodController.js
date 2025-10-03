@@ -75,14 +75,14 @@ exports.getPaymentMethods = async (req, res) => {
       latestStripePM = pmList.data.length ? pmList.data[0] : null;
       if (latestStripePM) {
         // 2️⃣ Extract required details
-        const cardNumberMasked = latestStripePM.card.last4;
-        const expiryDate = `${latestStripePM.card.exp_month}/${latestStripePM.card.exp_year}`;
-        const cardholderName = latestStripePM.billing_details.name || dbRecord.cardholderName;
-        const cardType = latestStripePM.card.brand;
-        const companyName = dbRecord.companyName || user.companyName;
-        const address = `${latestStripePM.billing_details.address.line1}, ${latestStripePM.billing_details.address.line2}` || dbRecord.address;
-        const cityPostalCode = latestStripePM.billing_details?.postal_code || dbRecord.cityPostalCode;
-        const stripepaymentid = latestStripePM.id;
+        const cardNumberMasked = latestStripePM.card.last4 || '';
+        const expiryDate = `${latestStripePM.card.exp_month}/${latestStripePM.card.exp_year}` || '';
+        const cardholderName = latestStripePM.billing_details.name || dbRecord.cardholderName || '';
+        const cardType = latestStripePM.card.brand || '';
+        const companyName = dbRecord.companyName || user.companyName || '';
+        const address = `${latestStripePM.billing_details.address.line1}, ${latestStripePM.billing_details.address.line2}` || dbRecord.address || '';
+        const cityPostalCode = latestStripePM.billing_details?.postal_code || dbRecord.cityPostalCode || '';
+        const stripepaymentid = latestStripePM.id || '';
 
         if (dbRecord) {
           await dbRecord.update({
