@@ -74,7 +74,6 @@ exports.getPaymentMethods = async (req, res) => {
 
       latestStripePM = pmList.data.length ? pmList.data[0] : null;
       if (latestStripePM) {
-
         // 2️⃣ Extract required details
         const cardNumberMasked = latestStripePM.card.last4;
         const expiryDate = `${latestStripePM.card.exp_month}/${latestStripePM.card.exp_year}`;
@@ -110,14 +109,7 @@ exports.getPaymentMethods = async (req, res) => {
             stripePaymentMethodId: stripepaymentid,
           });
         }
-
-
       }
-
-
-
-
-
     }
 
     // 4️⃣ Return the single payment method
