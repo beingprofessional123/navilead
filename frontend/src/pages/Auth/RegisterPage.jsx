@@ -41,7 +41,7 @@ const SignupPage = () => {
       });
 
       // Automatically login after signup
-      login(res.data.token, res.data.user);
+      login(res.data.token, res.data.user, res.data.userPlan);
       toast.success(t("api.register.success"));
       navigate('/dashboard');
     } catch (err) {

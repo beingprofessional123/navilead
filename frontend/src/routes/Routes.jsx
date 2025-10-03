@@ -17,6 +17,9 @@ import IntegrationsPage from '../pages/Integrations/IntegrationsPage';
 import SettingsPage from '../pages/Settings/SettingsPage'; 
 import WorkflowsPage from '../pages/Workflows/WorkflowsPage'; 
 import CustomizeTemplatesPage from '../pages/offersTempate/CustomizeTemplatesPage'; 
+import BillingPage from '../pages/Billing/BillingPage'; 
+import SubscriptionSuccessPage from '../pages/Billing/SubscriptionSuccessPage';
+import SubscriptionCancelPage from '../pages/Billing/SubscriptionCancelPage';
 
 const RouterSetup = () => {
   return (
@@ -122,8 +125,24 @@ const RouterSetup = () => {
         element={
           <ProtectedRoute>
             <PublicLayout>
-              <Dashboard /> {/* Placeholder, replace with actual BillingPage if available */}
+              <BillingPage /> {/* Placeholder, replace with actual BillingPage if available */}
             </PublicLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/subscription/success"
+        element={
+          <ProtectedRoute>
+              <SubscriptionSuccessPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/subscription/cancel"
+        element={
+          <ProtectedRoute>
+              <SubscriptionCancelPage />
           </ProtectedRoute>
         }
       />

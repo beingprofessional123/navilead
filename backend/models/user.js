@@ -56,6 +56,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    stripeCustomerId: {            // <-- NEW FIELD
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+    },
   }, {
     tableName: 'users',
     timestamps: true,
@@ -80,6 +85,8 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.Workflow, { foreignKey: 'userId', as: 'workflows' });
     User.hasMany(models.WorkflowLog, { foreignKey: "userId", as: "workflowLogs" });
     User.hasMany(models.OfferTemplate, { foreignKey: "userId", as: "offerTemplates" });
+    User.hasMany(models.UserPlan, { foreignKey: 'userId', as: 'userPlans' });
+
   };
 
   return User;

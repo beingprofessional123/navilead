@@ -826,5 +826,203 @@
       "failedToCopy": "Failed to copy. Please try again.",
       "authRequired": "Authentication required"
     }
+  },
+  "billing": {
+    "title": "Billing & Subscription",
+    "description": "Manage your subscription, payment methods, and invoices"
+  },
+  "plan": {
+    "starter": {
+      "name": "Starter",
+      "description": "Perfect for smaller teams",
+      "leads": "Up to {{leads}} leads",
+      "smsPrice": "0.4 DKK per SMS",
+      "emailFeatures": "Basic email features",
+      "standardTemplates": "Standard templates",
+      "emailSupport": "Email support"
+    },
+    "professional": {
+      "name": "Professional",
+      "popularDescription": "Our most popular plan",
+      "leads": "Up to {{leads}} leads",
+      "features": {
+        "leads": "Up to 300 leads",
+        "smsPrice": "0.3 DKK per SMS",
+        "onboarding": "Free onboarding",
+        "users": "Multiple users",
+        "customSmsSender": "Custom SMS sender",
+        "customEmailDesign": "Custom email design",
+        "customOfferDomain": "Custom offer page domain",
+        "customOfferDesign": "Custom offer page design",
+        "whiteLabel": "White-label solution",
+        "apiAccess": "API access"
+      }
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "For large organizations",
+      "leads": "Unlimited leads",
+      "allFromProfessional": "Everything from Professional",
+      "smsPrice": "0.3 DKK per SMS",
+      "prioritySupport": "Priority support",
+      "priorityFeatures": "Priority feature suggestions",
+      "dedicatedAccountManager": "Dedicated account manager",
+      "customIntegrations": "Custom integrations",
+      "slaGuarantee": "SLA guarantee"
+    },
+    "onboarding": "Onboarding"
+  },
+  "currentPlan": {
+    "title": "Current Plan",
+    "subtitle": "Your current subscription and status",
+    "status": "Active",
+    "plan": "Plan",
+    "perMonth": "per month",
+    "nextPayment": "Next payment",
+    "featuresTitle": "Plan features",
+    "EndDate": "End Date"
+  },
+  "usageOverview": {
+    "title": "Usage Overview",
+    "subtitle": "Your current usage this month",
+    "users": "Users",
+    "unlimited": "Unlimited",
+    "leads": "Leads",
+    "leadsWarning": "You are approaching your lead limit",
+    "smsSent": "SMS sent",
+    "unit": "pcs",
+    "smsCost": "cost: 162.9 DKK (0.3 DKK per SMS)",
+    "emailsSent": "Emails sent",
+    "unlimitedIncluded": "Unlimited included in the plan"
+  },
+  "storage": {
+    "title": "Storage Space",
+    "subtitle": "Data storage and backup usage",
+    "usedOf": "of {{total}} used",
+    "used": "Used",
+    "available": "Available"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "upgradePlan": {
+      "title": "Upgrade Plan",
+      "subtitle": "Get access to more features"
+    },
+    "paymentMethods": {
+      "title": "Payment Methods",
+      "subtitle": "Manage cards and invoices"
+    },
+    "downloadInvoices": {
+      "title": "Download Invoices",
+      "subtitle": "View and download invoice history"
+    }
+  },
+  "tabs": {
+    "overview": "Overview",
+    "plans": "Plans",
+    "payment": "Payment",
+    "history": "History"
+  },
+  "plans": {
+    "choosePlan": "Choose the right plan for you",
+    "subheading": "Upgrade or downgrade at any time. All plans include a 14-day free trial.",
+    "free": "Free",
+    "monthly": "Monthly",
+    "annually": "Annually",
+    "discount": "{{discount}}% off",
+    "perYear": "per year",
+    "save": "Save {{amount}}",
+    "mostPopular": "Most Popular",
+    "comingSoon": "Coming soon",
+    "contactForm": "Contact Form",
+    "priceCalculator": "Price Calculator"
+  },
+  "smsPrices": {
+    "title": "SMS Prices",
+    "starter": "0.4 DKK",
+    "professional": "0.3 DKK",
+    "perSms": "per SMS - {{plan}}",
+    "payAsYouGoTitle": "Pay-as-you-go",
+    "payAsYouGoDescription": "Only pay for sent SMS"
+  },
+  "paymentMethods": {
+    "title": "Payment Methods",
+    "subtitle": "Manage your saved payment methods",
+    "addCardButton": "Add Card",
+    "expires": "Expires",
+    "standard": "Standard"
+  },
+  "billingSettings": {
+    "title": "Billing Settings",
+    "companyName": "Company Name",
+    "cvrNumber": "CVR Number",
+    "address": "Address",
+    "cityPostalCode": "Postal Code"
+  },
+  "emailNotifications": {
+    "title": "Email Notifications",
+    "subtitle": "Receive an email when invoices are ready"
+  },
+  "invoiceHistory": {
+    "title": "Invoice History",
+    "subtitle": "Download and view all your previous invoices",
+    "statusPaid": "Paid",
+    "table": {
+      "invoiceNumber": "Invoice #",
+      "date": "Date",
+      "plan": "Plan",
+      "amount": "Amount",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  },
+  "paymentMetrics": {
+    "title": "Payment Metrics",
+    "totalPaid": "Total paid in 2024",
+    "invoicesThisYear": "Invoices this year",
+    "onTimePaid": "Invoices paid on time"
+  },
+  "upgradePlanModal": {
+    "title": "Upgrade Plan",
+    "description": "Upgrade to Enterprise for unlimited leads and priority support",
+    "currentPlan": "Current Plan ({{plan}})",
+    "newPlan": "New Plan ({{plan}})",
+    "difference": "Difference",
+    "prorationWarning": "The upgrade takes effect immediately. You will be billed pro-rata."
+  },
+  "downgradePlanModal": {
+    "description": "Upgrade to Starter for fewer leads and basic features",
+    "currentPlan": "Current Plan ({{plan}})",
+    "newPlan": "New Plan ({{plan}})",
+    "difference": "Difference",
+    "prorationWarning": "The downgrade takes effect at the end of your billing period. You will not be billed again until then."
+  },
+  "paymentMethodModal": {
+    "editCardTitle": "Edit Payment Method",
+    "addCardTitle": "Add Payment Method",
+    "cardNumber": "Card Number",
+    "expiryDate": "Expiry Date",
+    "cvc": "CVC",
+    "cardType": "Card Type",
+    "cardholderName": "Cardholder's Name",
+    "nameOnCard": "Name on Card",
+    "defaultCard": "Make this the standard payment method"
+  },
+  "button": {
+    "upgradePlan": "Upgrade Plan",
+    "choosePlan": "Choose Plan",
+    "currentPlan": "Current Plan",
+    "cancel": "Cancel",
+    "confirmUpgrade": "Confirm Upgrade",
+    "addCard": "Add Card",
+    "confirmDowngrade": "Confirm Downgrade",
+    "upgrading": "Upgrading...",
+    "save": "Save",
+    "Cancelnow": "Cancel Now",
+    "cancelled": "Cancelled"
+  },
+  "currency": {
+    "dkk": "kr.",
+    "eur": "EUR"
   }
 }

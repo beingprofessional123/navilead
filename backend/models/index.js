@@ -25,6 +25,10 @@ const WorkflowLog = require('./WorkflowLog');
 const CronLog = require('./cronlog');
 const StatusUpdateLog = require('./statusUpdateLog');
 const OfferTemplate = require('./OfferTemplate');
+const Plan = require('./plan');
+const UserPlan = require('./UserPlan');
+const Transaction = require('./Transaction');
+const PaymentMethod = require('./PaymentMethod');
 
 
 const db = {};
@@ -55,6 +59,10 @@ db.WorkflowLog = WorkflowLog(sequelize, DataTypes);
 db.CronLog = CronLog(sequelize, DataTypes);
 db.StatusUpdateLog = StatusUpdateLog(sequelize, DataTypes);
 db.OfferTemplate = OfferTemplate(sequelize, DataTypes);
+db.Plan = Plan(sequelize, DataTypes);
+db.UserPlan = UserPlan(sequelize, DataTypes);
+db.Transaction = Transaction(sequelize, DataTypes);
+db.PaymentMethod = PaymentMethod(sequelize, DataTypes);
 
 // Setup associations
 Object.keys(db).forEach(modelName => {

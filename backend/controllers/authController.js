@@ -2,8 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const db = require('../models');
-const { where } = require('sequelize');
-const { User, UserVariable, OfferTemplate } = db;
+const { User, UserVariable, OfferTemplate, UserPlan, Plan } = db;
 
 function generateApiKey(userId) {
   return crypto
@@ -67,7 +66,29 @@ exports.register = async (req, res) => {
       companyName: user.companyName,
       companyLogo: user.companyLogo,
       createdAt: user.createdAt,
+      stripeCustomerId: user.stripeCustomerId,
     };
+
+    // -------------------- Check User Plan --------------------
+    let userPlan = await UserPlan.findOne({ where: { userId: user.id, status: 'active' }, include: [{ model: Plan, as: 'plan' }] });
+    if (!userPlan) {
+      const freePlan = await Plan.findOne({ where: { billing_type: 'free' } });
+      if (freePlan) {
+        userPlan = await UserPlan.create({
+          userId: user.id,
+          planId: freePlan.id,
+          status: 'active',
+          startDate: new Date(),
+          endDate: null,
+          renewalDate: null,
+          subscriptionId: null,
+          invoiceUrl: null,
+          invoiceNo: null,
+          autoRenew: false,
+          cancelledAt: null
+        });
+      }
+    }
 
     // Generate JWT token
     const token = jwt.sign(
@@ -80,6 +101,7 @@ exports.register = async (req, res) => {
       message: 'api.register.success',
       token,
       user: userData,
+      userPlan,
     });
 
   } catch (error) {
@@ -129,7 +151,29 @@ exports.login = async (req, res) => {
       companyName: user.companyName,
       companyLogo: user.companyLogo,
       createdAt: user.createdAt,
+      stripeCustomerId: user.stripeCustomerId,
     };
+
+    // -------------------- Check User Plan --------------------
+   let userPlan = await UserPlan.findOne({ where: { userId: user.id }, include: [{ model: Plan, as: 'plan' }] });
+    if (!userPlan) {
+      const freePlan = await Plan.findOne({ where: { billing_type: 'free' } });
+      if (freePlan) {
+        userPlan = await UserPlan.create({
+          userId: user.id,
+          planId: freePlan.id,
+          status: 'active',
+          startDate: new Date(),
+          endDate: null,
+          renewalDate: null,
+          subscriptionId: null,
+          invoiceUrl: null,
+          invoiceNo: null,
+          autoRenew: false,
+          cancelledAt: null
+        });
+      }
+    }
 
     const existingTemplate = await OfferTemplate.findOne({ where: { userId: user.id } });
     if (!existingTemplate) {
@@ -142,7 +186,7 @@ exports.login = async (req, res) => {
         aboutUsLogo: null,
       });
     }
-    res.status(200).json({ message: 'api.login.success', token, user: userData });
+    res.status(200).json({ message: 'api.login.success', token, user: userData,userPlan });
 
   } catch (error) {
     console.error('Login error:', error);
