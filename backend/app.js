@@ -21,18 +21,33 @@ const publicLeadRoutes = require('./routes/publicLeadRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const integrationRoutes = require('./routes/integrationRoutes');
 const offersTemplatesRoutes = require('./routes/offersTemplatesRoutes');
+const planRoutes = require('./routes/planRoutes');
+const subscriptionRoutes = require('./routes/subscriptionRoutes');
+const transactionsRoutes = require('./routes/transactionsRoutes');
+const paymentMethodsRoutes = require('./routes/paymentMethodsRoutes');
+
 const workflowRoutes = require('./routes/workflowRoutes');
 const publicWorkflowRoutes = require('./routes/publicWorkflowRoutes');
+const publicSubscriptionRenewWebhook = require('./routes/publicSubscriptionRenewWebhook');
 
 
 
 const app = express();
+
+app.use('/api/public-subscriptions-renew', publicSubscriptionRenewWebhook);
+
 app.use(cors());
 app.use(express.json()); // Middleware to parse JSON request bodies
 
 app.get('/', (req, res) => {
   res.send('✅ Navilead Backend is running!');
 });
+
+app.use((req, res, next) => {
+  console.log(`➡️ Incoming request: ${req.method} ${req.url}`);
+  next();
+});
+
 
 // General user authentication routes
 app.use('/api/auth', authRoutes);
@@ -52,14 +67,16 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/integrations', integrationRoutes);
 app.use('/api/workflows', workflowRoutes);
 app.use('/api/offers-templates', offersTemplatesRoutes);
+app.use('/api/plans', planRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/transactions', transactionsRoutes);
+app.use('/api/paymentMethods', paymentMethodsRoutes);
+
 
 // Public leads route (no auth required)
 app.use('/api/public-leads', publicLeadRoutes);
 app.use('/api/public-workflows', publicWorkflowRoutes);
-
-
-
-
+// app.use('/api/public-subscriptions-renew', publicSubscriptionRenewWebhook);
 
 // Serve files from the uploads directory under /uploads URL path
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

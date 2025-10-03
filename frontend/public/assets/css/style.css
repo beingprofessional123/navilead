@@ -3722,3 +3722,10 @@ ul.notification-settings {
     padding: 8px 20px;
     border-radius: 5px !important;
 }
+
+
+.status.status6.cancelled {
+              color: #ff0000;
+              background-color: color-mix(in oklab, #ff0000 10%, transparent);
+              border: 1px solid color-mix(in oklab, #ff0000 20%, transparent);
+            }

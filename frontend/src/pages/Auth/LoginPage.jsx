@@ -34,9 +34,9 @@ const LoginPage = () => {
         }
       );
 
-      const { token, user, message } = res.data;
+      const { token, user, userPlan, message } = res.data;
 
-      login(token, user);
+      login(token, user, userPlan);
       toast.success(t(message) || t("api.login.success"));
       navigate("/dashboard");
     } catch (err) {

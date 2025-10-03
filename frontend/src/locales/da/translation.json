@@ -827,5 +827,203 @@
       "failedToCopy": "Kunne ikke kopiere. Prøv venligst igen.",
       "authRequired": "Autentificering påkrævet"
     }
+  },
+  "billing": {
+    "title": "Fakturering & Abonnement",
+    "description": "Administrer dit abonnement, betalingsmetoder og fakturaer"
+  },
+  "plan": {
+    "starter": {
+      "name": "Starter",
+      "description": "Perfekt til mindre teams",
+      "leads": "Op til {{leads}} leads",
+      "smsPrice": "0,4 DKK pr. SMS",
+      "emailFeatures": "Basis email funktioner",
+      "standardTemplates": "Standard templates",
+      "emailSupport": "Email support"
+    },
+    "professional": {
+      "name": "Professional",
+      "popularDescription": "Vores mest populære plan",
+      "leads": "Op til {{leads}} leads",
+      "features": {
+        "leads": "Op til 300 leads",
+        "smsPrice": "0,3 DKK pr. SMS",
+        "onboarding": "Gratis onboarding",
+        "users": "Flere brugere",
+        "customSmsSender": "Custom SMS afsender",
+        "customEmailDesign": "Custom email design",
+        "customOfferDomain": "Custom tilbudsside domæne",
+        "customOfferDesign": "Custom tilbudsside design",
+        "whiteLabel": "White-label løsning",
+        "apiAccess": "API adgang"
+      }
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "Til store organisationer",
+      "leads": "Unlimited leads",
+      "allFromProfessional": "Alt fra Professional",
+      "smsPrice": "0,3 DKK pr. SMS",
+      "prioritySupport": "Prioritet support",
+      "priorityFeatures": "Prioritet feature forslag",
+      "dedicatedAccountManager": "Dedicated account manager",
+      "customIntegrations": "Custom integrations",
+      "slaGuarantee": "SLA garanti"
+    },
+    "onboarding": "Onboarding"
+  },
+  "currentPlan": {
+    "title": "Nuværende Plan",
+    "subtitle": "Din nuværende abonnement og status",
+    "status": "Aktiv",
+    "plan": "Plan",
+    "perMonth": "måned",
+    "nextPayment": "Næste betaling",
+    "featuresTitle": "Plan funktioner",
+    "EndDate": "Slutdato"
+  },
+  "usageOverview": {
+    "title": "Forbrug Overview",
+    "subtitle": "Dit nuværende forbrug i denne måned",
+    "users": "Brugere",
+    "unlimited": "Unlimited",
+    "leads": "Leads",
+    "leadsWarning": "Du nærmer dig din grænse for leads",
+    "smsSent": "SMS sendt",
+    "unit": "stk",
+    "smsCost": "omkostning: 162,9 DKK (0,3 DKK pr. SMS)",
+    "emailsSent": "Emails sendt",
+    "unlimitedIncluded": "Unlimited inkluderet i planen"
+  },
+  "storage": {
+    "title": "Lagerplads",
+    "subtitle": "Datalagring og backup forbrug",
+    "usedOf": "af {{total}} brugt",
+    "used": "Brugt",
+    "available": "Ledig"
+  },
+  "quickActions": {
+    "title": "Hurtige Handlinger",
+    "upgradePlan": {
+      "title": "Opgrader Plan",
+      "subtitle": "Få adgang til flere funktioner"
+    },
+    "paymentMethods": {
+      "title": "Betalingsmetoder",
+      "subtitle": "Administrer kort og faktureringer"
+    },
+    "downloadInvoices": {
+      "title": "Download Fakturaer",
+      "subtitle": "Se og download faktura historie"
+    }
+  },
+  "tabs": {
+    "overview": "Oversigt",
+    "plans": "Planer",
+    "payment": "Betaling",
+    "history": "Historie"
+  },
+  "plans": {
+    "choosePlan": "Vælg den rigtige plan til dig",
+    "subheading": "Opgrader eller nedgrader når som helst. Alle planer inkluderer 14 dages gratis prøveperiode.",
+    "monthly": "Månedligt",
+    "annually": "Årligt",
+    "free": "Gratis",
+    "discount": "{{discount}}% rabat",
+    "perYear": "pr. år",
+    "save": "Spar {{amount}}",
+    "mostPopular": "Mest Populær",
+    "comingSoon": "Kommer snart",
+    "contactForm": "Kontaktformular",
+    "priceCalculator": "Pris kalkulator"
+  },
+  "smsPrices": {
+    "title": "SMS Priser",
+    "starter": "0,4 DKK",
+    "professional": "0,3 DKK",
+    "perSms": "pr. SMS - {{plan}}",
+    "payAsYouGoTitle": "Pay-as-you-go",
+    "payAsYouGoDescription": "Kun betaling for afsendte SMS"
+  },
+  "paymentMethods": {
+    "title": "Betalingsmetoder",
+    "subtitle": "Administrer dine gemte betalingsmetoder",
+    "addCardButton": "Tilføj Kort",
+    "expires": "Udløber",
+    "standard": "Standard"
+  },
+  "billingSettings": {
+    "title": "Fakturerings Indstillinger",
+    "companyName": "Firma Navn",
+    "cvrNumber": "CVR Nummer",
+    "address": "Adresse",
+    "cityPostalCode": "Postnummer"
+  },
+  "emailNotifications": {
+    "title": "Email notifikationer",
+    "subtitle": "Modtag email når fakturaer er klar"
+  },
+  "invoiceHistory": {
+    "title": "Faktura Historie",
+    "subtitle": "Download og se alle dine tidligere fakturaer",
+    "statusPaid": "Betalt",
+    "table": {
+      "invoiceNumber": "Faktura #",
+      "date": "Dato",
+      "plan": "Plan",
+      "amount": "Beløb",
+      "status": "Status",
+      "actions": "Handlinger"
+    }
+  },
+  "paymentMetrics": {
+    "title": "Betalings Metrik",
+    "totalPaid": "Samlet betalt i 2024",
+    "invoicesThisYear": "Fakturaer dette år",
+    "onTimePaid": "Fakturaer betalt til tiden"
+  },
+  "upgradePlanModal": {
+    "title": "Opgrader Plan",
+    "description": "Opgrader til Enterprise for unlimited leads og prioritet support",
+    "currentPlan": "Nuværende plan ({{plan}})",
+    "newPlan": "Ny plan ({{plan}})",
+    "difference": "Forskel",
+    "prorationWarning": "Opgraderingen træder i kraft øjeblikkeligt. Du vil blive faktureret pro-rata."
+  },
+  "downgradePlanModal": {
+    "description": "Nedgrader til Starter for færre leads og basis funktioner",
+    "currentPlan": "Nuværende plan ({{plan}})",
+    "newPlan": "Ny plan ({{plan}})",
+    "difference": "Forskel",
+    "prorationWarning": "Nedgraderingen træder i kraft ved udgangen af din faktureringsperiode. Du vil ikke blive opkrævet igen før da."
+  },
+  "paymentMethodModal": {
+    "editCardTitle": "Rediger betalingsmetode",
+    "addCardTitle": "Tilføj Betalingsmetode",
+    "cardNumber": "Kortnummer",
+    "expiryDate": "Udløbsdato",
+    "cvc": "CVC",
+    "cardType": "Korttype",
+    "cardholderName": "Kortholders navn",
+    "nameOnCard": "Navn på kort",
+    "defaultCard": "Gør dette til standard betalingsmetode"
+  },
+  "button": {
+    "upgradePlan": "Opgrader Plan",
+    "choosePlan": "Vælg Plan",
+    "currentPlan": "Nuværende Plan",
+    "cancel": "Annuller",
+    "confirmUpgrade": "Bekræft Opgradering",
+    "addCard": "Tilføj Kort",
+    "confirmDowngrade": "Bekræft Nedgradering",
+    "upgrading": "Opgraderer...",
+    "save": "Gem",
+    "Cancelnow": "Annuller nu",
+    "cancelled": "annulleret"
+  },
+  "currency": {
+    "dkk": "kr.",
+    "eur": "EUR"
   }
 }
