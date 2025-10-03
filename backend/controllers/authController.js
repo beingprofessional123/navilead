@@ -119,7 +119,7 @@ exports.register = async (req, res) => {
     };
 
     // -------------------- Check User Plan --------------------
-    let userPlan = await UserPlan.findOne({ where: { userId: user.id, status: 'active' }, include: [{ model: Plan, as: 'plan' }] });
+    let userPlan = await UserPlan.findOne({ where: { userId: user.id }, include: [{ model: Plan, as: 'plan' }] });
     if (!userPlan) {
       const freePlan = await Plan.findOne({ where: { billing_type: 'free' } });
       if (freePlan) {
@@ -139,6 +139,12 @@ exports.register = async (req, res) => {
       }
     }
 
+    const userPlanWithDetails = await UserPlan.findOne({
+        where: { userId: user.id },  // ✅ use user.id, not userPlan.id
+        include: [{ model: Plan, as: 'plan' }]
+    });
+
+
     // Generate JWT token
     const token = jwt.sign(
       { id: user.id },
@@ -150,7 +156,7 @@ exports.register = async (req, res) => {
       message: 'api.register.success',
       token,
       user: userData,
-      userPlan,
+      userPlan: userPlanWithDetails,
     });
 
   } catch (error) {
@@ -189,7 +195,7 @@ exports.login = async (req, res) => {
       await user.update({ apikey: apiKey });
     }
 
-    let stripeCustomerId = user.stripeCustomerId;
+     let stripeCustomerId = user.stripeCustomerId;
     if (!stripeCustomerId) {
       // Will create Stripe customer and default PaymentMethod if needed
       stripeCustomerId = await createStripeCustomer(user);
@@ -210,7 +216,7 @@ exports.login = async (req, res) => {
     };
 
     // -------------------- Check User Plan --------------------
-    let userPlan = await UserPlan.findOne({ where: { userId: user.id }, include: [{ model: Plan, as: 'plan' }] });
+   let userPlan = await UserPlan.findOne({ where: { userId: user.id }, include: [{ model: Plan, as: 'plan' }] });
     if (!userPlan) {
       const freePlan = await Plan.findOne({ where: { billing_type: 'free' } });
       if (freePlan) {
@@ -241,7 +247,14 @@ exports.login = async (req, res) => {
         aboutUsLogo: null,
       });
     }
-    res.status(200).json({ message: 'api.login.success', token, user: userData, userPlan });
+
+   const userPlanWithDetails = await UserPlan.findOne({
+        where: { userId: user.id },  // ✅ use user.id, not userPlan.id
+        include: [{ model: Plan, as: 'plan' }]
+    });
+
+
+    res.status(200).json({ message: 'api.login.success', token, user: userData, userPlan: userPlanWithDetails });
 
   } catch (error) {
     console.error('Login error:', error);
