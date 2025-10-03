@@ -12,7 +12,9 @@ exports.checkout = async (req, res) => {
 
     // Fetch plan from DB
     const plan = await Plan.findByPk(planId);
+    const PaymentMethods = await PaymentMethod.findOne({ where: { userId: userId } });
     if (!plan) return res.status(404).json({ message: 'Plan not found' });
+    if (!PaymentMethods) return res.status(404).json({ message: 'Billing details not found' });
 
     // If plan is free, assign directly
     if (plan.billing_type === 'free') {
@@ -35,67 +37,40 @@ exports.checkout = async (req, res) => {
       });
     }
 
-    // Paid plan: fetch user's payment method (optional)
-    const PaymentMethods = await PaymentMethod.findOne({ where: { userId } });
+    // For paid plans, first check if user already exists in Stripe
+    let stripeCustomerId = req.user.stripeCustomerId; // From User model
 
-    // Step 1: Get or create Stripe customer
-    let stripeCustomerId = req.user.stripeCustomerId;
     if (!stripeCustomerId) {
       const customer = await stripe.customers.create({
         email: req.user.email,
         name: req.user.name,
-        address: {
-          line1: PaymentMethods?.address || '',
-          postal_code: PaymentMethods?.cityPostalCode || '',
-          country: 'DK'
-        },
-        metadata: {
-          companyName: PaymentMethods?.companyName || '',
-          cvrNumber: PaymentMethods?.cvrNumber || ''
-        }
       });
 
       stripeCustomerId = customer.id;
 
       // Save stripeCustomerId in DB
       await User.update({ stripeCustomerId }, { where: { id: userId } });
-    } else {
-      // Optional: update Stripe customer info
-      await stripe.customers.update(stripeCustomerId, {
-        name: req.user.name,
-        address: {
-          line1: PaymentMethods?.address || '',
-          postal_code: PaymentMethods?.cityPostalCode || '',
-          country: 'DK'
-        },
-        metadata: {
-          companyName: PaymentMethods?.companyName || '',
-          cvrNumber: PaymentMethods?.cvrNumber || ''
-        }
-      });
     }
 
-    // Step 2: Build Stripe Checkout session
-    const sessionParams = {
+    // Now create Stripe Checkout session
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
-      line_items: [{ price: plan.stripe_price_id, quantity: 1 }],
-      billing_address_collection: 'required',
+      line_items: [
+        {
+          price: plan.stripe_price_id,
+          quantity: 1
+        }
+      ],
+      customer: stripeCustomerId, // use existing or newly created customer
+      billing_address_collection: 'required', // ✅ Address, postal code fetch karega
+      customer_update: {
+        name: 'auto',     // ✅ CardholderName auto update
+        address: 'auto',  // ✅ Address + postal code auto update
+      },
       success_url: `${process.env.FRONTEND_URL}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/subscription/cancel`,
-    };
-
-    // Only include customer_update if customer exists
-    if (stripeCustomerId) {
-      sessionParams.customer = stripeCustomerId;
-      sessionParams.customer_update = { name: 'auto', address: 'auto' };
-    } else {
-      // No customer yet: prefill email so Stripe can create customer
-      sessionParams.customer_email = req.user.email;
-    }
-
-    // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    });
 
     res.status(200).json({
       message: 'Stripe Checkout session created',
@@ -492,8 +467,7 @@ exports.subscriptionRenewWebhook = async (req, res) => {
             dueDate: invoice.due_date || invoice.created,
           });
 
-          if(PaymentMethods.emailNotifications === true)
-          {
+          if (PaymentMethods.emailNotifications === true) {
             await sendMail({
               to: user.email,
               subject: 'Upcoming Invoice Reminder',
@@ -504,9 +478,9 @@ exports.subscriptionRenewWebhook = async (req, res) => {
             console.log(`📧 Upcoming invoice email sent to ${user.email}`);
           }
 
-          
 
-       
+
+
         } else {
           console.error(`❌ User not found for Stripe customer ID: ${invoice.customer}`);
         }

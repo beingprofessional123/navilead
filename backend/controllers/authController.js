@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const db = require('../models');
 const { User, UserVariable, OfferTemplate, UserPlan, Plan } = db;
+const stripe = require('../utils/stripe'); // Your Stripe instance
+
 
 function generateApiKey(userId) {
   return crypto
@@ -10,6 +12,49 @@ function generateApiKey(userId) {
     .update(userId.toString())
     .digest('hex');                  // no substring → full 32 chars
 }
+
+// ------------------- STRIPE CUSTOMER HELPER -------------------
+async function createStripeCustomer(user) {
+  // Fetch existing payment method
+  let PaymentMethods = await db.PaymentMethod.findOne({ where: { userId: user.id } });
+
+  // If PaymentMethods not exist, create a default/empty record
+  if (!PaymentMethods) {
+    PaymentMethods = await db.PaymentMethod.create({
+      userId: user.id,
+      cardNumber: '',
+      expiryDate: '',
+      cvc: '',
+      cardholderName: user.name || '',
+      cardType: '',
+      companyName: '',
+      address: '',
+      cityPostalCode: '',
+      stripePaymentMethodId: '',
+      emailNotifications: true, // optional default
+    });
+  }
+
+  // Create Stripe customer
+  const customer = await stripe.customers.create({
+    email: user.email,
+    name: user.name,
+    address: {
+      line1: PaymentMethods.address || '',
+      postal_code: PaymentMethods.cityPostalCode || '',
+      country: 'DK',
+    },
+    metadata: {
+      companyName: PaymentMethods.companyName || '',
+      cvrNumber: PaymentMethods.cvrNumber || '',
+    },
+  });
+
+  await user.update({ stripeCustomerId: customer.id });
+
+  return customer.id;
+}
+
 
 // REGISTER
 exports.register = async (req, res) => {
@@ -54,6 +99,10 @@ exports.register = async (req, res) => {
       variablesToInsert.map(v => ({ ...v, userId: user.id }))
     );
 
+    // -------------------- Create Stripe Customer --------------------
+    const stripeCustomerId = await createStripeCustomer(user);
+
+
     // Prepare user data (exclude password)
     const userData = {
       id: user.id,
@@ -66,7 +115,7 @@ exports.register = async (req, res) => {
       companyName: user.companyName,
       companyLogo: user.companyLogo,
       createdAt: user.createdAt,
-      stripeCustomerId: user.stripeCustomerId,
+      stripeCustomerId: stripeCustomerId,
     };
 
     // -------------------- Check User Plan --------------------
@@ -140,6 +189,12 @@ exports.login = async (req, res) => {
       await user.update({ apikey: apiKey });
     }
 
+    let stripeCustomerId = user.stripeCustomerId;
+    if (!stripeCustomerId) {
+      // Will create Stripe customer and default PaymentMethod if needed
+      stripeCustomerId = await createStripeCustomer(user);
+    }
+
     const userData = {
       id: user.id,
       name: user.name,
@@ -151,11 +206,11 @@ exports.login = async (req, res) => {
       companyName: user.companyName,
       companyLogo: user.companyLogo,
       createdAt: user.createdAt,
-      stripeCustomerId: user.stripeCustomerId,
+      stripeCustomerId: stripeCustomerId,
     };
 
     // -------------------- Check User Plan --------------------
-   let userPlan = await UserPlan.findOne({ where: { userId: user.id }, include: [{ model: Plan, as: 'plan' }] });
+    let userPlan = await UserPlan.findOne({ where: { userId: user.id }, include: [{ model: Plan, as: 'plan' }] });
     if (!userPlan) {
       const freePlan = await Plan.findOne({ where: { billing_type: 'free' } });
       if (freePlan) {
@@ -186,7 +241,7 @@ exports.login = async (req, res) => {
         aboutUsLogo: null,
       });
     }
-    res.status(200).json({ message: 'api.login.success', token, user: userData,userPlan });
+    res.status(200).json({ message: 'api.login.success', token, user: userData, userPlan });
 
   } catch (error) {
     console.error('Login error:', error);
