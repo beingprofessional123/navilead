@@ -96,9 +96,6 @@ const BillingPage = () => {
     return <div className="loading-state p-5 text-center">{t('loading')}...</div>;
   }
 
-  if (error) {
-    return <div className="error-state p-5 text-danger text-center">{t('error')}: {error.message}</div>;
-  }
 
   if (!plans) {
     return <div className="no-data-state p-5 text-center">{t('noData')}</div>;
