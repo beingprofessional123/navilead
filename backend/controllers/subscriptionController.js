@@ -35,59 +35,67 @@ exports.checkout = async (req, res) => {
       });
     }
 
-    // For paid plans, use Stripe checkout
-    let stripeCustomerId = req.user.stripeCustomerId; // From User model
-    const PaymentMethods = await PaymentMethod.findOne({ where: { userId: userId } });
+    // Paid plan: fetch user's payment method (optional)
+    const PaymentMethods = await PaymentMethod.findOne({ where: { userId } });
 
-    // Create or update Stripe customer if user has billing info
+    // Step 1: Get or create Stripe customer
+    let stripeCustomerId = req.user.stripeCustomerId;
     if (!stripeCustomerId) {
       const customer = await stripe.customers.create({
         email: req.user.email,
         name: req.user.name,
         address: {
-          line1: PaymentMethods.address || '',
-          postal_code: PaymentMethods.cityPostalCode || '',
-          country: 'DK' // Denmark
+          line1: PaymentMethods?.address || '',
+          postal_code: PaymentMethods?.cityPostalCode || '',
+          country: 'DK'
         },
         metadata: {
-          companyName: PaymentMethods.companyName || '',
-          cvrNumber: PaymentMethods.cvrNumber || '',
+          companyName: PaymentMethods?.companyName || '',
+          cvrNumber: PaymentMethods?.cvrNumber || ''
         }
       });
 
       stripeCustomerId = customer.id;
+
+      // Save stripeCustomerId in DB
       await User.update({ stripeCustomerId }, { where: { id: userId } });
-    } else if (stripeCustomerId) {
+    } else {
+      // Optional: update Stripe customer info
       await stripe.customers.update(stripeCustomerId, {
         name: req.user.name,
         address: {
-          line1: PaymentMethods.address || '',
-          postal_code: PaymentMethods.cityPostalCode || '',
+          line1: PaymentMethods?.address || '',
+          postal_code: PaymentMethods?.cityPostalCode || '',
           country: 'DK'
         },
         metadata: {
-          companyName: PaymentMethods.companyName || '',
-          cvrNumber: PaymentMethods.cvrNumber || '',
+          companyName: PaymentMethods?.companyName || '',
+          cvrNumber: PaymentMethods?.cvrNumber || ''
         }
       });
     }
 
-    // If no PaymentMethods, stripeCustomerId will be undefined, Stripe will handle it
-    const session = await stripe.checkout.sessions.create({
+    // Step 2: Build Stripe Checkout session
+    const sessionParams = {
       payment_method_types: ['card'],
       mode: 'subscription',
-      line_items: [
-        { price: plan.stripe_price_id, quantity: 1 }
-      ],
-      customer: stripeCustomerId || undefined, // optional, can be undefined
+      line_items: [{ price: plan.stripe_price_id, quantity: 1 }],
       billing_address_collection: 'required',
-      customer_update: {
-        name: 'auto',
-        address: 'auto',
-      },
       success_url: `${process.env.FRONTEND_URL}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/subscription/cancel`,
-    });
+    };
+
+    // Only include customer_update if customer exists
+    if (stripeCustomerId) {
+      sessionParams.customer = stripeCustomerId;
+      sessionParams.customer_update = { name: 'auto', address: 'auto' };
+    } else {
+      // No customer yet: prefill email so Stripe can create customer
+      sessionParams.customer_email = req.user.email;
+    }
+
+    // Create Stripe checkout session
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     res.status(200).json({
       message: 'Stripe Checkout session created',
