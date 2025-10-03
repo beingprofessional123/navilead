@@ -130,10 +130,10 @@ exports.getPaymentMethods = async (req, res) => {
 exports.createPaymentMethod = async (req, res) => {
   try {
     const { type } = req.query;
-    const errors = validatePaymentMethod(req.body, type);
-    if (errors.length > 0) {
-      return res.status(400).json({ message: 'Validation failed', errors });
-    }
+    // const errors = validatePaymentMethod(req.body, type);
+    // if (errors.length > 0) {
+    //   return res.status(400).json({ message: 'Validation failed', errors });
+    // }
 
     const newPaymentMethod = await PaymentMethod.create({
       userId: req.user.id,
@@ -162,11 +162,11 @@ exports.updatePaymentMethod = async (req, res) => {
       return res.status(404).json({ message: 'Payment method not found.' });
     }
 
-    // Validate input
-    const errors = validatePaymentMethod(req.body, type);
-    if (errors.length > 0) {
-      return res.status(400).json({ message: 'Validation failed', errors });
-    }
+    // // Validate input
+    // const errors = validatePaymentMethod(req.body, type);
+    // if (errors.length > 0) {
+    //   return res.status(400).json({ message: 'Validation failed', errors });
+    // }
 
     // Update DB record
     await paymentMethod.update({

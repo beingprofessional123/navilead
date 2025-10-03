@@ -5,15 +5,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false,
     },
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     cardNumber: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     stripePaymentMethodId: {
       type: DataTypes.STRING,
@@ -21,19 +20,19 @@ module.exports = (sequelize, DataTypes) => {
     },
     expiryDate: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     cvc: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     cardholderName: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     cardType: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       defaultValue: 'Visa',
     },
     companyName: {
@@ -54,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     emailNotifications: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
+      allowNull: true,
       defaultValue: true,
     },
   }, {
