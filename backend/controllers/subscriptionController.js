@@ -12,9 +12,8 @@ exports.checkout = async (req, res) => {
 
     // Fetch plan from DB
     const plan = await Plan.findByPk(planId);
-    const PaymentMethods = await PaymentMethod.findOne({ where: { userId: userId } });
     if (!plan) return res.status(404).json({ message: 'Plan not found' });
-    
+
     // If plan is free, assign directly
     if (plan.billing_type === 'free') {
       const userPlan = await UserPlan.create({
@@ -36,61 +35,55 @@ exports.checkout = async (req, res) => {
       });
     }
 
-    // For paid plans, first check if user already exists in Stripe
+    // For paid plans, use Stripe checkout
     let stripeCustomerId = req.user.stripeCustomerId; // From User model
+    const PaymentMethods = await PaymentMethod.findOne({ where: { userId: userId } });
 
-    if (!stripeCustomerId) {
-      // Create new Stripe customer
+    // Create or update Stripe customer if user has billing info
+    if (!stripeCustomerId && PaymentMethods) {
       const customer = await stripe.customers.create({
         email: req.user.email,
         name: req.user.name,
         address: {
-          line1: PaymentMethods.address || null,
-          postal_code: PaymentMethods.cityPostalCode || null,
-          country: 'DKk' // Denmark
+          line1: PaymentMethods.address || '',
+          postal_code: PaymentMethods.cityPostalCode || '',
+          country: 'DK' // Denmark
         },
         metadata: {
-          companyName:PaymentMethods.companyName || null,
-          cvrNumber:PaymentMethods.cvrNumber || null,
+          companyName: PaymentMethods.companyName || '',
+          cvrNumber: PaymentMethods.cvrNumber || '',
         }
       });
 
       stripeCustomerId = customer.id;
-
-      // Save stripeCustomerId in DB
       await User.update({ stripeCustomerId }, { where: { id: userId } });
-    } else {
-      // Update existing Stripe customer with new billing info
+    } else if (stripeCustomerId && PaymentMethods) {
       await stripe.customers.update(stripeCustomerId, {
         name: req.user.name,
-         address: {
-          line1: PaymentMethods.address || null,
-          postal_code: PaymentMethods.cityPostalCode || null,
-          country: 'DKk'
+        address: {
+          line1: PaymentMethods.address || '',
+          postal_code: PaymentMethods.cityPostalCode || '',
+          country: 'DK'
         },
         metadata: {
-          companyName:PaymentMethods.companyName || null,
-          cvrNumber:PaymentMethods.cvrNumber || null,
+          companyName: PaymentMethods.companyName || '',
+          cvrNumber: PaymentMethods.cvrNumber || '',
         }
       });
     }
 
-
-    // Now create Stripe Checkout session
+    // If no PaymentMethods, stripeCustomerId will be undefined, Stripe will handle it
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
       line_items: [
-        {
-          price: plan.stripe_price_id,
-          quantity: 1
-        }
+        { price: plan.stripe_price_id, quantity: 1 }
       ],
-      customer: stripeCustomerId, // use existing or newly created customer
-      billing_address_collection: 'required', // ✅ Address, postal code fetch karega
+      customer: stripeCustomerId || undefined, // optional, can be undefined
+      billing_address_collection: 'required',
       customer_update: {
-        name: 'auto',     // ✅ CardholderName auto update
-        address: 'auto',  // ✅ Address + postal code auto update
+        name: 'auto',
+        address: 'auto',
       },
       success_url: `${process.env.FRONTEND_URL}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/subscription/cancel`,
