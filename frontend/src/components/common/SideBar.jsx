@@ -8,9 +8,9 @@ const SideBar = () => {
     const { user, logout } = useContext(AuthContext);
     const location = useLocation();
 
-    const isActive = (path) => {
-        // Check if the current path matches the link's path
-        return location.pathname === path;
+     const isActive = (path, exact = false) => {
+        if (exact) return location.pathname === path;
+        return location.pathname.startsWith(path);
     };
 
     const userInitials = user?.name

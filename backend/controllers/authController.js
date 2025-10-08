@@ -73,10 +73,13 @@ exports.register = async (req, res) => {
     await OfferTemplate.create({
       userId: user.id,
       title: "Default Template",
+      discripton: "Standard offer layout with logo, services.",
+      type: 'Default',
       companyName: null,
       companyLogo: null,
       aboutUsDescription: null,
       aboutUsLogo: null,
+      status: 'inactive',
     });
 
     const apiKey = generateApiKey(user.id);

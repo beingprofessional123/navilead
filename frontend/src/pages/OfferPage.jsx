@@ -236,7 +236,7 @@ const OfferPage = () => {
 
   return (
     <>
-      {offerTemplate?.htmlCode && offerTemplate?.customHtml ? (
+      {offerTemplate?.status === 'active' && offerTemplate?.type === 'Custom' && (
        <OfferHtmlRenderer
         offer={offer}
         htmlCode={offerTemplate.htmlCode}
@@ -251,9 +251,9 @@ const OfferPage = () => {
         setCustomerNotes={setCustomerNotes}
         AcceptedOffer={AcceptedOffer}
       />
+      )}
 
-
-      ) : (
+     {offerTemplate?.status === 'active' && offerTemplate?.type === 'Default' && (
         <>
           <section className="navpublic" style={{ backgroundColor: offerTemplate.mainBgColor }}>
             <div className="container">

@@ -143,6 +143,43 @@
 .handler-card {
     margin-bottom: 10px;
 }
+.webhookslist li {
+    flex-wrap: wrap;
+    gap: 10px 0px;
+}
+.ratelimits .carddesign {
+    margin: 5px 0px;
+}
+.mainbody.newoffertemplatespage {
+    padding-top: 70px;
+}
+.newoffertemplate-col-left {
+    width: 100%;
+    height: auto;
+    overflow-y: initial;
+}
+.newoffertemplate-col-right {
+    width: 100%;
+}
+.newoffertop-left {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.newoffertop-right {
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+.newoffertemplate-col-leftin .emailmodaltab ul.nav.nav-tabs li.nav-item {
+    margin: 0px;
+}
+.newoffertemplate-tab-footer {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.activetemplate-card {
+    padding: 15px;
+}
 }
 /*320-767 End*/
 
@@ -171,6 +208,25 @@
 .sendemaiinfo span {
     word-break: break-all;
 }
+.mainbody.newoffertemplatespage {
+    padding-top: 70px;
+}
+.newoffertemplate-col-left {
+    width: 100%;
+    height: auto;
+    overflow-y: initial;
+}
+.newoffertemplate-col-right {
+    width: 100%;
+}
+.newoffertop-left {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.newoffertop-right {
+    justify-content: center;
+    flex-wrap: wrap;
+}
 }
 
 
@@ -188,5 +244,9 @@
     width: 100%;
     min-width: 100%;
 }
+.mainbody.newoffertemplatespage {
+    padding-top: 70px;
+}
 }
 /*1025-1199 End*/
+

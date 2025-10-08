@@ -488,6 +488,47 @@ exports.subscriptionRenewWebhook = async (req, res) => {
         break;
       }
 
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object;
+
+        // Find user via Stripe customer ID
+        const user = await User.findOne({
+          where: { stripeCustomerId: subscription.customer }
+        });
+
+        if (!user) {
+          console.error(`❌ No user found for customer ${subscription.customer}`);
+          break;
+        }
+
+        // Fetch free plan
+        const freePlan = await Plan.findOne({ where: { billing_type: 'free' } });
+        if (!freePlan) {
+          console.error("❌ Free plan not found in DB");
+          break;
+        }
+
+        // Assign free plan
+        const userPlan = await UserPlan.create({
+          userId: user.id,
+          planId: freePlan.id,
+          status: 'active',
+          startDate: new Date(),
+          endDate: null,
+          renewalDate: null,
+          subscriptionId: null,
+          invoiceUrl: null,
+          invoiceNo: null,
+          autoRenew: false,
+          cancelledAt: null
+        });
+
+        console.log(`🔄 User ${user.id} auto switched to free plan after cancellation`);
+
+        break;
+      }
+
+
       default:
         console.log(`ℹ️ Unhandled event type: ${event.type}`);
     }

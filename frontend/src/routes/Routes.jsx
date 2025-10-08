@@ -11,6 +11,9 @@ import Dashboard from '../pages/Dashboard';
 import EmailSMSPage from '../pages/emailTemplate/EmailSMSPage';
 import PricingTemplatesPage from '../pages/pricingTempate/PricingTemplatesPage';
 import OffersTemplatesPage from '../pages/offersTempate/OffersTemplatesPage';
+import OffersTemplatesCreatePage from '../pages/offersTempate/OffersTemplatesCreatePage';
+import OffersTemplatesEditPage from '../pages/offersTempate/OffersTemplatesEditPage';
+import OffersTemplatesViewPage from '../pages/offersTempate/OffersTemplatesViewPage';
 import LeadsPage from '../pages/Leads/LeadsPage';
 import LeadViewPage from '../pages/Leads/LeadViewPage'; 
 import IntegrationsPage from '../pages/Integrations/IntegrationsPage'; 
@@ -106,6 +109,36 @@ const RouterSetup = () => {
           <ProtectedRoute>
             <PublicLayout>
               <OffersTemplatesPage /> {/* Placeholder, replace with actual OfferTemplatesPage if available */}
+            </PublicLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/templatesoffers/create"
+        element={
+          <ProtectedRoute>
+            <PublicLayout>
+              <OffersTemplatesCreatePage /> {/* Placeholder, replace with actual OfferTemplatesCreatePage if available */}
+            </PublicLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/templatesoffers/:templatetype/edit/:templateid"
+        element={
+          <ProtectedRoute>
+            <PublicLayout>
+              <OffersTemplatesEditPage /> {/* Placeholder, replace with actual OffersTemplatesEditPage if available */}
+            </PublicLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/templatesoffers/:templatetype/view/:templateid"
+        element={
+          <ProtectedRoute>
+            <PublicLayout>
+              <OffersTemplatesViewPage /> {/* Placeholder, replace with actual OffersTemplatesViewPage if available */}
             </PublicLayout>
           </ProtectedRoute>
         }
