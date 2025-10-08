@@ -33,8 +33,14 @@ router.use(authenticate);
 router.route('/')
     .get(offersTemplateController.getAllTemplates);
 
-// Individual template routes
+router.route('/create')
+    .post(upload.none(), offersTemplateController.createTemplates);
+
 router.route('/:id')
-    .put(uploadMiddleware, offersTemplateController.updateTemplate);
+    .get(offersTemplateController.getTemplateById)  // GET single template (for edit)
+    .put(uploadMiddleware, offersTemplateController.updateTemplate) // UPDATE
+    .delete(offersTemplateController.deleteTemplate); // ✅ DELETE
+
+router.patch('/:id/mark-default', offersTemplateController.markAsDefault);
 
 module.exports = router;

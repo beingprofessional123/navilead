@@ -138,7 +138,7 @@ exports.getOfferByQuoteId = async (req, res) => {
 
     const replacedDescription = replaceVars(offer.description);
     const replacedTerms = replaceVars(offer.terms);
-    const offerTemplate = await OfferTemplate.findOne({ where: { userId: offer.userId } });
+    const offerTemplate = await OfferTemplate.findOne({ where: { userId: offer.userId ,status: 'active' } });
     const acceptedOffers = await AcceptedOffer.findOne({ where: { quoteId } });
     const users = await User.findOne({ where: { id: offer.userId } });
     

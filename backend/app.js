@@ -76,7 +76,6 @@ app.use('/api/paymentMethods', paymentMethodsRoutes);
 // Public leads route (no auth required)
 app.use('/api/public-leads', publicLeadRoutes);
 app.use('/api/public-workflows', publicWorkflowRoutes);
-// app.use('/api/public-subscriptions-renew', publicSubscriptionRenewWebhook);
 
 // Serve files from the uploads directory under /uploads URL path
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

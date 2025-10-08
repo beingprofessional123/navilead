@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       companyName: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -31,10 +35,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      customHtml: {
-          type: DataTypes.BOOLEAN,
+      type: {
+          type: DataTypes.ENUM('Default', 'Custom'),
           allowNull: false,
-          defaultValue: false, // default is false
+          defaultValue: 'Default',
+      },
+      status: {
+          type: DataTypes.ENUM('active', 'inactive'),
+          allowNull: true,
       },
       mainBgColor: {
         type: DataTypes.STRING,

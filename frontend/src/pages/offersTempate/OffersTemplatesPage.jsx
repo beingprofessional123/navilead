@@ -3,64 +3,39 @@ import { AuthContext } from '../../context/AuthContext';
 import api from '../../utils/api';
 import MobileHeader from '../../components/common/MobileHeader';
 import { toast } from 'react-toastify';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Link } from 'react-router-dom';
+import { useTranslation } from "react-i18next";
+import Swal from 'sweetalert2';
+
 
 const OffersTemplatesPage = () => {
+    const { t } = useTranslation();
     const { authToken, user } = useContext(AuthContext);
-    const [template, setTemplate] = useState(null);
+    const [template, setTemplate] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [isCustom, setIsCustom] = useState(false);
-    const defaultColors = {
-        mainBgColor: '#101418',  // main page background
-        leftCardBgColor: '#101418',  // left card (form)
-        rightCardBgColor: '#101418', // right card (preview)
-        textColor: '#ccffff',
-        subTextColor: '#8cd9d9',
+    const [selectedTemplate, setSelectedTemplate] = useState(null);
+
+    const handleSelectTemplate = async (tmpl) => {
+        setSelectedTemplate(tmpl); // Update selected template in state
+        await handleMarkAsDefault(tmpl.id); // Mark as active
     };
-    const [formData, setFormData] = useState({
-        title: '',
-        companyName: user?.companyName || '',
-        companyLogo: null, // This will only hold a new file, not a URL
-        aboutUsLogo: null,
-        aboutUsDescription: '',
-        htmlCode: '',
-        ...defaultColors,
-    });
 
-    useEffect(() => {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = '/assets/css/offerstyle.css'; // path relative to public/
-        document.head.appendChild(link);
 
-        return () => {
-            document.head.removeChild(link); // cleanup when page unmounts
-        };
-    }, []);
 
     const fetchUserTemplate = async () => {
         try {
             const response = await api.get('/offers-templates', {
                 headers: { Authorization: `Bearer ${authToken}` },
             });
+
             if (response.data && response.data.length > 0) {
-                const templateData = response.data[0]; // ✅ first object in array
-                setTemplate(templateData);
-                setFormData({
-                    title: templateData.title || '',
-                    companyName: templateData.companyName || user?.companyName || '',
-                    aboutUsDescription: templateData.aboutUsDescription || '',
-                    companyLogo: null,
-                    aboutUsLogo: null,
-                    mainBgColor: templateData.mainBgColor,  // main page background
-                    leftCardBgColor: templateData.leftCardBgColor,  // left card (form)
-                    rightCardBgColor: templateData.rightCardBgColor, // right card (preview)
-                    textColor: templateData.textColor,
-                    subTextColor: templateData.subTextColor,
-                });
-                setIsCustom(templateData.customHtml);
+                setTemplate(response.data); // ✅ keep full array
+                 const activeTemplate = response.data.find(tmpl => tmpl.status === 'active');
+                if (activeTemplate) {
+                    setSelectedTemplate(activeTemplate);
+                }
+            } else {
+                setTemplate([]);
             }
 
         } catch (error) {
@@ -75,60 +50,6 @@ const OffersTemplatesPage = () => {
         }
     };
 
-    const handleFormChange = (e) => {
-        const { name, value, files } = e.target;
-        setFormData(prevState => ({
-            ...prevState,
-            [name]: files ? files[0] : value,
-        }));
-    };
-
-    const handleSaveTemplate = async (e) => {
-        e.preventDefault();
-        const formDataToSend = new FormData();
-        formDataToSend.append("title", formData.title);
-        formDataToSend.append("companyName", formData.companyName);
-        formDataToSend.append("aboutUsDescription", formData.aboutUsDescription);
-        formDataToSend.append("mainBgColor", formData.mainBgColor);
-        formDataToSend.append("leftCardBgColor", formData.leftCardBgColor);
-        formDataToSend.append("rightCardBgColor", formData.rightCardBgColor);
-        formDataToSend.append("textColor", formData.textColor);
-        formDataToSend.append("subTextColor", formData.subTextColor);
-
-        if (formData.companyLogo) {
-            formDataToSend.append("companyLogo", formData.companyLogo);
-        }
-        if (formData.aboutUsLogo) {
-            formDataToSend.append("aboutUsLogo", formData.aboutUsLogo);
-        }
-
-        try {
-            let response;
-            if (template) {
-                response = await api.put(`/offers-templates/${template.id}`, formDataToSend, {
-                    headers: {
-                        Authorization: `Bearer ${authToken}`,
-                        "Content-Type": "multipart/form-data",
-                    },
-                });
-                toast.success("Template updated successfully!");
-            }
-            if (response.data && response.data.length > 0) {
-                const templateData = response.data[0]; // ✅ first object in array
-                setTemplate(templateData);
-                setFormData({
-                    title: templateData.title || '',
-                    companyName: templateData.companyName || user?.companyName || '',
-                    aboutUsDescription: templateData.aboutUsDescription || '',
-                    companyLogo: templateData.companyLogo || null,
-                    aboutUsLogo: templateData.aboutUsLogo || null,
-                });
-            }
-        } catch (error) {
-            console.error("Error saving template:", error);
-            toast.error("Failed to save template");
-        }
-    };
 
     useEffect(() => {
         if (authToken) {
@@ -136,323 +57,343 @@ const OffersTemplatesPage = () => {
         }
     }, [authToken]);
 
-    // Updated logic to show the preview from the user's default data
-    const previewCompanyLogo = formData.companyLogo
-        ? URL.createObjectURL(formData.companyLogo)
-        : template?.companyLogo
-            ? template.companyLogo
-            : user?.companyLogo || null;
 
+    const handleDeleteTemplate = async (id) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        });
 
-    const previewAboutUsLogo = formData.aboutUsLogo
-        ? URL.createObjectURL(formData.aboutUsLogo)
-        : (template?.aboutUsLogo || null);
+        if (result.isConfirmed) {
+            try {
+                await api.delete(`/offers-templates/${id}`, {
+                    headers: { Authorization: `Bearer ${authToken}` },
+                });
+                // Remove the deleted template from state
+                setTemplate(prev => prev.filter(tmpl => tmpl.id !== id));
 
-    if (loading) {
-        return <p>Loading template...</p>;
-    }
+                Swal.fire(
+                    'Deleted!',
+                    'Template has been deleted.',
+                    'success'
+                );
+            } catch (error) {
+                console.error("Error deleting template:", error);
+                Swal.fire(
+                    'Error!',
+                    'Failed to delete template.',
+                    'error'
+                );
+            }
+        }
+    };
 
-    const handleToggle = async () => {
-        const newValue = !isCustom; // toggle value
-        setIsCustom(newValue);
-
+    const handleCopyTemplate = async (template) => {
         try {
-            const formDataToSend = new FormData();
-            formDataToSend.append("customHtml", newValue); // Pass true/false to backend
+            const formData = new FormData();
 
-            await api.put(`/offers-templates/${template.id}`, formDataToSend, {
+            // 🔹 Basic details
+            formData.append('title', `Copy of ${template.title || 'Untitled Template'}`);
+            formData.append('description', template.description || '');
+            formData.append('companyName', template.companyName || '');
+            formData.append('aboutUsDescription', template.aboutUsDescription || '');
+            formData.append('htmlCode', template.htmlCode || '');
+            formData.append('type', template.type || 'Default');
+
+            // 🔹 Colors
+            formData.append('mainBgColor', template.mainBgColor || '#ffffff');
+            formData.append('leftCardBgColor', template.leftCardBgColor || '#ffffff');
+            formData.append('rightCardBgColor', template.rightCardBgColor || '#ffffff');
+            formData.append('textColor', template.textColor || '#000000');
+            formData.append('subTextColor', template.subTextColor || '#000000');
+            formData.append('status', 'inactive');
+
+            // 🔹 Logos (handle existing URLs)
+            if (template.companyLogo) {
+                formData.append('companyLogoUrl', template.companyLogo);
+                // backend should check if `companyLogoUrl` exists and copy from URL directly
+            }
+
+            if (template.aboutUsLogo) {
+                formData.append('aboutUsLogoUrl', template.aboutUsLogo);
+            }
+
+            // 🔹 Send request
+            await api.post(`/offers-templates/create`, formData, {
                 headers: {
                     Authorization: `Bearer ${authToken}`,
-                    "Content-Type": "multipart/form-data",
+                    'Content-Type': 'multipart/form-data',
                 },
             });
 
-            toast.success("Template updated to " + (newValue ? "Custom" : "Default"));
-        } catch (err) {
-            console.error("Error updating template:", err);
-            toast.error("Failed to update template");
+            toast.success('Copy of Template created successfully!');
+            fetchUserTemplate(); // refresh list if needed
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to create template.');
         }
     };
 
 
+
+    const handleMarkAsDefault = async (templateId) => {
+        try {
+            await api.patch(`/offers-templates/${templateId}/mark-default`, {}, {
+                headers: { Authorization: `Bearer ${authToken}` },
+            });
+
+            toast.success('Template marked as Active successfully!');
+
+            // Refresh templates
+            fetchUserTemplate();
+        } catch (error) {
+            console.error('Error marking template as default:', error);
+            toast.error('Failed to mark template as default.');
+        }
+    };
+
     return (
         <>
-            <style>
-                {`
-        .code-snippet {
-            padding: 5px;
-            border-left: 3px solid #007bff;
-            user-select: none; /* prevents selecting text in snippet */
-        }
-        `}
-            </style>
-
             <div className="mainbody">
                 <div className="container-fluid">
                     <MobileHeader />
                     <div className="row top-row">
                         <div className="col-md-6">
                             <div className="dash-heading">
-                                <h2>Offers Templates</h2>
-                                <p>Customize your primary offer template. Only you can see and edit this.</p>
+                                <h2>{t('offerTemplate.pagetitle')}</h2>
+                                <p>{t('offerTemplate.pagesubtitle')}</p>
                             </div>
                         </div>
                         <div className="col-md-6">
                             <div className="dashright">
-                                {isCustom && (
-                                    <Link to={`/customize-templates`} className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Customize</Link>
-                                )}
+                                <Link to={`/templatesoffers/create`} className="btn btn-send">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                                    {t('offerTemplate.newTemplateBtn')}
+                                </Link>
                             </div>
                         </div>
                     </div>
-                    <div className="row">
-                        {/* Left side: Edit Form */}
-                        <div className="col-md-4">
-                            <div className="carddesign">
-                                <div className='d-flex justify-content-between align-items-center'>
-                                    <h4 className="mb-4">Edit Template</h4>
-                                    <div className="form-check form-switch mb-3">
-                                        <input
-                                            className="form-check-input"
-                                            type="checkbox"
-                                            id="customToggle"
-                                            checked={isCustom}
-                                            onChange={handleToggle}
-                                        />
-                                        <label className="form-check-label" htmlFor="customToggle">
-                                            {isCustom ? "Custom" : "Default"}
-                                        </label>
+
+                    <div className="carddesign activetemplate-form">
+                        <div className="activetemplate">
+                            <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
+                            <h4>{t('offerTemplate.activeTemplatesTitle')}</h4>
+                            <h5>{t('offerTemplate.activeTemplatesSubtitle')}</h5>
+                        </div>
+                        <div className="formdesign">
+                            <div className="row">
+                                <div className="col-md-12">
+                                    <div className="form-group mb-1">
+                                        <label><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-receipt" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg>{t('offerTemplate.offerPageLabel')}</label>
+                                        <div className="inputselect">
+                                            <div className="dropdown leaddropdown sendemaidropdown">
+                                                <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check w-4 h-4 text-primary" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>{selectedTemplate ? selectedTemplate.title || selectedTemplate.title : t("offerTemplate.defaultOfferName")}</span>
+                                                </button>
+                                                <ul className="dropdown-menu">
+                                                    {template && template.length > 0 ? (
+                                                        template.map((tmpl) => (
+                                                            <li key={tmpl.id}>
+                                                                <Link className="dropdown-item" to="#" onClick={() => handleSelectTemplate(tmpl)}>
+                                                                    {/* Icon based on template type or status */}
+                                                                    {tmpl.type === 'Default' ? (
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            width="24"
+                                                                            height="24"
+                                                                            viewBox="0 0 24 24"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            strokeWidth="2"
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            className="lucide lucide-lock"
+                                                                            aria-hidden="true"
+                                                                        >
+                                                                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                                                                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                                                        </svg>
+                                                                    ) : (
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            width="24"
+                                                                            height="24"
+                                                                            viewBox="0 0 24 24"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            strokeWidth="2"
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            className="lucide lucide-code"
+                                                                            aria-hidden="true"
+                                                                        >
+                                                                            <path d="m16 18 6-6-6-6" />
+                                                                            <path d="m8 6-6 6 6 6" />
+                                                                        </svg>
+                                                                    )}
+
+                                                                    {/* Template name */}
+                                                                    {tmpl.title}
+
+                                                                    {/* Optional status tag */}
+                                                                    {tmpl.type === 'Default' && (
+                                                                        <div className="status status7">{t('offerTemplate.standardTag')}</div>
+                                                                    )}
+                                                                </Link>
+                                                            </li>
+                                                        ))
+                                                    ) : (
+                                                        <li>
+                                                            <span className="dropdown-item text-muted">No templates available</span>
+                                                        </li>
+                                                    )}
+                                                </ul>
+
+                                            </div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                                        </div>
+                                        <span className="inputnote">{t('offerTemplate.offerPageNote')}</span>
                                     </div>
-                                </div>
-                                <div className="formdesign">
-                                    <form onSubmit={handleSaveTemplate}>
-                                        <div className="form-group">
-                                            <label>Template Title *</label>
-                                            <input type="text" className="form-control" name="title" value={formData.title} onChange={handleFormChange} placeholder="e.g., Complete Website Solution" required />
-                                            <span className="inputnote">This title will be shown to clients</span>
-                                        </div>
-                                        <div className="form-group">
-                                            <label>Company Name *</label>
-                                            <input type="text" className="form-control" name="companyName" value={formData.companyName} onChange={handleFormChange} placeholder="e.g., Your Company Inc." required />
-                                        </div>
-                                        <div className="form-group">
-                                            <label>Company Logo</label>
-                                            {(template?.companyLogo || user?.companyLogo) && !formData.companyLogo && (
-                                                <p className="mt-2">Current Logo: <img src={template?.companyLogo || user?.companyLogo} alt="Current company logo" style={{ maxWidth: '100px', display: 'block' }} /></p>
-                                            )}
-                                            <input type="file" className="form-control" name="companyLogo" onChange={handleFormChange} />
-                                        </div>
-                                        <div className="form-group">
-                                            <label>About Us Logo</label>
-                                            {(template?.aboutUsLogo) && !formData.aboutUsLogo && (
-                                                <p className="mt-2">Current Logo: <img src={template?.aboutUsLogo} alt="Current about us logo" style={{ maxWidth: '100px', display: 'block' }} /></p>
-                                            )}
-                                            <input type="file" className="form-control" name="aboutUsLogo" onChange={handleFormChange} />
-                                        </div>
-                                        <div className="form-group">
-                                            <label>About Us Description</label>
-                                            <CKEditor
-                                                editor={ClassicEditor}
-                                                data={formData.aboutUsDescription}
-                                                onChange={(event, editor) => {
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        aboutUsDescription: editor.getData()
-                                                    }));
-                                                }}
-                                                config={{
-                                                    toolbar: [
-                                                        'bold',
-                                                        'italic',
-                                                        'underline',
-                                                        'link',
-                                                        'bulletedList',
-                                                        'numberedList',
-                                                        'undo',
-                                                        'redo',
-                                                        'fontColor',           // Add text color
-                                                        'fontBackgroundColor'  // Add background color
-                                                    ],
-                                                    removePlugins: [
-                                                        'EasyImage',
-                                                        'ImageUpload',
-                                                        'ImageToolbar',
-                                                        'ImageCaption',
-                                                        'MediaEmbed',
-                                                        'CKFinder'
-                                                    ]
-                                                }}
-                                            />
-
-
-                                        </div>
-
-                                        <div className="d-flex justify-content-between">
-                                            <div className="form-group">
-                                                <label>Main Background Color</label>
-                                                <input type="color" className="form-control" name="mainBgColor" value={formData.mainBgColor} onChange={handleFormChange} />
-                                            </div>
-
-                                            <div className="form-group">
-                                                <label>Left Card Background</label>
-                                                <input type="color" className="form-control" name="leftCardBgColor" value={formData.leftCardBgColor} onChange={handleFormChange} />
-                                            </div>
-
-                                            <div className="form-group">
-                                                <label>Right Card Background</label>
-                                                <input type="color" className="form-control" name="rightCardBgColor" value={formData.rightCardBgColor} onChange={handleFormChange} />
-                                            </div>
-
-                                        </div>
-                                        <div className="d-flex justify-content-between">
-
-
-                                            <div className="form-group">
-                                                <label>Text Color</label>
-                                                <input
-                                                    type="color"
-                                                    className="form-control"
-                                                    name="textColor"
-                                                    value={formData.textColor}
-                                                    onChange={handleFormChange}
-                                                />
-                                            </div>
-
-                                            <div className="form-group">
-                                                <label>Subtext Color</label>
-                                                <input
-                                                    type="color"
-                                                    className="form-control"
-                                                    name="subTextColor"
-                                                    value={formData.subTextColor}
-                                                    onChange={handleFormChange}
-                                                />
-                                            </div>
-
-                                        </div>
-                                        <div className="modalfooter btn-right">
-                                            <button type="button" className="btn btn-send" onClick={() => setFormData(prev => ({ ...prev, ...defaultColors }))}>
-                                                Reset Colors
-                                            </button>
-                                            <button type="submit" className="btn btn-send" disabled={!formData.title || !formData.companyName}>
-                                                {template ? "Update Template" : "Create Template"}
-                                            </button>
-                                        </div>
-                                    </form>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Right side: Live Preview */}
-                        <div className="col-md-8">
-                            <div className="carddesign">
-                                <h4 className="mb-4">Template Preview</h4>
-                                <div className="carddesign emailcard p-4" style={{ backgroundColor: formData.mainBgColor }}>
-                                    <section className="navpublic">
-
-                                        <div className="container">
-                                            <div className="row">
-                                                <div className="col-md-12">
-                                                    <div className="logo">
-                                                        <a href="#">
-                                                            {previewCompanyLogo && (
-                                                                <img
-                                                                    src={previewCompanyLogo}
-                                                                    className="img-fluid"
-                                                                    alt={`${formData.companyName || 'Company'} logo`}
-                                                                />
-                                                            )}
-                                                        </a>
+                    <div className="row">
+                        {/* Standard Offer Template Card */}
+                        {template.length > 0 ? (
+                            template.map((tmpl) => (
+                                <div className="col-xl-4 col-lg-6 col-md-6" key={tmpl.id}>
+                                    <div className={`carddesign activetemplate-card ${tmpl.status === 'active' ? 'active' : ''}`}>
+                                        <div className="activetemplatecard-top">
+                                            {tmpl.status === 'active' ? (
+                                                <>
+                                                    <h4>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lock text-primary" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                                        {tmpl.title || "Untitled Tmpl"}
+                                                    </h4>
+                                                    <div className="activetemplatecard-topright">
+                                                        {tmpl.status === 'active' ? (
+                                                            <div className="status status9">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                                                                {t('offerTemplate.statusActive')}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="status status9 bg-danger">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x" aria-hidden="true"> <path d="M18 6 6 18" /> <path d="m6 6 12 12" /></svg>
+                                                                {t('offerTemplate.statusInActive')}
+                                                            </div>
+                                                        )}
+                                                        {tmpl.type === 'Default' ? (
+                                                            <div className="status status7">{t('offerTemplate.standardTag')}</div>
+                                                        ) : (
+                                                            <div className="status status7">{tmpl.type}</div>
+                                                        )}
                                                     </div>
-                                                    <div className="companyname text-center">
-                                                        <h6 style={{ color: formData.textColor }} >{formData.companyName || 'Your Company Name'}</h6>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <h4>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-code text-muted-foreground" aria-hidden="true"><path d="m16 18 6-6-6-6"></path><path d="m8 6-6 6 6 6"></path></svg>
+                                                        {tmpl.title || "Untitled Tmpl"}
+                                                    </h4>
+                                                    <div className="activetemplatecard-topright">
+                                                        <div className="status statusno">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-code text-muted-foreground" aria-hidden="true"><path d="m16 18 6-6-6-6"></path><path d="m8 6-6 6 6 6"></path></svg>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                </>
+                                            )}
+                                        </div>
+                                        <p>{tmpl.description}</p>
+                                        <div className="activetemplate-carddate">
+                                            <div className="activetemplate-carddateleft">
+                                                {t('offerTemplate.lastEdited')} {" "}
+                                                {new Date(tmpl.updatedAt).toLocaleDateString("en-US", {
+                                                    year: "numeric",
+                                                    month: "short",
+                                                    day: "numeric",
+                                                })}
                                             </div>
-                                            <div className="row">
-                                                <div className="col-md-7">
-                                                    <div className="carddesign" style={{ backgroundColor: formData.leftCardBgColor }}>
-                                                        <div className="offer-title">
-                                                            <h1 className="tilbud-title" style={{ color: formData.textColor }}>Your Quote</h1>
-                                                        </div>
-                                                        <div className="intro">
-                                                            <p style={{ color: formData.subTextColor }}>Thank you for your interest in our services. Below is a tailored quote for you.</p>
-                                                            <p className="muted" style={{ color: formData.subTextColor }}>Please review the details below and approve the quote if satisfactory. Contact us with any questions.</p>
-                                                        </div>
-                                                        <div className="items">
-                                                            <div className="item">
-                                                                <input type="checkbox" className="form-check-input" checked="" />
-                                                                <div>
-                                                                    <div className="title" style={{ color: formData.textColor }}>Vinduespudsning – Standard</div>
-                                                                    <div className="desc" style={{ color: formData.subTextColor }}>Interior &amp; exterior every 8 weeks.</div>
-                                                                </div>
-                                                                <div className="price" style={{ color: formData.textColor }}>225,00 kr</div>
-                                                            </div>
+                                            <div className="activetemplate-carddateright">
+                                                {tmpl.type === 'Default' ? (
+                                                    <>
 
-                                                            <div className="item">
-                                                                <input type="checkbox" className="form-check-input" />
-                                                                <div>
-                                                                    <div className="title" style={{ color: formData.textColor }}>Solcelle-rens (tilvalg)</div>
-                                                                    <div className="desc" style={{ color: formData.subTextColor }}>Gentle cleaning including after-wipe.</div>
-                                                                </div>
-                                                                <div className="price" style={{ color: formData.textColor }}>349,00 kr</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="totals">
-                                                            <div className="totalsrow" style={{ color: formData.textColor }}><span>Subtotal</span><strong style={{ color: formData.textColor }}>723,00 kr</strong></div>
-                                                            <div className="totalsrow" style={{ color: formData.textColor }}><span>VAT (25%)</span><strong style={{ color: formData.textColor }}>180,75 kr</strong></div>
-                                                            <div className="totalsrow" style={{ color: formData.textColor }}><span style={{ fontWeight: 700 }}>Total</span><strong style={{ fontSize: '16px', color: formData.textColor }}>903,75 kr</strong></div>
-                                                        </div>
-                                                        <div className="publicbottom">
-                                                            <div className="publicbottom-heading">
-                                                                <h2 className="card-title" style={{ color: formData.textColor }}>Terms</h2>
-                                                                <p style={{ color: formData.subTextColor }}>This quote is valid for 30 days. Payment terms: net 8 days unless otherwise agreed.</p>
-                                                            </div>
-                                                            <div className="terms-row">
-                                                                <input id="acceptTerms" type="checkbox" className="form-check-input" />
-                                                                <label for="acceptTerms" style={{ color: formData.textColor }}>I accept the <a href="#" target="_blank" rel="noopener" style={{ color: formData.subTextColor }}>Terms &amp; Conditions</a>.</label>
-                                                            </div>
-                                                        </div>
-                                                        <div className="mb-4 form-group">
-                                                            <label htmlFor="customerNotes" className="form-label">Notes for us (optional):</label>
-                                                            <textarea
-                                                                id="customerNotes"
-                                                                className="form-control customerNotes text-white"
-                                                                rows="3"
-                                                            ></textarea>
-                                                        </div>
-                                                        <div className="modalfooter">
-                                                            <button className="btn btn-add">Accept Quote</button>
-                                                            <button className="btn btn-send">Ask a Question</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-md-5">
-                                                    <div className="carddesign" style={{ backgroundColor: formData.rightCardBgColor }}>
-                                                        <div className="about-media">
-                                                            <a href="#">
-                                                                <img
-                                                                    src={previewAboutUsLogo || "assets/images/blog3.jpg"}
-                                                                    className="img-fluid"
-                                                                    alt="About us logo"
-                                                                />
-                                                            </a>
+                                                        <div className="status status7">{t('offerTemplate.standardTag')}</div>
+                                                        <div className="status status7">{t('offerTemplate.offerTag')}</div>
+                                                    </>
 
-                                                        </div>
-                                                        <div className="publicbottom-heading">
-                                                            <h2 className="card-title" style={{ color: formData.textColor }}>About Us</h2>
-                                                            <div
-                                                                dangerouslySetInnerHTML={{
-                                                                    __html: formData.aboutUsDescription || "About Us Description will appear here..."
-                                                                }}
-                                                            />
-                                                        </div>
-
-                                                    </div>
-                                                </div>
+                                                ) : (
+                                                    <>
+                                                        <div className="status status7">{t('offerTemplate.customTag')}</div>
+                                                        <div className="status status7">{t('offerTemplate.offerTag')}</div>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
-                                    </section>
+                                        <div className="activetemplate-cardbtn">
+                                            {tmpl.type === 'Default' ? (
+                                                <>
+                                                    <Link to={`/templatesoffers/${tmpl.type}/edit/${tmpl.id}`} className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{t('offerTemplate.editBtn')}</Link>
+                                                    <Link to={`/templatesoffers/${tmpl.type}/view/${tmpl.id}`} className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{t('offerTemplate.previewBtn')}</Link>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Link to={`/templatesoffers/${tmpl.type}/edit/${tmpl.id}`} className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{t('offerTemplate.editBtn')}</Link>
+                                                    <Link to={`/templatesoffers/${tmpl.type}/view/${tmpl.id}`} className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{t('offerTemplate.previewBtn')}</Link>
+                                                    <Link to="#" onClick={() => handleCopyTemplate(tmpl)} className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>{t('offerTemplate.duplicateBtn')}</Link>
+                                                    <Link to="#" onClick={() => handleDeleteTemplate(tmpl.id)} className="btn btn-send btntrash2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>{t('offerTemplate.deleteBtn')}</Link>
+
+
+                                                </>
+                                            )}
+                                        </div>
+                                        <div className="activetemplatecard-ab">
+                                            {tmpl.status === 'active' && (
+                                                <>
+                                                    <span className="bg-primary10"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lock w-3 h-3 text-primary" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>
+                                                    <span className="bg-primary"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check w-3 h-3 text-primary-foreground" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="col-12 text-center">
+                                <p className='text-danger'>{t('pricingTemplatesPage.noTemplatesFound')}</p> {/* td */}
+                            </div>
+                        )}
+
+
+                        {/* Create New Template Card */}
+                        <div className="col-xl-4 col-lg-6 col-md-6">
+                            <Link to={`/templatesoffers/create`} className=''>
+                                <div className="carddesign opennew-template">
+                                    <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>
+                                    <h4>{t('offerTemplate.createNewTemplateTitle')}</h4>
+                                    <p>{t('offerTemplate.createNewTemplateDesc')}</p>
+                                </div>
+                            </Link>
+                        </div>
+
+                        {/* About Templates Card */}
+                        <div className="col-md-12">
+                            <div className="carddesign om-templates">
+                                <div className="om-templatesin">
+                                    <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text text-primary" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></span>
+                                    <h4>{t('offerTemplate.aboutTemplatesTitle')}</h4>
+                                    <p>{t('offerTemplate.aboutTemplatesDesc')}</p>
+                                    <ul>
+                                        <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-receipt text-primary" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg><strong>{t('offerTemplate.listOfferPageTitle')}:</strong> {t('offerTemplate.listOfferPageDesc')}</li>
+                                        <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lock text-primary" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg><strong>{t('offerTemplate.listStandardTitle')}:</strong> {t('offerTemplate.listStandardDesc')}</li>
+                                        <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-code text-primary" aria-hidden="true"><path d="m16 18 6-6-6-6"></path><path d="m8 6-6 6 6 6"></path></svg><strong>{t('offerTemplate.listCustomTitle')}:</strong> {t('offerTemplate.listCustomDesc')}</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
