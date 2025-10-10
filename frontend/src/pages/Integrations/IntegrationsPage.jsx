@@ -7,6 +7,8 @@ import { useTranslation } from "react-i18next";
 
 const IntegrationsPage = () => {
     const { t } = useTranslation();
+    const [showAlert, setShowAlert] = useState(true);
+    const [isApiAccessAllowed, setIsApiAccessAllowed] = useState(null);
     const [selectedIntegration, setSelectedIntegration] = useState(null);
     const { authToken, user } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
@@ -31,6 +33,13 @@ const IntegrationsPage = () => {
                 headers: { Authorization: `Bearer ${authToken}` },
             });
             setRateLimits(response.data);
+            setRateLimits({
+                requestsToday: response.data.totalLeadsUsed,
+                dailyLimit: response.data.totalLeadsAllowed,
+                usedPercentage: response.data.usedPercentage,
+            });
+            setIsApiAccessAllowed(response.data.isApiAccessAllowed);
+
         } catch (error) {
             console.error('Error fetching rate limits:', error);
             toast.error(error.response?.data?.error || t('integrationsPage.toasts.failedToFetchRateLimits'));
@@ -110,7 +119,6 @@ const IntegrationsPage = () => {
                 return null;
         }
     };
-
     return (
         <>
             <div className="mainbody">
@@ -126,6 +134,22 @@ const IntegrationsPage = () => {
                     </div>
 
                     <div className="emailmodaltab">
+                        {!isApiAccessAllowed && showAlert && (
+                            <div
+                                className="alert alert-warning alert-dismissible fade show"
+                                role="alert"
+                            >
+                                Your current plan does not allow API access!
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Close"
+                                    onClick={() => setShowAlert(false)}
+                                ></button>
+                            </div>
+                        )}
+
                         <ul className="nav nav-tabs" role="tablist">
                             <li className="nav-item">
                                 <a className="nav-link active" data-bs-toggle="tab" href="#home">{t('integrationsPage.tabs.browse')}</a>

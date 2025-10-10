@@ -3,6 +3,8 @@ const router = express.Router();
 
 const workflowController = require('../controllers/workflowController');
 const authenticate = require('../middleware/authMiddleware');
+const planValidation = require('../middleware/planValidationMiddleware');
+
 
 // ✅ Protect all workflow routes
 router.use(authenticate);
@@ -18,7 +20,7 @@ router.get('/', workflowController.getWorkflows);
 router.get('/:id', workflowController.getWorkflowById);
 
 // Create a new workflow
-router.post('/', workflowController.createWorkflow);
+router.post('/',planValidation('Workflows'), workflowController.createWorkflow);
 
 // Update a workflow
 router.put('/:id', workflowController.updateWorkflow);

@@ -796,8 +796,8 @@
       },
       "rateLimits": {
         "title": "Rategrænser",
-        "requestsToday": "Anmodninger i dag",
-        "dailyLimit": "Daglig grænse",
+        "requestsToday": "Brugt grænse",
+        "dailyLimit": "Begrænse",
         "used": "Brugt"
       }
     },
@@ -1021,7 +1021,8 @@
     "upgrading": "Opgraderer...",
     "save": "Gem",
     "Cancelnow": "Annuller nu",
-    "cancelled": "annulleret"
+    "cancelled": "annulleret",
+    "cannotDowngrade": "Kan ikke nedgradere"
   },
   "currency": {
     "dkk": "kr.",

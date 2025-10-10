@@ -4,6 +4,8 @@ const multer = require('multer');
 const path = require('path');
 const offersTemplateController = require('../controllers/offersTemplateController');
 const authenticate = require('../middleware/authMiddleware');
+const planValidation = require('../middleware/planValidationMiddleware');
+
 
 // Define Multer configuration directly in the router file
 const storage = multer.diskStorage({
@@ -33,9 +35,14 @@ router.use(authenticate);
 router.route('/')
     .get(offersTemplateController.getAllTemplates);
 
-router.route('/create')
-    .post(upload.none(), offersTemplateController.createTemplates);
 
+router.route('/create')
+    .post(
+        planValidation('Offers_Templates'), // ✅ check limit before creating
+        upload.none(),
+        offersTemplateController.createTemplates
+    );
+    
 router.route('/:id')
     .get(offersTemplateController.getTemplateById)  // GET single template (for edit)
     .put(uploadMiddleware, offersTemplateController.updateTemplate) // UPDATE

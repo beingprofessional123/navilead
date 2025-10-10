@@ -52,7 +52,7 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
 
       );
 
-        localStorage.setItem('userPlan', JSON.stringify(response.data.userPlan));
+      localStorage.setItem('userPlan', JSON.stringify(response.data.userPlan));
       toast.success(response.data.message);
     } catch (err) {
       console.error(err);
@@ -108,7 +108,7 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
                   <div className="save">{t('plans.save', { amount: (plan.price * plan.discount_percentage / 100).toFixed(2) })} {t('currency.dkk')} </div>
                 )}
                 <p>{plan.shortdescription}</p>
-                <div className="status status7">{t('plan.professional.leads', { leads: '300' })}</div>
+                <div className="status status7">{t('plan.professional.leads', { leads: plan.Total_Leads_Allowed })}</div>
               </div>
               <div className="plancard-body">
                 <ul>
@@ -121,33 +121,45 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
                     </li>
                   ))}
                 </ul>
-                  <Link
-                      to="#"
-                      className="btn btn-add"
-                      style={
-                        userPlan?.plan?.id === plan.id
-                          ? { pointerEvents: "none", opacity: 0.6, cursor: "not-allowed" }
-                          : {}
-                      }
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (userPlan?.plan?.id !== plan.id) handleOpenUpgradeModal(plan);
-                      }}
-                    >
-                      {userPlan?.plan?.id === plan.id ? t('button.currentPlan') : t('button.upgradePlan')}
-                    </Link>
+                <Link
+                  to="#"
+                  className="btn btn-add"
+                  style={
+                    userPlan?.plan?.id === plan.id ||
+                      (userPlan?.plan?.billing_type !== 'free' && plan.billing_type === 'free')
+                      ? { pointerEvents: "none", opacity: 0.6, cursor: "not-allowed" }
+                      : {}
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Only allow if it's not current plan AND not a forbidden downgrade
+                    if (
+                      userPlan?.plan?.id !== plan.id &&
+                      !(userPlan?.plan?.billing_type !== 'free' && plan.billing_type === 'free')
+                    ) {
+                      handleOpenUpgradeModal(plan);
+                    }
+                  }}
+                >
+                  {userPlan?.plan?.id === plan.id
+                    ? t('button.currentPlan')
+                    : (userPlan?.plan?.billing_type !== 'free' && plan.billing_type === 'free')
+                      ? t('button.cannotDowngrade')
+                      : t('button.upgradePlan')}
+                </Link>
 
-                    {userPlan?.plan?.id === plan.id && userPlan.plan.billing_type !== 'free' && (
-                      <button
-                        className="btn btn-add"
-                        onClick={() => handleCancelPlan(plan)}
-                        // disabled={userPlan.status === 'cancelled'}
-                      >
-                        {userPlan.status === 'cancelled'
-                          ? t('button.cancelled')
-                          : t('button.Cancelnow')}
-                      </button>
-                    )}
+
+                {userPlan?.plan?.id === plan.id && userPlan.plan.billing_type !== 'free' && (
+                  <button
+                    className="btn btn-add"
+                    onClick={() => handleCancelPlan(plan)}
+                  // disabled={userPlan.status === 'cancelled'}
+                  >
+                    {userPlan.status === 'cancelled'
+                      ? t('button.cancelled')
+                      : t('button.Cancelnow')}
+                  </button>
+                )}
 
               </div>
             </div>

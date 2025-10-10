@@ -8,15 +8,20 @@ import AddEditLeadModal from './AddEditLeadModal';
 import SendQuoteModal from './SendQuoteModal';
 import FullPageLoader from '../../components/common/FullPageLoader';
 import { useTranslation } from "react-i18next"; // Import useTranslation
+import LimitModal from '../../components/LimitModal'; // the modal we created earlier
+import { useLimit } from "../../context/LimitContext";
+
 
 const LeadViewPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { authToken } = useContext(AuthContext);
+  const { authToken, userPlan } = useContext(AuthContext);
   const { t: translate } = useTranslation(); // Initialize the translation hook
-
+  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal } = useLimit();
   const [activeTab, setActiveTab] = useState("create");
   const [lead, setLead] = useState(null);
+  const [totalSmsSend, setTotalSmsSend] = useState(0);
+  const [totalEmailsSend, setTotalEmailsSend] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -262,6 +267,8 @@ const LeadViewPage = () => {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       setAllQuotesHistory(response.data.quotes || []); // Access quotes from response.data.quotes
+      setTotalSmsSend(response.data.totalSmsSend); // Access quotes from response.data.quotes
+      setTotalEmailsSend(response.data.totalEmailsSend); // Access quotes from response.data.quotes
     } catch (err) {
       console.error('Error fetching quotes history:', err);
       toast.error(translate('api.quotes.historyFetchError')); // Translated error message
@@ -416,6 +423,10 @@ const LeadViewPage = () => {
   const handleCopyQuote = async (quote) => {
     setLoading(true);
     try {
+      const currentOfferCount = quotesHistory.length; // total offers used
+      const canProceed = checkLimit(currentOfferCount, "Offers");
+      if (!canProceed) return;
+
       // Deep copy services and ensure numerical values for calculations
       const copiedServices = quote.services.map(service => {
         const pricePerUnit = Number(service.pricePerUnit ?? service.price ?? 0);
@@ -451,6 +462,7 @@ const LeadViewPage = () => {
       });
       toast.success(translate('leadViewPage.quoteCopySuccess', { quoteTitle: response.data.quotes.title })); // Translated success message
       fetchAllQuotesHistory();
+      fetchQuotesHistory();
     } catch (err) {
       console.error('Error copying and saving quote:', err);
       toast.error(translate('leadViewPage.quoteCopyError'));
@@ -462,6 +474,11 @@ const LeadViewPage = () => {
 
   const handleSaveQuote = async (e) => {
     e.preventDefault();
+
+    const currentOfferCount = allquotesHistory.length; // total offers used
+    const canProceed = checkLimit(currentOfferCount, "Offers");
+    if (!canProceed) return;
+
     const action = e.nativeEvent.submitter?.value;
     setLoading(true);
     try {
@@ -491,6 +508,7 @@ const LeadViewPage = () => {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       toast.success(translate(response.data.message || 'leadViewPage.quoteSaveSuccess')); // Translated success message
+      fetchAllQuotesHistory();
       fetchQuotesHistory();
       setQuoteToActOn(response.data.quotes); // Store the newly created quote (response.data.quote)
       if (action === "saveAndSend") {
@@ -523,18 +541,22 @@ const LeadViewPage = () => {
 
   const handleSendQuoteActions = async (actions) => {
     if (!quoteToActOn) {
-      toast.error(translate('leadViewPage.noQuoteDataActions')); // Translated error message
-      return;
+      toast.error(translate('leadViewPage.noQuoteDataActions'));
+      return { success: false };
     }
 
     setLoading(true);
+    let success = true; // track overall success
+
     try {
       // 1. Update quote status if changed in modal
       if (actions.newStatusId && actions.newStatusId !== quoteToActOn.statusId) {
-        const response = await api.put(`/quotes/${quoteToActOn.id}`, { statusId: actions.newStatusId }, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-        toast.success(translate(response.data.message || 'api.quotes.statusUpdateSuccess')); // Translated success message
+        const response = await api.put(
+          `/quotes/${quoteToActOn.id}`,
+          { statusId: actions.newStatusId },
+          { headers: { Authorization: `Bearer ${authToken}` } }
+        );
+        toast.success(translate(response.data.message || 'api.quotes.statusUpdateSuccess'));
       }
 
       // 2. Send SMS if checked
@@ -549,7 +571,7 @@ const LeadViewPage = () => {
         const response = await api.post('/send-sms-quotes', smsPayload, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
-        toast.success(translate(response.data.message || 'api.sms.sendSuccess')); // Translated success message
+        toast.success(translate(response.data.message || 'api.sms.sendSuccess'));
       }
 
       // 3. Send Email if checked
@@ -564,20 +586,30 @@ const LeadViewPage = () => {
         const response = await api.post('/send-email-quotes', emailPayload, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
-        toast.success(translate(response.data.message || 'api.email.sendSuccess')); // Translated success message
+        toast.success(translate(response.data.message || 'api.email.sendSuccess'));
       }
 
-      fetchQuotesHistory();
-      fetchLeadDetails();
+      // ✅ Only reload if everything succeeded
+      await fetchQuotesHistory();
+      await fetchLeadDetails();
     } catch (err) {
       console.error('Error performing quote actions:', err);
       const errorMessage = err.response?.data?.message || 'leadViewPage.quoteActionsError';
-      toast.error(translate(errorMessage)); // Translated error message
+      toast.error(translate(errorMessage));
+      success = false; // mark as failed
     } finally {
       setLoading(false);
-      setShowSendQuoteModal(false); // Close modal
-      setQuoteToActOn(null); // Clear the quote in action
+
+      // ✅ Only close modal if successful
+      if (success) {
+        setShowSendQuoteModal(false);
+        setQuoteToActOn(null);
+      } else {
+        console.warn("Keeping modal open due to error.");
+      }
     }
+
+    return { success };
   };
 
 
@@ -1543,8 +1575,17 @@ const LeadViewPage = () => {
           quoteData={quoteToActOn}
           quoteStatuses={quoteStatuses}
           onSend={handleSendQuoteActions}
+          totalSmsSend={totalSmsSend}
+          totalEmailsSend={totalEmailsSend}
         />
       )}
+      {/* Limit Modal */}
+      <LimitModal
+        isOpen={isLimitModalOpen}
+        onClose={closeLimitModal}
+        usedLimit={currentLimit.usage}
+        totalAllowed={currentLimit.totalAllowed}
+      />
     </>
   );
 };
