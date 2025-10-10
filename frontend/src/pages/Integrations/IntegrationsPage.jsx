@@ -10,7 +10,7 @@ const IntegrationsPage = () => {
     const [showAlert, setShowAlert] = useState(true);
     const [isApiAccessAllowed, setIsApiAccessAllowed] = useState(null);
     const [selectedIntegration, setSelectedIntegration] = useState(null);
-    const { authToken, user } = useContext(AuthContext);
+    const { authToken, user,userPlan } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
     const [rateLimits, setRateLimits] = useState({
         requestsToday: 0,
@@ -38,7 +38,7 @@ const IntegrationsPage = () => {
                 dailyLimit: response.data.totalLeadsAllowed,
                 usedPercentage: response.data.usedPercentage,
             });
-            setIsApiAccessAllowed(response.data.isApiAccessAllowed);
+            setIsApiAccessAllowed(userPlan.plan.api_access);
 
         } catch (error) {
             console.error('Error fetching rate limits:', error);
