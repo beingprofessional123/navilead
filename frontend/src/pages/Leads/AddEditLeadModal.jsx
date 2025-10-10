@@ -5,6 +5,7 @@ import api from '../../utils/api';
 import { useTranslation } from "react-i18next";
 import { Link } from 'react-router-dom';
 
+
 const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
   const { t } = useTranslation(); // Initialize the translation hook and rename 't' to 'translate'
 
@@ -165,7 +166,6 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
     const apiEndpoint = leadData ? `/leads/${leadData.id}` : '/leads';
     const method = leadData ? 'put' : 'post';

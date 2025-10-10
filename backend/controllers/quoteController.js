@@ -4,6 +4,7 @@ const { Quote, QuoteService, Status ,SendEmail,SendSms } = db;
 // Get all quotes (optionally filter by leadId or userId via query params)
 exports.getQuotes = async (req, res) => {
   try {
+    const userId = req.user.id;
     const filter = {};
     if (req.query.leadId) filter.leadId = req.query.leadId;
     if (req.query.userId) filter.userId = req.query.userId;
@@ -16,7 +17,12 @@ exports.getQuotes = async (req, res) => {
       ],
       order: [['createdAt', 'DESC']],
     });
-    res.status(200).json({ message: 'api.quotes.fetchSuccess', quotes });
+
+  const totalSmsSend = await SendSms.count({ where: { userId: req.user.id } });
+  const totalEmailsSend = await SendEmail.count({ where: { userId: req.user.id } });
+
+
+    res.status(200).json({ message: 'api.quotes.fetchSuccess', quotes,totalSmsSend,totalEmailsSend });
   } catch (err) {
     res.status(500).json({ message: 'api.quotes.historyFetchError', error: err.message });
   }

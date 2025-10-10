@@ -297,7 +297,7 @@
     "setStatus": "Set status",
     "currently": "Currently:",
     "cancel": "Cancel",
-    "sendOffer": "Send tilbud",
+    "sendOffer": "Send Offer",
     "sendSms": "Send SMS",
     "smsEditor": "SMS Editor",
     "to": "To:",
@@ -795,8 +795,8 @@
       },
       "rateLimits": {
         "title": "Rate Limits",
-        "requestsToday": "Requests today",
-        "dailyLimit": "Daily limit",
+        "requestsToday": "Used Limit",
+        "dailyLimit": "Limit",
         "used": "Used"
       }
     },
@@ -1020,7 +1020,8 @@
     "upgrading": "Upgrading...",
     "save": "Save",
     "Cancelnow": "Cancel Now",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "cannotDowngrade": "Cannot Downgrade"
   },
   "currency": {
     "dkk": "kr.",

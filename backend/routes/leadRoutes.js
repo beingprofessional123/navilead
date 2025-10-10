@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const leadController = require("../controllers/leadController");
 const authMiddleware = require("../middleware/authMiddleware");
+const planValidation = require('../middleware/planValidationMiddleware');
 const multer = require("multer");
 
 // Multer storage config
@@ -19,7 +20,7 @@ router.use(authMiddleware);
 
 // Routes
 router.get("/", leadController.getAllLeads);
-router.post("/", upload.array("attachments"), leadController.createLead);
+router.post("/",planValidation('Leads'), upload.array("attachments"), leadController.createLead);
 router.get("/:id", leadController.getLeadById);
 router.put("/:id", upload.array("attachments"), leadController.updateLead);
 router.delete("/:id", leadController.deleteLead);

@@ -1,42 +1,47 @@
 const db = require('../models');
-const { ApiLog, Settings } = db;
+const { Lead, UserPlan, Plan } = db;
 
 exports.getRateLimits = async (req, res) => {
   try {
-    // Sequelize instance → extract plain values
     const userId = req.user.id || req.user.dataValues.id;
 
-    // Fetch all API logs for the user
-    const logs = await ApiLog.findAll({
-      where: { userId: userId }, // ✅ correct column
-      order: [['createdAt', 'DESC']],
+    // ✅ Get the user's active plan (there should be only one)
+    const activePlan = await UserPlan.findOne({
+      include: [{ model: Plan, as: 'plan' }],
     });
 
-    // Count requests made today
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const requestsToday = logs.filter(
-      log => log.createdAt.toISOString().startsWith(today)
-    ).length;
+    const planDetails = activePlan.plan;
 
-    // Get daily limit from Settings table
-    const dailyLimitSetting = await Settings.findOne({
-      where: { key: 'api_Daily_limit' },
+    // ✅ Total leads allowed in this plan
+    const totalLeadsAllowed = planDetails.Total_Leads_Allowed;
+
+    // ✅ Count how many leads user already has
+    const totalLeadsUsed = await Lead.count({
+      where: { userId },
     });
-    const dailyLimit = dailyLimitSetting ? Number(dailyLimitSetting.value) : 5;
 
-    // Calculate percentage used
-    const usedPercentage = dailyLimit
-      ? Math.min(Math.round((requestsToday / dailyLimit) * 100), 100)
+    // ✅ Calculate percentage used
+    const usedPercentage = totalLeadsAllowed
+      ? ((totalLeadsUsed / totalLeadsAllowed) * 100).toFixed(2)
       : 0;
 
-    res.json({
-      userId,
-      requestsToday,
-      dailyLimit,
-      usedPercentage,
+    // ✅ Check if API access is allowed
+    const isApiAccessAllowed = planDetails.api_access ?? false;
+
+    // ✅ Response
+    return res.json({
+      success: true,
+      totalLeadsAllowed,
+      totalLeadsUsed,
+      usedPercentage: `${usedPercentage}%`,
+      isApiAccessAllowed, // added
     });
   } catch (err) {
     console.error('Error fetching rate limits:', err);
-    res.status(500).json({ message: 'Error fetching rate limits', error: err.message });
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching rate limits',
+      error: err.message,
+    });
   }
 };

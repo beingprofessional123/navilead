@@ -7,10 +7,13 @@ import api from '../../utils/api';
 import PricingTemplateModal from './PricingTemplateModal';
 import MobileHeader from '../../components/common/MobileHeader';
 import { useTranslation } from "react-i18next"; // Import useTranslation
+import LimitModal from '../../components/LimitModal'; // the modal we created earlier
+import { useLimit } from "../../context/LimitContext";
 
 const PricingTemplatesPage = () => {
     const { authToken } = useContext(AuthContext);
     const { t: translate } = useTranslation(); // Initialize the translation hook
+    const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal } = useLimit(); // use limit context
 
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -43,9 +46,13 @@ const PricingTemplatesPage = () => {
     }, [authToken, translate]); // Added translate to dependencies
 
     const handleCreateTemplate = () => {
+        const currentCount = templates.length; // total templates used
+        const canProceed = checkLimit(currentCount, "Pricing_Templates"); // match your plan key
+        if (!canProceed) return; // stops if limit reached
         setCurrentTemplate(null);
         setModalShow(true);
     };
+
 
     const handleEditTemplate = (template) => {
         setCurrentTemplate(template);
@@ -86,6 +93,13 @@ const PricingTemplatesPage = () => {
 
     const handleCopyTemplate = async (template) => {
         try {
+
+            const currentCount = templates.length; // total templates used
+            const canProceed = checkLimit(currentCount, "Pricing_Templates"); // match your plan key
+            if (!canProceed) return; // stops if limit reached
+
+
+
             // Build new template data from existing one
             const copyData = {
                 name: `(Copy) ${template.name}`,
@@ -127,7 +141,8 @@ const PricingTemplatesPage = () => {
     }
 
     return (
-        <div className="mainbody">
+        <>
+           <div className="mainbody">
             <div className="container-fluid">
                 <MobileHeader />
                 <div className="row top-row">
@@ -190,7 +205,9 @@ const PricingTemplatesPage = () => {
                     )}
                 </div>
             </div>
-            {modalShow && (
+        </div>
+        
+         {modalShow && (
                 <PricingTemplateModal
                     show={modalShow}
                     onHide={() => setModalShow(false)}
@@ -198,7 +215,15 @@ const PricingTemplatesPage = () => {
                     onSave={handleSaveTemplate}
                 />
             )}
-        </div>
+
+         {/* Limit Modal */}
+        <LimitModal
+            isOpen={isLimitModalOpen}
+            onClose={closeLimitModal}
+            usedLimit={currentLimit.usage}
+            totalAllowed={currentLimit.totalAllowed}
+        />
+        </>
     );
 };
 

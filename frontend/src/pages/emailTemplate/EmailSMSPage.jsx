@@ -10,12 +10,16 @@ import MobileHeader from '../../components/common/MobileHeader';
 import { useTranslation } from "react-i18next";
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import LimitModal from '../../components/LimitModal'; // the modal we created earlier
+import { useLimit } from "../../context/LimitContext";
 
 
 
 const EmailSMSPage = () => {
     const { authToken } = useContext(AuthContext);
     const { t: translate } = useTranslation();
+    const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal } = useLimit(); // use limit context
+    
 
     const [emailTemplates, setEmailTemplates] = useState([]);
     const [smsTemplates, setSmsTemplates] = useState([]);
@@ -202,10 +206,15 @@ const EmailSMSPage = () => {
                 smsContent: '',
             });
             setIsEditing(true);
+            setShowEmailModal(true);
         } else {
             resetForm();
+            const currentLeadCount = emailTemplates.length; // total leads used
+                const canProceed = checkLimit(currentLeadCount, 'Email_Templates'); // matches userPlan key
+                if (canProceed) {
+                setShowEmailModal(true);
+            }
         }
-        setShowEmailModal(true);
     };
 
     const closeEmailModal = () => {
@@ -229,10 +238,15 @@ const EmailSMSPage = () => {
             setSmsCharCount(template.smsContent.length);
             setSmsMessageCount(Math.ceil(template.smsContent.length / SMS_MAX_CHARS) || 1);
             setIsEditing(true);
+            setShowSmsModal(true);
         } else {
             resetForm();
+            const currentLeadCount = smsTemplates.length; // total leads used
+                const canProceed = checkLimit(currentLeadCount, 'SMS_Templates'); // matches userPlan key
+                if (canProceed) {
+                setShowSmsModal(true);
+            }
         }
-        setShowSmsModal(true);
     };
 
     const closeSmsModal = () => {
@@ -476,464 +490,466 @@ const EmailSMSPage = () => {
     // const variableCategoriesasdf = { ... };
 
     return (
-        <div className="mainbody">
-            <div className="container-fluid">
-                <MobileHeader />
-                <div className="row top-row">
-                    <div className="col-md-12">
-                        <div className="dash-heading">
-                            <h2>{translate('emailSmsPage.title')}</h2>
-                            <p>{translate('emailSmsPage.description')}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-4">
-                        <div className="carddesign emailcard">
-                            <h2 className="card-title">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail w-4 h-4" aria-hidden="true">
-                                    <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path>
-                                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                                </svg>
-                                {translate('emailSmsPage.emailTemplatesTitle')}
-                            </h2>
-                            <p>{translate('emailSmsPage.emailTemplatesDescription')}</p>
-                            <button className="btn btn-send" onClick={() => openEmailModal()}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true">
-                                    <path d="M5 12h14"></path>
-                                    <path d="M12 5v14"></path>
-                                </svg>
-                                {translate('emailSmsPage.newTemplateButton')}
-                            </button>
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="carddesign emailcard">
-                            <h2 className="card-title">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square w-4 h-4" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg>
-                                {translate('emailSmsPage.smsTemplatesTitle')}
-                            </h2>
-                            <p>{translate('emailSmsPage.smsTemplatesDescription')}</p>
-                            <button className="btn btn-send" onClick={() => openSmsModal()}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true">
-                                    <path d="M5 12h14"></path>
-                                    <path d="M12 5v14"></path>
-                                </svg>
-                                {translate('emailSmsPage.newTemplateButton')}
-                            </button>
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="carddesign emailcard comingsoon">
-                            <h2 className="card-title">{translate('emailSmsPage.campaignsTitle')}</h2>
-                            <div className="badge">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-3 h-3 mr-1" aria-hidden="true">
-                                    <path d="M12 6v6l4 2"></path>
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                </svg>
-                                {translate('emailSmsPage.comingSoonBadge')}
+        <>
+
+            <div className="mainbody">
+                <div className="container-fluid">
+                    <MobileHeader />
+                    <div className="row top-row">
+                        <div className="col-md-12">
+                            <div className="dash-heading">
+                                <h2>{translate('emailSmsPage.title')}</h2>
+                                <p>{translate('emailSmsPage.description')}</p>
                             </div>
-                            <p>{translate('emailSmsPage.campaignsDescription')}</p>
-                            <Link to="#" className="btn btn-send">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true">
-                                    <path d="M5 12h14"></path>
-                                    <path d="M12 5v14"></path>
-                                </svg>
-                                {translate('emailSmsPage.newCampaignButton')}
-                            </Link>
                         </div>
                     </div>
-                </div>
+                    <div className="row">
+                        <div className="col-md-4">
+                            <div className="carddesign emailcard">
+                                <h2 className="card-title">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail w-4 h-4" aria-hidden="true">
+                                        <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path>
+                                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                    </svg>
+                                    {translate('emailSmsPage.emailTemplatesTitle')}
+                                </h2>
+                                <p>{translate('emailSmsPage.emailTemplatesDescription')}</p>
+                                <button className="btn btn-send" onClick={() => openEmailModal()}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true">
+                                        <path d="M5 12h14"></path>
+                                        <path d="M12 5v14"></path>
+                                    </svg>
+                                    {translate('emailSmsPage.newTemplateButton')}
+                                </button>
+                            </div>
+                        </div>
+                        <div className="col-md-4">
+                            <div className="carddesign emailcard">
+                                <h2 className="card-title">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square w-4 h-4" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg>
+                                    {translate('emailSmsPage.smsTemplatesTitle')}
+                                </h2>
+                                <p>{translate('emailSmsPage.smsTemplatesDescription')}</p>
+                                <button className="btn btn-send" onClick={() => openSmsModal()}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true">
+                                        <path d="M5 12h14"></path>
+                                        <path d="M12 5v14"></path>
+                                    </svg>
+                                    {translate('emailSmsPage.newTemplateButton')}
+                                </button>
+                            </div>
+                        </div>
+                        <div className="col-md-4">
+                            <div className="carddesign emailcard comingsoon">
+                                <h2 className="card-title">{translate('emailSmsPage.campaignsTitle')}</h2>
+                                <div className="badge">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-3 h-3 mr-1" aria-hidden="true">
+                                        <path d="M12 6v6l4 2"></path>
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                    </svg>
+                                    {translate('emailSmsPage.comingSoonBadge')}
+                                </div>
+                                <p>{translate('emailSmsPage.campaignsDescription')}</p>
+                                <Link to="#" className="btn btn-send">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true">
+                                        <path d="M5 12h14"></path>
+                                        <path d="M12 5v14"></path>
+                                    </svg>
+                                    {translate('emailSmsPage.newCampaignButton')}
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
 
-                {/* Email Templates Table */}
-                <div className="carddesign leadstable">
-                    <h2 className="card-title">{translate('emailSmsPage.allEmailTemplates')}</h2>
-                    <div className="tabledesign">
-                        <div className="table-responsive" style={{ minHeight: "150px", maxHeight: "230px" }}>
-                            <table className="table">
-                                <thead style={{ position: "sticky", top: 0, background: "rgb(22 31 38)", zIndex: 10, }}>
-                                    <tr>
-                                        <th className="talechebox"><input className="form-check-input" type="checkbox" /></th>
-                                        <th>{translate('emailSmsPage.templateNameTable')}</th>
-                                        <th>{translate('emailSmsPage.subjectTable')}</th>
-                                        <th>{translate('emailSmsPage.recipientEmailTable')}</th>
-                                        <th>{translate('emailSmsPage.createdAtTable')}</th>
-                                        <th>{translate('emailSmsPage.actionsTable')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {loadingEmails ? (
+                    {/* Email Templates Table */}
+                    <div className="carddesign leadstable">
+                        <h2 className="card-title">{translate('emailSmsPage.allEmailTemplates')}</h2>
+                        <div className="tabledesign">
+                            <div className="table-responsive" style={{ minHeight: "150px", maxHeight: "230px" }}>
+                                <table className="table">
+                                    <thead style={{ position: "sticky", top: 0, background: "rgb(22 31 38)", zIndex: 10, }}>
                                         <tr>
-                                            <td colSpan="7" className="text-center">{translate('emailSmsPage.loadingEmailTemplates')}</td>
+                                            <th className="talechebox"><input className="form-check-input" type="checkbox" /></th>
+                                            <th>{translate('emailSmsPage.templateNameTable')}</th>
+                                            <th>{translate('emailSmsPage.subjectTable')}</th>
+                                            <th>{translate('emailSmsPage.recipientEmailTable')}</th>
+                                            <th>{translate('emailSmsPage.createdAtTable')}</th>
+                                            <th>{translate('emailSmsPage.actionsTable')}</th>
                                         </tr>
-                                    ) : emailTemplates.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="7" className="text-center">{translate('emailSmsPage.noEmailTemplates')}</td>
-                                        </tr>
-                                    ) : (
-                                        emailTemplates.map((template) => (
-                                            <tr key={template.id}>
-                                                <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
-                                                <td><strong>{template.templateName}</strong></td>
-                                                <td>{template.subject}</td>
-                                                <td>{template.recipientEmail}</td>
-                                                <td>{new Date(template.createdAt).toLocaleDateString()}</td>
-                                                <td className="actionbtn">
-                                                    <div className="dropdown leaddropdown">
-                                                        <button type="button" className="btn btn-add dropdown-toggle" data-bs-toggle="dropdown">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                                        </button>
-                                                        <ul className="dropdown-menu">
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => openViewContentModal(template.body)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{translate('emailSmsPage.viewContent')}</Link></li>
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => openEmailModal(template)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{translate('emailSmsPage.edit')}</Link></li>
-                                                            <li className="sletborder"><Link className="dropdown-item" to="#" onClick={() => handleDeleteEmailTemplate(template.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>{translate('emailSmsPage.delete')}</Link></li>
-                                                        </ul>
-                                                    </div>
-                                                </td>
+                                    </thead>
+                                    <tbody>
+                                        {loadingEmails ? (
+                                            <tr>
+                                                <td colSpan="7" className="text-center">{translate('emailSmsPage.loadingEmailTemplates')}</td>
                                             </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                {/* SMS Templates Table */}
-                <div className="carddesign leadstable">
-                    <h2 className="card-title">{translate('emailSmsPage.allSmsTemplates')}</h2>
-                    <div className="tabledesign">
-                        <div className="table-responsive" style={{ minHeight: "150px", maxHeight: "230px" }}>
-                            <table className="table">
-                                <thead style={{ position: "sticky", top: 0, background: "rgb(22 31 38)", zIndex: 10, }}>
-                                    <tr>
-                                        <th className="talechebox"><input className="form-check-input" type="checkbox" /></th>
-                                        <th>{translate('emailSmsPage.templateNameTable')}</th>
-                                        <th>{translate('emailSmsPage.recipientPhoneTable')}</th>
-                                        <th>{translate('emailSmsPage.smsContentTable')}</th>
-                                        <th>{translate('emailSmsPage.createdAtTable')}</th>
-                                        <th>{translate('emailSmsPage.actionsTable')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {loadingSMS ? (
-                                        <tr>
-                                            <td colSpan="7" className="text-center">{translate('emailSmsPage.loadingSmsTemplates')}</td>
-                                        </tr>
-                                    ) : smsTemplates.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="7" className="text-center">{translate('emailSmsPage.noSmsTemplates')}</td>
-                                        </tr>
-                                    ) : (
-                                        smsTemplates.map((template) => (
-                                            <tr key={template.id}>
-                                                <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
-                                                <td><strong>{template.templateName}</strong></td>
-                                                <td>{template.recipientPhone}</td>
-                                                <td>{template.smsContent}</td>
-                                                <td>{new Date(template.createdAt).toLocaleDateString()}</td>
-                                                <td className="actionbtn">
-                                                    <div className="dropdown leaddropdown">
-                                                        <button type="button" className="btn btn-add dropdown-toggle" data-bs-toggle="dropdown">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                                        </button>
-                                                        <ul className="dropdown-menu">
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => openViewContentModal(template.smsContent)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{translate('emailSmsPage.viewContent')}</Link></li>
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => openSmsModal(template)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{translate('emailSmsPage.edit')}</Link></li>
-                                                            <li className="sletborder"><Link className="dropdown-item" to="#" onClick={() => handleDeleteSmsTemplate(template.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>{translate('emailSmsPage.delete')}</Link></li>
-                                                        </ul>
-                                                    </div>
-                                                </td>
+                                        ) : emailTemplates.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="7" className="text-center">{translate('emailSmsPage.noEmailTemplates')}</td>
                                             </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                                        ) : (
+                                            emailTemplates.map((template) => (
+                                                <tr key={template.id}>
+                                                    <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
+                                                    <td><strong>{template.templateName}</strong></td>
+                                                    <td>{template.subject}</td>
+                                                    <td>{template.recipientEmail}</td>
+                                                    <td>{new Date(template.createdAt).toLocaleDateString()}</td>
+                                                    <td className="actionbtn">
+                                                        <div className="dropdown leaddropdown">
+                                                            <button type="button" className="btn btn-add dropdown-toggle" data-bs-toggle="dropdown">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                                                            </button>
+                                                            <ul className="dropdown-menu">
+                                                                <li><Link className="dropdown-item" to="#" onClick={() => openViewContentModal(template.body)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{translate('emailSmsPage.viewContent')}</Link></li>
+                                                                <li><Link className="dropdown-item" to="#" onClick={() => openEmailModal(template)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{translate('emailSmsPage.edit')}</Link></li>
+                                                                <li className="sletborder"><Link className="dropdown-item" to="#" onClick={() => handleDeleteEmailTemplate(template.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>{translate('emailSmsPage.delete')}</Link></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SMS Templates Table */}
+                    <div className="carddesign leadstable">
+                        <h2 className="card-title">{translate('emailSmsPage.allSmsTemplates')}</h2>
+                        <div className="tabledesign">
+                            <div className="table-responsive" style={{ minHeight: "150px", maxHeight: "230px" }}>
+                                <table className="table">
+                                    <thead style={{ position: "sticky", top: 0, background: "rgb(22 31 38)", zIndex: 10, }}>
+                                        <tr>
+                                            <th className="talechebox"><input className="form-check-input" type="checkbox" /></th>
+                                            <th>{translate('emailSmsPage.templateNameTable')}</th>
+                                            <th>{translate('emailSmsPage.recipientPhoneTable')}</th>
+                                            <th>{translate('emailSmsPage.smsContentTable')}</th>
+                                            <th>{translate('emailSmsPage.createdAtTable')}</th>
+                                            <th>{translate('emailSmsPage.actionsTable')}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {loadingSMS ? (
+                                            <tr>
+                                                <td colSpan="7" className="text-center">{translate('emailSmsPage.loadingSmsTemplates')}</td>
+                                            </tr>
+                                        ) : smsTemplates.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="7" className="text-center">{translate('emailSmsPage.noSmsTemplates')}</td>
+                                            </tr>
+                                        ) : (
+                                            smsTemplates.map((template) => (
+                                                <tr key={template.id}>
+                                                    <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
+                                                    <td><strong>{template.templateName}</strong></td>
+                                                    <td>{template.recipientPhone}</td>
+                                                    <td>{template.smsContent}</td>
+                                                    <td>{new Date(template.createdAt).toLocaleDateString()}</td>
+                                                    <td className="actionbtn">
+                                                        <div className="dropdown leaddropdown">
+                                                            <button type="button" className="btn btn-add dropdown-toggle" data-bs-toggle="dropdown">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                                                            </button>
+                                                            <ul className="dropdown-menu">
+                                                                <li><Link className="dropdown-item" to="#" onClick={() => openViewContentModal(template.smsContent)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{translate('emailSmsPage.viewContent')}</Link></li>
+                                                                <li><Link className="dropdown-item" to="#" onClick={() => openSmsModal(template)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{translate('emailSmsPage.edit')}</Link></li>
+                                                                <li className="sletborder"><Link className="dropdown-item" to="#" onClick={() => handleDeleteSmsTemplate(template.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>{translate('emailSmsPage.delete')}</Link></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Email Modal for Add/Edit */}
-            <div className={`${showEmailModal ? 'modal-backdrop fade show' : ''}`}></div>
-            <div className={`modal fade modaldesign emailmodal ${showEmailModal ? 'show d-block' : ''}`} tabIndex="-1" role="dialog" style={{ display: showEmailModal ? 'block' : 'none' }}>
-                <div className="modal-dialog modal-lg" role="document">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h4 className="modal-title">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail w-5 h-5" aria-hidden="true">
-                                    <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path>
-                                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                                </svg>
-                                {isEditing ? translate('emailSmsPage.editEmailTemplate') : translate('emailSmsPage.createEmailTemplate')}
-                                <p>{isEditing ? translate('emailSmsPage.editEmailTemplateDesc') : translate('emailSmsPage.createEmailTemplateDesc')}</p>
-                            </h4>
-                            <button type="button" className="btn-close" onClick={closeEmailModal} aria-label={translate('emailSmsPage.cancel')}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
-                                    <path d="M18 6 6 18"></path>
-                                    <path d="m6 6 12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
+                {/* Email Modal for Add/Edit */}
+                <div className={`${showEmailModal ? 'modal-backdrop fade show' : ''}`}></div>
+                <div className={`modal fade modaldesign emailmodal ${showEmailModal ? 'show d-block' : ''}`} tabIndex="-1" role="dialog" style={{ display: showEmailModal ? 'block' : 'none' }}>
+                    <div className="modal-dialog modal-lg" role="document">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h4 className="modal-title">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail w-5 h-5" aria-hidden="true">
+                                        <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path>
+                                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                    </svg>
+                                    {isEditing ? translate('emailSmsPage.editEmailTemplate') : translate('emailSmsPage.createEmailTemplate')}
+                                    <p>{isEditing ? translate('emailSmsPage.editEmailTemplateDesc') : translate('emailSmsPage.createEmailTemplateDesc')}</p>
+                                </h4>
+                                <button type="button" className="btn-close" onClick={closeEmailModal} aria-label={translate('emailSmsPage.cancel')}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
+                                        <path d="M18 6 6 18"></path>
+                                        <path d="m6 6 12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
 
-                        <div className="modal-body">
-                            <div className="formdesign">
-                                <form onSubmit={handleAddUpdateEmailTemplate}>
-                                    <div className="row">
-                                        <div className="col-md-8">
-                                            <div className="row">
-                                                <div className="col-md-6">
-                                                    <div className="form-group">
-                                                        <label>{translate('emailSmsPage.templateNameLabel')}</label>
-                                                        <input type="text" className="form-control" name="templateName" value={currentTemplate.templateName} onChange={handleInputChange} placeholder={translate('emailSmsPage.templateNamePlaceholderEmail')} required />
+                            <div className="modal-body">
+                                <div className="formdesign">
+                                    <form onSubmit={handleAddUpdateEmailTemplate}>
+                                        <div className="row">
+                                            <div className="col-md-8">
+                                                <div className="row">
+                                                    <div className="col-md-6">
+                                                        <div className="form-group">
+                                                            <label>{translate('emailSmsPage.templateNameLabel')}</label>
+                                                            <input type="text" className="form-control" name="templateName" value={currentTemplate.templateName} onChange={handleInputChange} placeholder={translate('emailSmsPage.templateNamePlaceholderEmail')} required />
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="col-md-6">
-                                                    <div className="form-group">
-                                                        <label>{translate('emailSmsPage.recipientEmailLabel')}</label>
-                                                        <input type="text" className="form-control" name="recipientEmail" ref={recipientEmailRef} onFocus={() => setFocusedRef(recipientEmailRef)} value={currentTemplate.recipientEmail} onChange={handleInputChange} placeholder={translate('emailSmsPage.recipientEmailPlaceholder')} />
-                                                        <span className="inputnote">{translate('emailSmsPage.recipientEmailNote', { contact_email: '{{contact_email}}' })}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="row">
-                                                <div className="col-md-6">
-                                                    <div className="form-group">
-                                                        <label>{translate('emailSmsPage.subjectLabel')}</label>
-                                                        <input type="text" className="form-control" name="subject" onFocus={() => setFocusedRef(subjectRef)} ref={subjectRef} value={currentTemplate.subject} onChange={handleInputChange} placeholder={translate('emailSmsPage.subjectPlaceholder')} required />
-                                                        <div className="addoption">
-                                                            <button type="button" className="btn btn-add" onClick={() => insertVariable('{{contact_name}}')}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{translate('emailSmsPage.contactName')}
-                                                            </button>
-                                                            <button type="button" className="btn btn-add" onClick={() => insertVariable('{{company_name}}')}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{translate('emailSmsPage.companyName')}
-                                                            </button>
+                                                    <div className="col-md-6">
+                                                        <div className="form-group">
+                                                            <label>{translate('emailSmsPage.recipientEmailLabel')}</label>
+                                                            <input type="text" className="form-control" name="recipientEmail" ref={recipientEmailRef} onFocus={() => setFocusedRef(recipientEmailRef)} value={currentTemplate.recipientEmail} onChange={handleInputChange} placeholder={translate('emailSmsPage.recipientEmailPlaceholder')} />
+                                                            <span className="inputnote">{translate('emailSmsPage.recipientEmailNote', { contact_email: '{{contact_email}}' })}</span>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="col-md-6">
-                                                    <div className="form-group">
-                                                        <label>{translate('emailSmsPage.ccLabel')}</label>
-                                                        <input type="text" className="form-control" name="cc" ref={ccRef} value={currentTemplate.cc} onFocus={() => setFocusedRef(ccRef)} onChange={handleInputChange} placeholder={translate('emailSmsPage.ccPlaceholder')} />
-                                                        <span className="inputnote">{translate('emailSmsPage.ccNote')}</span>
+                                                <div className="row">
+                                                    <div className="col-md-6">
+                                                        <div className="form-group">
+                                                            <label>{translate('emailSmsPage.subjectLabel')}</label>
+                                                            <input type="text" className="form-control" name="subject" onFocus={() => setFocusedRef(subjectRef)} ref={subjectRef} value={currentTemplate.subject} onChange={handleInputChange} placeholder={translate('emailSmsPage.subjectPlaceholder')} required />
+                                                            <div className="addoption">
+                                                                <button type="button" className="btn btn-add" onClick={() => insertVariable('{{contact_name}}')}>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{translate('emailSmsPage.contactName')}
+                                                                </button>
+                                                                <button type="button" className="btn btn-add" onClick={() => insertVariable('{{company_name}}')}>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{translate('emailSmsPage.companyName')}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-6">
+                                                        <div className="form-group">
+                                                            <label>{translate('emailSmsPage.ccLabel')}</label>
+                                                            <input type="text" className="form-control" name="cc" ref={ccRef} value={currentTemplate.cc} onFocus={() => setFocusedRef(ccRef)} onChange={handleInputChange} placeholder={translate('emailSmsPage.ccPlaceholder')} />
+                                                            <span className="inputnote">{translate('emailSmsPage.ccNote')}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div className="row">
-                                                <div className="col-md-12">
-                                                    <div className="form-group">
-                                                        <label>{translate('emailSmsPage.emailContentLabel')}</label>
-                                                        <CKEditor
-                                                            editor={ClassicEditor}
-                                                            name="body"
-                                                            data={currentTemplate.body || ''}   // similar to value
-                                                            onReady={(editor) => {
-                                                                emailBodyRef.current = editor;
-                                                                // Apply height style directly when editor is ready
-                                                                editor.editing.view.change((writer) => {
-                                                                    writer.setStyle(
-                                                                        "min-height",
-                                                                        "200px", // change as per need
-                                                                        editor.editing.view.document.getRoot()
-                                                                    );
-                                                                });
-                                                            }}
-                                                            onChange={(event, editor) => {
-                                                                const data = editor.getData();
+                                                <div className="row">
+                                                    <div className="col-md-12">
+                                                        <div className="form-group">
+                                                            <label>{translate('emailSmsPage.emailContentLabel')}</label>
+                                                            <CKEditor
+                                                                editor={ClassicEditor}
+                                                                name="body"
+                                                                data={currentTemplate.body || ''}   // similar to value
+                                                                onReady={(editor) => {
+                                                                    emailBodyRef.current = editor;
+                                                                    // Apply height style directly when editor is ready
+                                                                    editor.editing.view.change((writer) => {
+                                                                        writer.setStyle(
+                                                                            "min-height",
+                                                                            "200px", // change as per need
+                                                                            editor.editing.view.document.getRoot()
+                                                                        );
+                                                                    });
+                                                                }}
+                                                                onChange={(event, editor) => {
+                                                                    const data = editor.getData();
 
-                                                                // Mimic normal input event for handleInputChange
-                                                                handleInputChange({
-                                                                    target: { name: "body", value: data }
-                                                                });
-                                                            }}
-                                                            onFocus={() => setFocusedRef(emailBodyRef)}
-                                                            config={{
-                                                                placeholder: translate('emailSmsPage.emailContentPlaceholder')
-                                                            }}
-                                                        />
-                                                        {/* <textarea className="form-control" rows="5" name="body" ref={emailBodyRef} value={currentTemplate.body} onChange={handleInputChange} onFocus={() => setFocusedRef(emailBodyRef)} placeholder={translate('emailSmsPage.emailContentPlaceholder')}></textarea> */}
+                                                                    // Mimic normal input event for handleInputChange
+                                                                    handleInputChange({
+                                                                        target: { name: "body", value: data }
+                                                                    });
+                                                                }}
+                                                                onFocus={() => setFocusedRef(emailBodyRef)}
+                                                                config={{
+                                                                    placeholder: translate('emailSmsPage.emailContentPlaceholder')
+                                                                }}
+                                                            />
+                                                            {/* <textarea className="form-control" rows="5" name="body" ref={emailBodyRef} value={currentTemplate.body} onChange={handleInputChange} onFocus={() => setFocusedRef(emailBodyRef)} placeholder={translate('emailSmsPage.emailContentPlaceholder')}></textarea> */}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            {/* Attachments Section */}
-                                            <div className="form-group">
-                                                <label className="form-label">{translate('emailSmsPage.uploadFilesLabel')}</label>
-                                                <div className="upload-files-container">
-                                                    <div className="drag-file-area">
-                                                        <span className="material-icons-outlined upload-icon">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-upload w-8 h-8 text-muted-foreground" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg>
-                                                        </span>
-
-                                                        <label className="label">
-                                                            <span className="browse-files">
-                                                                <input type="file" className="default-file-input" multiple onChange={handleFileChange} ref={fileInputRef} />
-                                                                <span className="browse-files-text">{translate('emailSmsPage.uploadFilesClick')}</span>
+                                                {/* Attachments Section */}
+                                                <div className="form-group">
+                                                    <label className="form-label">{translate('emailSmsPage.uploadFilesLabel')}</label>
+                                                    <div className="upload-files-container">
+                                                        <div className="drag-file-area">
+                                                            <span className="material-icons-outlined upload-icon">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-upload w-8 h-8 text-muted-foreground" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg>
                                                             </span>
-                                                        </label>
-                                                        <h3 className="dynamic-message">{translate('emailSmsPage.uploadFilesMessage')}</h3>
+
+                                                            <label className="label">
+                                                                <span className="browse-files">
+                                                                    <input type="file" className="default-file-input" multiple onChange={handleFileChange} ref={fileInputRef} />
+                                                                    <span className="browse-files-text">{translate('emailSmsPage.uploadFilesClick')}</span>
+                                                                </span>
+                                                            </label>
+                                                            <h3 className="dynamic-message">{translate('emailSmsPage.uploadFilesMessage')}</h3>
+                                                        </div>
                                                     </div>
+                                                    {/* Display existing attachments from backend */}
+                                                    {currentTemplate.attachments && currentTemplate.attachments.length > 0 && (
+                                                        <div className="mt-2">
+                                                            <label className="d-block mb-1">{translate('emailSmsPage.existingAttachmentsTitle')}</label>
+                                                            <ul className="list-group">
+                                                                {currentTemplate.attachments.map((file, index) => (
+                                                                    <li key={`existing-${file.fileName || index}`} className="list-group-item d-flex justify-content-between align-items-center" style={{ background: 'rgb(27 38 50)', border: "1px solid #8cd9d9" }}>
+                                                                        <div className="file-info">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file w-4 h-4 mr-1" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>
+                                                                            <span className="file-name">{file.originalName}</span> | <span className="file-size">{(file.size / 1024).toFixed(2)} KB</span>
+                                                                        </div>
+                                                                        <button type="button" className="btn btn-add" onClick={() => handleRemoveExistingAttachment(file.fileName)}>
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 w-3 h-3 m-0" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                                                            {/* {translate('emailSmsPage.removeAttachment')} */}
+                                                                        </button>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                    {/* Display newly added files */}
+                                                    {selectedFiles.length > 0 && (
+                                                        <div className="mt-2" >
+                                                            <label className="d-block mb-1">{translate('emailSmsPage.newFilesTitle')}</label>
+                                                            <ul className="list-group" style={{ '--bs-list-group-color': 'var(--bs-body-color)' }}>
+                                                                {selectedFiles.map((file, index) => (
+                                                                    <li key={`new-${index}`} className="list-group-item d-flex justify-content-between align-items-center" style={{ background: 'rgb(27 38 50)', border: "1px solid #8cd9d9" }}>
+                                                                        <div className="file-info">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file w-4 h-4 mr-1" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>
+                                                                            <span className="file-name">{file.name}</span> | <span className="file-size">{(file.size / 1024).toFixed(2)} KB</span>
+                                                                        </div>
+                                                                        <button type="button" className="btn btn-add" onClick={() => handleRemoveExistingAttachment(file.fileName)}>
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 w-3 h-3 m-0" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                                                            {/* {translate('emailSmsPage.removeAttachment')} */}
+                                                                        </button>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                {/* Display existing attachments from backend */}
-                                                {currentTemplate.attachments && currentTemplate.attachments.length > 0 && (
-                                                    <div className="mt-2">
-                                                        <label className="d-block mb-1">{translate('emailSmsPage.existingAttachmentsTitle')}</label>
-                                                        <ul className="list-group">
-                                                            {currentTemplate.attachments.map((file, index) => (
-                                                                <li key={`existing-${file.fileName || index}`} className="list-group-item d-flex justify-content-between align-items-center" style={{ background: 'rgb(27 38 50)', border: "1px solid #8cd9d9" }}>
-                                                                    <div className="file-info">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file w-4 h-4 mr-1" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>
-                                                                        <span className="file-name">{file.originalName}</span> | <span className="file-size">{(file.size / 1024).toFixed(2)} KB</span>
-                                                                    </div>
-                                                                    <button type="button" className="btn btn-add" onClick={() => handleRemoveExistingAttachment(file.fileName)}>
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 w-3 h-3 m-0" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                                                        {/* {translate('emailSmsPage.removeAttachment')} */}
-                                                                    </button>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                )}
-                                                {/* Display newly added files */}
-                                                {selectedFiles.length > 0 && (
-                                                    <div className="mt-2" >
-                                                        <label className="d-block mb-1">{translate('emailSmsPage.newFilesTitle')}</label>
-                                                        <ul className="list-group" style={{ '--bs-list-group-color': 'var(--bs-body-color)' }}>
-                                                            {selectedFiles.map((file, index) => (
-                                                                <li key={`new-${index}`} className="list-group-item d-flex justify-content-between align-items-center" style={{ background: 'rgb(27 38 50)', border: "1px solid #8cd9d9" }}>
-                                                                    <div className="file-info">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file w-4 h-4 mr-1" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>
-                                                                        <span className="file-name">{file.name}</span> | <span className="file-size">{(file.size / 1024).toFixed(2)} KB</span>
-                                                                    </div>
-                                                                    <button type="button" className="btn btn-add" onClick={() => handleRemoveExistingAttachment(file.fileName)}>
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 w-3 h-3 m-0" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                                                        {/* {translate('emailSmsPage.removeAttachment')} */}
-                                                                    </button>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                )}
+
+
                                             </div>
+                                            <div className="col-md-4">
+                                                <VariableSelector
+                                                    activeTab={activeEmailVariableTab}
+                                                    setActiveTab={setActiveEmailVariableTab}
+                                                    variableCategories={variableCategories}
+                                                    insertVariable={insertVariable} // just the function
+                                                />
 
-
-                                        </div>
-                                        <div className="col-md-4">
-                                            <VariableSelector
-                                                activeTab={activeEmailVariableTab}
-                                                setActiveTab={setActiveEmailVariableTab}
-                                                variableCategories={variableCategories}
-                                                insertVariable={insertVariable} // just the function
-                                            />
-
-                                            <div className="carddesign">
-                                                <div className="emailmodaltab-heading">
-                                                    <h3>{translate('emailSmsPage.preview')}</h3>
-                                                </div>
-                                                <div className="form-group">
-                                                    <label>{translate('emailSmsPage.to')}</label>
-                                                    <input type="text" className="form-control" readOnly value={currentTemplate.recipientEmail} placeholder={translate('emailSmsPage.recipientEmailPlaceholder')} />
+                                                <div className="carddesign">
+                                                    <div className="emailmodaltab-heading">
+                                                        <h3>{translate('emailSmsPage.preview')}</h3>
+                                                    </div>
+                                                    <div className="form-group">
+                                                        <label>{translate('emailSmsPage.to')}</label>
+                                                        <input type="text" className="form-control" readOnly value={currentTemplate.recipientEmail} placeholder={translate('emailSmsPage.recipientEmailPlaceholder')} />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div> {/* end row */}
+                                        </div> {/* end row */}
 
-                                    <div className="modalfooter">
-                                        <button type="button" className="btn btn-add" onClick={closeEmailModal}>{translate('emailSmsPage.cancel')}</button>
-                                        <button type="submit" className="btn btn-send">{isEditing ? translate('emailSmsPage.updateTemplate') : translate('emailSmsPage.saveTemplate')}</button>
-                                    </div>
-                                </form>
+                                        <div className="modalfooter">
+                                            <button type="button" className="btn btn-add" onClick={closeEmailModal}>{translate('emailSmsPage.cancel')}</button>
+                                            <button type="submit" className="btn btn-send">{isEditing ? translate('emailSmsPage.updateTemplate') : translate('emailSmsPage.saveTemplate')}</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* SMS Modal for Add/Edit (Updated with new design) */}
-            <div className={`${showSmsModal ? 'modal-backdrop fade show' : ''}`}></div>
-            <div className={`modal fade modaldesign emailmodal ${showSmsModal ? 'show d-block' : ''}`} tabIndex="-1" role="dialog" style={{ display: showSmsModal ? 'block' : 'none' }}>
-                <div className="modal-dialog modal-lg" role="document"> {/* Changed to modal-lg for wider content */}
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h4 className="modal-title">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square w-5 h-5" aria-hidden="true">
-                                    <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path>
-                                </svg>
-                                {isEditing ? translate('emailSmsPage.editSmsTemplate') : translate('emailSmsPage.createSmsTemplate')}
-                                <p>{isEditing ? translate('emailSmsPage.editSmsTemplateDesc') : translate('emailSmsPage.createSmsTemplateDesc')}</p>
-                            </h4>
-                            <button type="button" className="btn-close" onClick={closeSmsModal} aria-label={translate('emailSmsPage.cancel')}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
-                                    <path d="M18 6 6 18"></path>
-                                    <path d="m6 6 12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
+                {/* SMS Modal for Add/Edit (Updated with new design) */}
+                <div className={`${showSmsModal ? 'modal-backdrop fade show' : ''}`}></div>
+                <div className={`modal fade modaldesign emailmodal ${showSmsModal ? 'show d-block' : ''}`} tabIndex="-1" role="dialog" style={{ display: showSmsModal ? 'block' : 'none' }}>
+                    <div className="modal-dialog modal-lg" role="document"> {/* Changed to modal-lg for wider content */}
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h4 className="modal-title">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square w-5 h-5" aria-hidden="true">
+                                        <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                    {isEditing ? translate('emailSmsPage.editSmsTemplate') : translate('emailSmsPage.createSmsTemplate')}
+                                    <p>{isEditing ? translate('emailSmsPage.editSmsTemplateDesc') : translate('emailSmsPage.createSmsTemplateDesc')}</p>
+                                </h4>
+                                <button type="button" className="btn-close" onClick={closeSmsModal} aria-label={translate('emailSmsPage.cancel')}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
+                                        <path d="M18 6 6 18"></path>
+                                        <path d="m6 6 12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
 
-                        <div className="modal-body">
-                            <div className="formdesign">
-                                <form onSubmit={handleAddUpdateSmsTemplate}>
-                                    <div className="row">
-                                        <div className="col-md-8">
-                                            <div className="row">
-                                                <div className="col-md-6">
-                                                    <div className="form-group">
-                                                        <label>{translate('emailSmsPage.templateNameLabel')}</label>
-                                                        <input type="text" className="form-control" name="templateName" value={currentTemplate.templateName} onChange={handleInputChange} placeholder={translate('emailSmsPage.templateNamePlaceholderSms')} required />
+                            <div className="modal-body">
+                                <div className="formdesign">
+                                    <form onSubmit={handleAddUpdateSmsTemplate}>
+                                        <div className="row">
+                                            <div className="col-md-8">
+                                                <div className="row">
+                                                    <div className="col-md-6">
+                                                        <div className="form-group">
+                                                            <label>{translate('emailSmsPage.templateNameLabel')}</label>
+                                                            <input type="text" className="form-control" name="templateName" value={currentTemplate.templateName} onChange={handleInputChange} placeholder={translate('emailSmsPage.templateNamePlaceholderSms')} required />
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-6">
+                                                        <div className="form-group">
+                                                            <label>{translate('emailSmsPage.recipientPhoneLabel')}</label>
+                                                            <input type="text" className="form-control" name="recipientPhone" ref={recipientPhoneRef} value={currentTemplate.recipientPhone} onChange={handleInputChange} onFocus={() => setFocusedRef(recipientPhoneRef)} placeholder={translate('emailSmsPage.recipientPhonePlaceholder')} />
+                                                            <span className="inputnote">{translate('emailSmsPage.recipientPhoneNote', { contact_phone: '{{contact_phone}}' })}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div className="col-md-6">
-                                                    <div className="form-group">
-                                                        <label>{translate('emailSmsPage.recipientPhoneLabel')}</label>
-                                                        <input type="text" className="form-control" name="recipientPhone" ref={recipientPhoneRef} value={currentTemplate.recipientPhone} onChange={handleInputChange} onFocus={() => setFocusedRef(recipientPhoneRef)} placeholder={translate('emailSmsPage.recipientPhonePlaceholder')} />
-                                                        <span className="inputnote">{translate('emailSmsPage.recipientPhoneNote', { contact_phone: '{{contact_phone}}' })}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="row">
-                                                <div className="col-md-12">
-                                                    <div className="form-group">
-                                                        <label>{translate('emailSmsPage.smsMessageLabel')}</label>
-                                                        <textarea className="form-control" rows="5" name="smsContent" maxLength={SMS_MAX_CHARS} ref={smsContentRef} value={currentTemplate.smsContent} onChange={handleInputChange} onFocus={() => setFocusedRef(smsContentRef)} placeholder={translate('emailSmsPage.smsMessagePlaceholder')}></textarea>
-                                                        <div className="texttypelimit">
-                                                            <span className="inputnote">{translate('emailSmsPage.smsLength')} {smsCharCount}/{SMS_MAX_CHARS} {translate('emailSmsPage.characters')}</span>
-                                                            <span className="texttype-besked">{smsMessageCount} {smsMessageCount > 1 ? translate('emailSmsPage.messages') : translate('emailSmsPage.message')}</span>
+                                                <div className="row">
+                                                    <div className="col-md-12">
+                                                        <div className="form-group">
+                                                            <label>{translate('emailSmsPage.smsMessageLabel')}</label>
+                                                            <textarea className="form-control" rows="5" name="smsContent" maxLength={SMS_MAX_CHARS} ref={smsContentRef} value={currentTemplate.smsContent} onChange={handleInputChange} onFocus={() => setFocusedRef(smsContentRef)} placeholder={translate('emailSmsPage.smsMessagePlaceholder')}></textarea>
+                                                            <div className="texttypelimit">
+                                                                <span className="inputnote">{translate('emailSmsPage.smsLength')} {smsCharCount}/{SMS_MAX_CHARS} {translate('emailSmsPage.characters')}</span>
+                                                                <span className="texttype-besked">{smsMessageCount} {smsMessageCount > 1 ? translate('emailSmsPage.messages') : translate('emailSmsPage.message')}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="col-md-4">
-                                            <VariableSelector
-                                                activeTab={activeSmsVariableTab} // Changed to activeSmsVariableTab
-                                                setActiveTab={setActiveSmsVariableTab} // Changed to setActiveSmsVariableTab
-                                                variableCategories={variableCategories}
-                                                insertVariable={insertVariable} // just the function
-                                            />
+                                            <div className="col-md-4">
+                                                <VariableSelector
+                                                    activeTab={activeSmsVariableTab} // Changed to activeSmsVariableTab
+                                                    setActiveTab={setActiveSmsVariableTab} // Changed to setActiveSmsVariableTab
+                                                    variableCategories={variableCategories}
+                                                    insertVariable={insertVariable} // just the function
+                                                />
 
-                                            <div className="carddesign">
-                                                <div className="emailmodaltab-heading">
-                                                    <h3>{translate('emailSmsPage.preview')}</h3>
-                                                </div>
-                                                <div className="form-group">
-                                                    <label>{translate('emailSmsPage.smsTo')}</label>
-                                                    <input type="text" className="form-control" readOnly value={currentTemplate.recipientPhone} placeholder={translate('emailSmsPage.recipientPhonePlaceholder')} />
+                                                <div className="carddesign">
+                                                    <div className="emailmodaltab-heading">
+                                                        <h3>{translate('emailSmsPage.preview')}</h3>
+                                                    </div>
+                                                    <div className="form-group">
+                                                        <label>{translate('emailSmsPage.smsTo')}</label>
+                                                        <input type="text" className="form-control" readOnly value={currentTemplate.recipientPhone} placeholder={translate('emailSmsPage.recipientPhonePlaceholder')} />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="modalfooter">
-                                        <button type="button" className="btn btn-add" onClick={closeSmsModal}>{translate('emailSmsPage.cancel')}</button>
-                                        <button type="submit" className="btn btn-send">{isEditing ? translate('emailSmsPage.updateTemplate') : translate('emailSmsPage.saveTemplate')}</button>
-                                    </div>
-                                </form>
+                                        <div className="modalfooter">
+                                            <button type="button" className="btn btn-add" onClick={closeSmsModal}>{translate('emailSmsPage.cancel')}</button>
+                                            <button type="submit" className="btn btn-send">{isEditing ? translate('emailSmsPage.updateTemplate') : translate('emailSmsPage.saveTemplate')}</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* View Content Modal */}
-            {/* <div className={`${showViewContentModal ? 'modal-backdrop fade show' : ''}`}></div>
+                {/* View Content Modal */}
+                {/* <div className={`${showViewContentModal ? 'modal-backdrop fade show' : ''}`}></div>
             <div className={`modal fade modaldesign emailmodal ${showViewContentModal ? 'show d-block' : ''}`} tabIndex="-1" role="dialog" style={{ display: showViewContentModal ? 'block' : 'none' }}>
                 <div className="modal-dialog modal-lg" role="document">
                     <div className="modal-content">
@@ -955,7 +971,15 @@ const EmailSMSPage = () => {
                     </div>
                 </div>
             </div> */}
-        </div>
+            </div>
+
+            <LimitModal
+                isOpen={isLimitModalOpen}
+                onClose={closeLimitModal}
+                usedLimit={currentLimit.usage}
+                totalAllowed={currentLimit.totalAllowed}
+            />
+        </>
     );
 };
 

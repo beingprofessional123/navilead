@@ -3,17 +3,41 @@ import { AuthContext } from '../../context/AuthContext';
 import api from '../../utils/api';
 import MobileHeader from '../../components/common/MobileHeader';
 import { toast } from 'react-toastify';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
 import Swal from 'sweetalert2';
+import LimitModal from '../../components/LimitModal'; // the modal we created earlier
+import { useLimit } from "../../context/LimitContext";
 
 
 const OffersTemplatesPage = () => {
     const { t } = useTranslation();
+    const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, isOfferPageCustomizationAllowed } = useLimit(); // use limit context
     const { authToken, user } = useContext(AuthContext);
-    const [template, setTemplate] = useState([]);
+    const [offerTemplates, setTemplate] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedTemplate, setSelectedTemplate] = useState(null);
+    const navigate = useNavigate();
+
+    const handleCreateOfferClick = () => {
+
+        if (!isOfferPageCustomizationAllowed()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Access Denied',
+                text: 'Your current plan does not allow creating or customizing templates. Please upgrade to access this feature.',
+                confirmButtonText: 'OK',
+            });
+            return;
+        }
+
+        const currentOfferCount = offerTemplates.length; // total offers used
+        const canProceed = checkLimit(currentOfferCount, "Offers_Templates");
+
+        if (canProceed) {
+            navigate("/templatesoffers/create");
+        }
+    };
 
     const handleSelectTemplate = async (tmpl) => {
         setSelectedTemplate(tmpl); // Update selected template in state
@@ -30,7 +54,7 @@ const OffersTemplatesPage = () => {
 
             if (response.data && response.data.length > 0) {
                 setTemplate(response.data); // ✅ keep full array
-                 const activeTemplate = response.data.find(tmpl => tmpl.status === 'active');
+                const activeTemplate = response.data.find(tmpl => tmpl.status === 'active');
                 if (activeTemplate) {
                     setSelectedTemplate(activeTemplate);
                 }
@@ -95,8 +119,24 @@ const OffersTemplatesPage = () => {
 
     const handleCopyTemplate = async (template) => {
         try {
-            const formData = new FormData();
 
+
+            if (!isOfferPageCustomizationAllowed()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Access Denied',
+                    text: 'Your current plan does not allow creating or customizing templates. Please upgrade to access this feature.',
+                    confirmButtonText: 'OK',
+                });
+                return;
+            }
+
+            const currentOfferCount = offerTemplates.length;
+            const canProceed = checkLimit(currentOfferCount, "Offers_Templates");
+
+            if (!canProceed) return;
+
+            const formData = new FormData();
             // 🔹 Basic details
             formData.append('title', `Copy of ${template.title || 'Untitled Template'}`);
             formData.append('description', template.description || '');
@@ -141,6 +181,7 @@ const OffersTemplatesPage = () => {
 
 
 
+
     const handleMarkAsDefault = async (templateId) => {
         try {
             await api.patch(`/offers-templates/${templateId}/mark-default`, {}, {
@@ -171,10 +212,10 @@ const OffersTemplatesPage = () => {
                         </div>
                         <div className="col-md-6">
                             <div className="dashright">
-                                <Link to={`/templatesoffers/create`} className="btn btn-send">
+                                <button type='button' onClick={handleCreateOfferClick} className="btn btn-send">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
                                     {t('offerTemplate.newTemplateBtn')}
-                                </Link>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -196,8 +237,8 @@ const OffersTemplatesPage = () => {
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check w-4 h-4 text-primary" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>{selectedTemplate ? selectedTemplate.title || selectedTemplate.title : t("offerTemplate.defaultOfferName")}</span>
                                                 </button>
                                                 <ul className="dropdown-menu">
-                                                    {template && template.length > 0 ? (
-                                                        template.map((tmpl) => (
+                                                    {offerTemplates && offerTemplates.length > 0 ? (
+                                                        offerTemplates.map((tmpl) => (
                                                             <li key={tmpl.id}>
                                                                 <Link className="dropdown-item" to="#" onClick={() => handleSelectTemplate(tmpl)}>
                                                                     {/* Icon based on template type or status */}
@@ -266,8 +307,8 @@ const OffersTemplatesPage = () => {
 
                     <div className="row">
                         {/* Standard Offer Template Card */}
-                        {template.length > 0 ? (
-                            template.map((tmpl) => (
+                        {offerTemplates.length > 0 ? (
+                            offerTemplates.map((tmpl) => (
                                 <div className="col-xl-4 col-lg-6 col-md-6" key={tmpl.id}>
                                     <div className={`carddesign activetemplate-card ${tmpl.status === 'active' ? 'active' : ''}`}>
                                         <div className="activetemplatecard-top">
@@ -373,7 +414,7 @@ const OffersTemplatesPage = () => {
 
                         {/* Create New Template Card */}
                         <div className="col-xl-4 col-lg-6 col-md-6">
-                            <Link to={`/templatesoffers/create`} className=''>
+                            <Link onClick={handleCreateOfferClick}>
                                 <div className="carddesign opennew-template">
                                     <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>
                                     <h4>{t('offerTemplate.createNewTemplateTitle')}</h4>
@@ -400,6 +441,13 @@ const OffersTemplatesPage = () => {
                     </div>
                 </div>
             </div>
+
+            <LimitModal
+                isOpen={isLimitModalOpen}
+                onClose={closeLimitModal}
+                usedLimit={currentLimit.usage}
+                totalAllowed={currentLimit.totalAllowed}
+            />
         </>
     );
 };

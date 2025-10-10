@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const db = require('../models');
 const { User, UserVariable, OfferTemplate, UserPlan, Plan } = db;
 const stripe = require('../utils/stripe'); // Your Stripe instance
+const status = require('../models/status');
 
 
 function generateApiKey(userId) {
@@ -79,7 +80,7 @@ exports.register = async (req, res) => {
       companyLogo: null,
       aboutUsDescription: null,
       aboutUsLogo: null,
-      status: 'inactive',
+      status: 'active',
     });
 
     const apiKey = generateApiKey(user.id);
@@ -141,6 +142,7 @@ exports.register = async (req, res) => {
         });
       }
     }
+     
 
     const userPlanWithDetails = await UserPlan.findOne({
         where: { userId: user.id },  // ✅ use user.id, not userPlan.id
@@ -239,15 +241,18 @@ exports.login = async (req, res) => {
       }
     }
 
-    const existingTemplate = await OfferTemplate.findOne({ where: { userId: user.id } });
+    const existingTemplate = await OfferTemplate.findOne({ where: { userId: user.id, status: 'active' } });
     if (!existingTemplate) {
       await OfferTemplate.create({
         userId: user.id,
-        title: "Offer Template",
+        title: "Default Template",
+        discripton: "Standard offer layout with logo, services.",
+        type: 'Default',
         companyName: null,
         companyLogo: null,
         aboutUsDescription: null,
         aboutUsLogo: null,
+        status: 'active',
       });
     }
 

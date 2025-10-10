@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const pricingTemplateController = require('../controllers/pricingTemplateController');
 const authMiddleware = require('../middleware/authMiddleware');
+const planValidation = require('../middleware/planValidationMiddleware');
+
 
 // All routes below require authentication
 router.use(authMiddleware);
@@ -10,7 +12,7 @@ router.use(authMiddleware);
 router.get('/', pricingTemplateController.getAllTemplates);
 
 // Create a new pricing template
-router.post('/', pricingTemplateController.createTemplate);
+router.post('/', planValidation('Pricing_Templates'), pricingTemplateController.createTemplate);
 
 // Get a single pricing template by ID
 router.get('/:id', pricingTemplateController.getTemplateById);

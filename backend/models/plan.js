@@ -48,6 +48,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 0,
     },
+    Total_offers_Templates_Allowed: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
     Total_emails_allowed: {
       type: DataTypes.INTEGER,
       allowNull: false,

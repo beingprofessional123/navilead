@@ -1,6 +1,6 @@
 require('dotenv').config();
 const db = require("../models");
-const { Lead, Status, User, ApiLog, Settings, StatusUpdateLog } = db;
+const { Lead, Status, User, Plan, UserPlan, ApiLog, Settings, StatusUpdateLog } = db;
 const { Op } = require("sequelize");
 const { runWorkflows } = require('../utils/runWorkflows');
 
@@ -108,14 +108,13 @@ exports.createLead = async (req, res) => {
       statusId,
       attachments,
     };
-
     const lead = await Lead.create(leadData);
 
     await StatusUpdateLog.create({
       leadId: lead.id,
       statusId: statusId,
     });
-    
+
     await runWorkflows("newLeadCreated", { lead, user: req.user });
     res.status(201).json({ message: "api.leads.createSuccess", lead });
   } catch (err) {
@@ -185,7 +184,7 @@ exports.updateLead = async (req, res) => {
       notifyOnFollowUp = false;
     }
 
-     let value = req.body.value;
+    let value = req.body.value;
     if (value === "" || value === null || value === undefined) {
       value = null;
     } else {
@@ -300,9 +299,20 @@ exports.createPublicLead = async (req, res) => {
     let user;
     if (apikey) {
       user = await User.findOne({
-        where: {
-          apikey
-        }
+        where: { apikey },
+        include: [
+          {
+            model: UserPlan,
+            as: "userPlans",
+            include: [
+              {
+                model: Plan,
+                as: "plan",
+              },
+            ],
+            required: false,
+          },
+        ],
       });
       if (!user) {
         return res.status(401).json({
@@ -314,6 +324,42 @@ exports.createPublicLead = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Authentication required. Pass the API key in the header (x-api-key) or as a query parameter (?apikey=).",
+      });
+    }
+
+    // ✅ Get user's active plan (only one active)
+    const UserCurrentPlan = user.userPlans?.[0];
+
+    if (!UserCurrentPlan || !UserCurrentPlan.plan) {
+      return res.status(403).json({
+        success: false,
+        message: "No active plan found for this user.",
+      });
+    }
+
+    const planDetails = UserCurrentPlan.plan;
+
+    // ✅ 1️⃣ Check if plan allows API access
+    if (!planDetails.api_access) {
+      return res.status(403).json({
+        success: false,
+        message: `Your current plan (${planDetails.name}) does not include API access.`,
+      });
+    }
+
+    // ✅ 2️⃣ Check if plan allows total leads limit
+    const totalAllowed = planDetails.Total_Leads_Allowed;
+
+    // Count how many leads user has already created
+    const totalLeadsUsed = await Lead.count({
+      where: { userId: user.id },
+    });
+
+    // ✅ If user exceeds allowed limit, block and show message
+    if (totalAllowed && totalLeadsUsed >= totalAllowed) {
+      return res.status(403).json({
+        success: false,
+        message: `Lead limit exceeded. You have used ${totalLeadsUsed} of ${totalAllowed} leads allowed in your current plan (${planDetails.name}).`,
       });
     }
 
@@ -355,39 +401,6 @@ exports.createPublicLead = async (req, res) => {
         success: false,
         message: "Invalid lead source provided.",
         allowedLeadSources: allowedLeadSources,
-      });
-    }
-
-    // --- Daily API Limit Check ---
-
-    // Get the daily limit from the settings table.
-    const dailyLimitSetting = await Settings.findOne({
-      where: {
-        key: "api_Daily_limit"
-      },
-    });
-    const dailyLimit = dailyLimitSetting ? Number(dailyLimitSetting.value) : 5;
-
-    // Get the start and end of the current day.
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayEnd = new Date();
-    todayEnd.setHours(23, 59, 59, 999);
-
-    // Count API hits for the current user today.
-    const hitCount = await ApiLog.count({
-      where: {
-        userId: user.id,
-        createdAt: {
-          [Op.between]: [todayStart, todayEnd],
-        },
-      },
-    });
-
-    if (hitCount >= dailyLimit) {
-      return res.status(429).json({
-        success: false,
-        message: "Daily API request limit reached.",
       });
     }
 
@@ -515,7 +528,7 @@ exports.createPublicLead = async (req, res) => {
       value,
     });
 
-     await StatusUpdateLog.create({
+    await StatusUpdateLog.create({
       leadId: lead.id,
       statusId: statusId,
     });
@@ -531,20 +544,20 @@ exports.createPublicLead = async (req, res) => {
 
 
 
-      return res.status(201).json({
-        success: true,
-        message: "Lead created successfully.",
-        lead: {
-          ...lead.toJSON(),
-          status: status ? status.name : null,
-        },
-      });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({
-        success: false,
-        message: "An error occurred while creating the lead.",
-        error: err.message,
-      });
-    }
-  };
+    return res.status(201).json({
+      success: true,
+      message: "Lead created successfully.",
+      lead: {
+        ...lead.toJSON(),
+        status: status ? status.name : null,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while creating the lead.",
+      error: err.message,
+    });
+  }
+};

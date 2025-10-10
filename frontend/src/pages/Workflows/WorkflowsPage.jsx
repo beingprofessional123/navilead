@@ -7,9 +7,12 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
 import Swal from 'sweetalert2';
+import LimitModal from '../../components/LimitModal'; // the modal we created earlier
+import { useLimit } from "../../context/LimitContext";
 
 const WorkflowsPage = () => {
     const { authToken } = useContext(AuthContext);
+    const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal } = useLimit(); // use limit context
     const { t } = useTranslation();
     const [workflows, setWorkflows] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -20,6 +23,8 @@ const WorkflowsPage = () => {
     const [leads, setLeads] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
     const totalWorkflows = workflows.length;
+    const [modalShow, setModalShow] = useState(false);
+
 
     // stats states
     const [totalSms, setTotalSms] = useState(0);
@@ -119,7 +124,7 @@ const WorkflowsPage = () => {
                 };
             });
 
-          
+
             // Update state
             setWorkflows(workflowsWithCounts);
             setTotalSms(totalSmsCount);
@@ -277,6 +282,7 @@ const WorkflowsPage = () => {
             setFormData({ name: "", triggerEvent: "", description: "", isActive: true });
             setSteps([]);
             setIsEditing(false);
+            setModalShow(false);
         } catch (err) {
             console.error("Error saving workflow:", err);
             toast.error(formData.id ? t("api.workflows.updateFailed") : t("api.workflows.creationFailed"));
@@ -856,15 +862,22 @@ const WorkflowsPage = () => {
 
 
     const openCreateModal = () => {
-        setIsEditing(false); // we are creating
-        setFormData({
-            name: "",
-            triggerEvent: "",
-            description: "",
-            isActive: true,
-        });
-        setSteps([]);
+        const currentOfferCount = totalWorkflows; // total offers used
+        const canProceed = checkLimit(currentOfferCount, "Workflows"); // check workflow/offer limit
+
+        if (canProceed) {
+            setIsEditing(false); // we are creating
+            setFormData({
+                name: "",
+                triggerEvent: "",
+                description: "",
+                isActive: true,
+            });
+            setSteps([]);
+            setModalShow(true);
+        }
     };
+
 
 
     const openEditModal = (workflow) => {
@@ -890,6 +903,7 @@ const WorkflowsPage = () => {
         setSteps(mappedSteps);
 
         setIsEditing(true);
+        setModalShow(true);
     };
 
 
@@ -948,7 +962,7 @@ const WorkflowsPage = () => {
                         </div>
                         <div className="col-md-6">
                             <div className="dashright">
-                                <Link to="#" onClick={() => openCreateModal()} className="btn btn-send" data-bs-toggle="modal" data-bs-target="#myModal3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{t('workflows.newWorkflowButton')}</Link>
+                                <Link to="#" onClick={() => openCreateModal()} className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{t('workflows.newWorkflowButton')}</Link>
                             </div>
                         </div>
                     </div>
@@ -1049,7 +1063,7 @@ const WorkflowsPage = () => {
                                                                 <span className="slider round"></span>
                                                             </label>
                                                         </div>
-                                                        <Link to="#" className="action-icon" data-bs-toggle="modal" data-bs-target="#myModal3" onClick={() => openEditModal(wf)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen w-4 h-4" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></Link>
+                                                        <Link to="#" className="action-icon" onClick={() => openEditModal(wf)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen w-4 h-4" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></Link>
                                                         <Link to="#" className="action-icon" onClick={() => handleDeleteWorkflow(wf.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></Link>
                                                     </div>
                                                 </div>
@@ -1062,116 +1076,127 @@ const WorkflowsPage = () => {
                     </div>
                 </div >
             </div >
-            <div className="modal fade modaldesign workflowmodal" id="myModal3">
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h4 className="modal-title"><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg></span>{isEditing ? t('workflows.editWorkflow') : t('workflows.createWorkflow')}</h4>
-                            <p>{isEditing ? t('workflows.editWorkflowDescription') : t('workflows.createWorkflowDescription')}</p>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="formdesign">
-                                <form onSubmit={handleSubmit}>
-                                    <div className="carddesign">
-                                        <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>{t('workflows.workflowSettings')}</h2>
-                                        <div className="row">
-                                            <div className="col-md-6">
-                                                <div className="form-group">
-                                                    <label>{t('workflows.workflowName')}</label>
-                                                    <input type="text" className="form-control" id="" name="name" value={formData.name} onChange={handleChange} placeholder={t('workflows.workflowNamePlaceholder')} required />
-                                                </div>
-                                            </div>
-                                            <div className="col-md-6">
-                                                <div className="form-group">
-                                                    <label>{t('workflows.triggerEvent')}</label>
-                                                    <div className="inputselect">
-                                                        <select className="form-select" name="triggerEvent" value={formData.triggerEvent} onChange={handleChange} required>
-                                                            <option value="">{t('workflows.selectTrigger')}</option>
-                                                            <option value="newLeadCreated">{t('workflows.triggerOptions.newLeadCreated')}</option>
-                                                            <option value="leadCreatedViaFacebook">{t('workflows.triggerOptions.leadCreatedViaFacebook')}</option>
-                                                            <option value="leadCreatedViaWebsite">{t('workflows.triggerOptions.leadCreatedViaWebsite')}</option>
-                                                            <option value="leadCreatedViaAPI">{t('workflows.triggerOptions.leadCreatedViaAPI')}</option>
-                                                            <option value="leadUpdated">{t('workflows.triggerOptions.leadUpdated')}</option>
-                                                            <option value="leadStatusChanged">{t('workflows.triggerOptions.leadStatusChanged')}</option>
-                                                            <option value="leadMarkedAsWon">{t('workflows.triggerOptions.leadMarkedAsWon')}</option>
-                                                            <option value="leadMarkedAsLost">{t('workflows.triggerOptions.leadMarkedAsLost')}</option>
-                                                            {/* <option value="leadInactive">{t('workflows.triggerOptions.leadInactive')}</option> */}
-                                                        </select>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+            {modalShow && (
+                <>
+                    <div className={`${modalShow ? 'modal-backdrop fade show' : ''}`}></div>
+                    <div className="modal fade modaldesign workflowmodal show d-block" role="dialog">
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h4 className="modal-title"><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg></span>{isEditing ? t('workflows.editWorkflow') : t('workflows.createWorkflow')}</h4>
+                                    <p>{isEditing ? t('workflows.editWorkflowDescription') : t('workflows.createWorkflowDescription')}</p>
+                                    <button type="button" className="btn-close" onClick={() => setModalShow(false)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+                                </div>
+                                <div className="modal-body">
+                                    <div className="formdesign">
+                                        <form onSubmit={handleSubmit}>
+                                            <div className="carddesign">
+                                                <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>{t('workflows.workflowSettings')}</h2>
+                                                <div className="row">
+                                                    <div className="col-md-6">
+                                                        <div className="form-group">
+                                                            <label>{t('workflows.workflowName')}</label>
+                                                            <input type="text" className="form-control" id="" name="name" value={formData.name} onChange={handleChange} placeholder={t('workflows.workflowNamePlaceholder')} required />
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-6">
+                                                        <div className="form-group">
+                                                            <label>{t('workflows.triggerEvent')}</label>
+                                                            <div className="inputselect">
+                                                                <select className="form-select" name="triggerEvent" value={formData.triggerEvent} onChange={handleChange} required>
+                                                                    <option value="">{t('workflows.selectTrigger')}</option>
+                                                                    <option value="newLeadCreated">{t('workflows.triggerOptions.newLeadCreated')}</option>
+                                                                    <option value="leadCreatedViaFacebook">{t('workflows.triggerOptions.leadCreatedViaFacebook')}</option>
+                                                                    <option value="leadCreatedViaWebsite">{t('workflows.triggerOptions.leadCreatedViaWebsite')}</option>
+                                                                    <option value="leadCreatedViaAPI">{t('workflows.triggerOptions.leadCreatedViaAPI')}</option>
+                                                                    <option value="leadUpdated">{t('workflows.triggerOptions.leadUpdated')}</option>
+                                                                    <option value="leadStatusChanged">{t('workflows.triggerOptions.leadStatusChanged')}</option>
+                                                                    <option value="leadMarkedAsWon">{t('workflows.triggerOptions.leadMarkedAsWon')}</option>
+                                                                    <option value="leadMarkedAsLost">{t('workflows.triggerOptions.leadMarkedAsLost')}</option>
+                                                                    {/* <option value="leadInactive">{t('workflows.triggerOptions.leadInactive')}</option> */}
+                                                                </select>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <div className="row">
-                                            <div className="col-md-12">
-                                                <div className="form-group">
-                                                    <label>{t('workflows.description')}</label>
-                                                    <textarea className="form-control" rows="3" name="description" value={formData.description} onChange={handleChange} placeholder={t('workflows.descriptionPlaceholder')} />
+                                                <div className="row">
+                                                    <div className="col-md-12">
+                                                        <div className="form-group">
+                                                            <label>{t('workflows.description')}</label>
+                                                            <textarea className="form-control" rows="3" name="description" value={formData.description} onChange={handleChange} placeholder={t('workflows.descriptionPlaceholder')} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="switchbtn">
+                                                    <label className="switch">
+                                                        <input type="checkbox" defaultChecked="" name="isActive" checked={formData.isActive} onChange={handleChange} />
+                                                        <span className="slider round"></span>
+                                                    </label><span className="switchbtntext">{t('workflows.activateWorkflow')}</span><span className="status status5">{formData.isActive ? t("workflows.statusActive") : t("workflows.statusInactive")}</span>
+                                                </div>
+                                                <div className="alertbox">
+                                                    <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>{t('workflows.alertTriggerEvent')}</h2>
+                                                    <p>{t('workflows.alertTriggerMessage')}<strong> {formData.triggerEvent ? formData.triggerEvent.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()) : ''}</strong></p>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="switchbtn">
-                                            <label className="switch">
-                                                <input type="checkbox" defaultChecked="" name="isActive" checked={formData.isActive} onChange={handleChange} />
-                                                <span className="slider round"></span>
-                                            </label><span className="switchbtntext">{t('workflows.activateWorkflow')}</span><span className="status status5">{formData.isActive ? t("workflows.statusActive") : t("workflows.statusInactive")}</span>
-                                        </div>
-                                        <div className="alertbox">
-                                            <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>{t('workflows.alertTriggerEvent')}</h2>
-                                            <p>{t('workflows.alertTriggerMessage')}<strong> {formData.triggerEvent ? formData.triggerEvent.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()) : ''}</strong></p>
-                                        </div>
-                                    </div>
-                                    <div className="carddesign">
-                                        <div className="addstep-heading">
-                                            <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{t('workflows.workflowSteps', { count: steps.length })}</h2>
-                                            <div className="form-group">
-                                                <div className="inputselect">
-                                                    <div className="dropdown leaddropdown">
-                                                        <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg><span>{t('workflows.addStep')}</span>
-                                                        </button>
-                                                        <ul className="dropdown-menu" >
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("sendEmail")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg></div><label>{t('workflows.stepTypes.sendEmail')} <span>{t('workflows.stepTypes.sendEmailDescription')}</span></label></Link></li>
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("sendSms")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg></div><label>{t('workflows.stepTypes.sendSms')} <span>{t('workflows.stepTypes.sendSmsDescription')}</span></label></Link></li>
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("updateStatus")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-target" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div><label>{t('workflows.stepTypes.updateStatus')} <span>{t('workflows.stepTypes.updateStatusDescription')}</span></label></Link></li>
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("waitDelay")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg></div><label>{t('workflows.stepTypes.waitDelay')} <span>{t('workflows.stepTypes.waitDelayDescription')}</span></label></Link></li>
-                                                             {/* <li><Link className="dropdown-item" to="#" onClick={() => addStep("assignUser")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-plus" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg></div><label>{t('workflows.stepTypes.assignUser')} <span>{t('workflows.stepTypes.assignUserDescription')}</span></label></Link></li>
+                                            <div className="carddesign">
+                                                <div className="addstep-heading">
+                                                    <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{t('workflows.workflowSteps', { count: steps.length })}</h2>
+                                                    <div className="form-group">
+                                                        <div className="inputselect">
+                                                            <div className="dropdown leaddropdown">
+                                                                <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg><span>{t('workflows.addStep')}</span>
+                                                                </button>
+                                                                <ul className="dropdown-menu" >
+                                                                    <li><Link className="dropdown-item" to="#" onClick={() => addStep("sendEmail")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg></div><label>{t('workflows.stepTypes.sendEmail')} <span>{t('workflows.stepTypes.sendEmailDescription')}</span></label></Link></li>
+                                                                    <li><Link className="dropdown-item" to="#" onClick={() => addStep("sendSms")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg></div><label>{t('workflows.stepTypes.sendSms')} <span>{t('workflows.stepTypes.sendSmsDescription')}</span></label></Link></li>
+                                                                    <li><Link className="dropdown-item" to="#" onClick={() => addStep("updateStatus")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-target" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div><label>{t('workflows.stepTypes.updateStatus')} <span>{t('workflows.stepTypes.updateStatusDescription')}</span></label></Link></li>
+                                                                    <li><Link className="dropdown-item" to="#" onClick={() => addStep("waitDelay")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg></div><label>{t('workflows.stepTypes.waitDelay')} <span>{t('workflows.stepTypes.waitDelayDescription')}</span></label></Link></li>
+                                                                    {/* <li><Link className="dropdown-item" to="#" onClick={() => addStep("assignUser")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-plus" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg></div><label>{t('workflows.stepTypes.assignUser')} <span>{t('workflows.stepTypes.assignUserDescription')}</span></label></Link></li>
                                                             <li><Link className="dropdown-item" to="#" onClick={() => addStep("addTags")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-tag" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg></div><label>{t('workflows.stepTypes.addTags')} <span>{t('workflows.stepTypes.addTagsDescription')}</span></label></Link></li>
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("condition")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-alert" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg></div><label>{t('workflows.stepTypes.condition')} <span>{t('workflows.stepTypes.conditionDescription')}</span></label></Link></li>*/} 
-                                                        </ul>
+                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("condition")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-alert" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg></div><label>{t('workflows.stepTypes.condition')} <span>{t('workflows.stepTypes.conditionDescription')}</span></label></Link></li>*/}
+                                                                </ul>
+                                                            </div>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                                                        </div>
                                                     </div>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                                                </div>
+                                                {steps.length === 0 && (
+                                                    <div className="addstepbox">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus mx-auto" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                                                        <h4>{t('workflows.noStepsAdded')}</h4>
+                                                        <p>{t('workflows.addStepInstruction')}</p>
+                                                        <button type="button" className="btn btn-send" onClick={() => addStep("sendEmail")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{t('workflows.addFirstStep')}</button>
+                                                    </div>
+                                                )}
+                                                {steps.map((step, index) => (
+                                                    <div key={step.id}>
+                                                        {renderStep(step, index)}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="modalfooter btn-right opretworkflow">
+                                                <div className="opretworkflowleft">{t('workflows.stepsConfigured', { count: steps.length })}</div>
+                                                <div className="opretworkflow-right">
+                                                    <button onClick={() => setModalShow(false)} type="button" className="btn btn-add">{t('workflows.cancel')}</button>
+                                                    <button className="btn btn-send" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>{t('workflows.saveWorkflow')}</button>
                                                 </div>
                                             </div>
-                                        </div>
-                                        {steps.length === 0 && (
-                                            <div className="addstepbox">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus mx-auto" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-                                                <h4>{t('workflows.noStepsAdded')}</h4>
-                                                <p>{t('workflows.addStepInstruction')}</p>
-                                                <button type="button" className="btn btn-send" onClick={() => addStep("sendEmail")}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{t('workflows.addFirstStep')}</button>
-                                            </div>
-                                        )}
-                                        {steps.map((step, index) => (
-                                            <div key={step.id}>
-                                                {renderStep(step, index)}
-                                            </div>
-                                        ))}
+                                        </form>
                                     </div>
-                                    <div className="modalfooter btn-right opretworkflow">
-                                        <div className="opretworkflowleft">{t('workflows.stepsConfigured', { count: steps.length })}</div>
-                                        <div className="opretworkflow-right">
-                                            <button data-bs-dismiss="modal" type="button" className="btn btn-add">{t('workflows.cancel')}</button>
-                                            <button className="btn btn-send" data-bs-dismiss="modal" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>{t('workflows.saveWorkflow')}</button>
-                                        </div>
-                                    </div>
-                                </form>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </>
+            )}
+            <LimitModal
+                isOpen={isLimitModalOpen}
+                onClose={closeLimitModal}
+                usedLimit={currentLimit.usage}
+                totalAllowed={currentLimit.totalAllowed}
+            />
         </>
     );
 };
