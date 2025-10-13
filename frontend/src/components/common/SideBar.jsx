@@ -8,7 +8,7 @@ const SideBar = () => {
     const { user, logout } = useContext(AuthContext);
     const location = useLocation();
 
-     const isActive = (path, exact = false) => {
+    const isActive = (path, exact = false) => {
         if (exact) return location.pathname === path;
         return location.pathname.startsWith(path);
     };
@@ -79,7 +79,7 @@ const SideBar = () => {
                                 <path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"></path>
                             </svg>
                         </span>
-                        {t('sidebar.integrations')} 
+                        {t('sidebar.integrations')}
                     </Link>
                 </li>
                 <li className={isActive('/pricing-templates') ? 'active' : ''}>
@@ -108,7 +108,7 @@ const SideBar = () => {
                                 <path d="M8 16h.01"></path>
                             </svg>
                         </span>
-                        {t('sidebar.offerTemplates')} 
+                        {t('sidebar.offerTemplates')}
                     </Link>
                 </li>
                 <li className={isActive('/billing') ? 'active' : ''}>
@@ -122,6 +122,18 @@ const SideBar = () => {
                         {t('sidebar.billing')}
                     </Link>
                 </li>
+                <li className={isActive('/sms-credits') ? 'active' : ''}>
+                    <Link to="/sms-credits">
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-dollar-sign w-4 h-4" aria-hidden="true">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+
+                        </span>
+                        {t('sidebar.smsCredits')}
+                    </Link>
+                </li>
                 <li className={isActive('/settings') ? 'active' : ''}>
                     <Link to="/settings">
                         <span>
@@ -130,7 +142,7 @@ const SideBar = () => {
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
                         </span>
-                        {t('sidebar.settings')} 
+                        {t('sidebar.settings')}
                     </Link>
                 </li>
                 <li className={`adminpanel ${isActive('/admin') ? 'active' : ''}`}>

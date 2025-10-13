@@ -25,6 +25,7 @@ const planRoutes = require('./routes/planRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const transactionsRoutes = require('./routes/transactionsRoutes');
 const paymentMethodsRoutes = require('./routes/paymentMethodsRoutes');
+const smsCreditsRoutes = require('./routes/smsCreditsRoutes');
 
 const workflowRoutes = require('./routes/workflowRoutes');
 const publicWorkflowRoutes = require('./routes/publicWorkflowRoutes');
@@ -71,6 +72,7 @@ app.use('/api/plans', planRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/transactions', transactionsRoutes);
 app.use('/api/paymentMethods', paymentMethodsRoutes);
+app.use('/api/smsCredits', smsCreditsRoutes);
 
 
 // Public leads route (no auth required)

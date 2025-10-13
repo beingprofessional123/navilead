@@ -52,6 +52,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    smsBalance: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     apikey: {
       type: DataTypes.STRING,
       allowNull: true,
