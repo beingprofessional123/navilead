@@ -6,7 +6,7 @@ exports.getUserTransactions = async (req, res) => {
     const userId = req.user.id; // from auth middleware
 
     const transactions = await Transaction.findAll({
-      where: { userId },
+      where: { userId , type: 'subscription' },
       include: [
         {
           model: Plan,

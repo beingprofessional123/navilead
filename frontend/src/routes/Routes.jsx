@@ -23,6 +23,9 @@ import CustomizeTemplatesPage from '../pages/offersTempate/CustomizeTemplatesPag
 import BillingPage from '../pages/Billing/BillingPage'; 
 import SubscriptionSuccessPage from '../pages/Billing/SubscriptionSuccessPage';
 import SubscriptionCancelPage from '../pages/Billing/SubscriptionCancelPage';
+import SMSCreditsPage from '../pages/SMSCredits/SMSCreditsPage'; 
+import SMSCreditsSuccessPage from '../pages/SMSCredits/SMSCreditsSuccessPage';
+import SMSCreditsCancelPage from '../pages/SMSCredits/SMSCreditsCancelPage';
 
 const RouterSetup = () => {
   return (
@@ -179,6 +182,33 @@ const RouterSetup = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/sms-credits"
+        element={
+          <ProtectedRoute>
+            <PublicLayout>
+              <SMSCreditsPage /> {/* Placeholder, replace with actual SMSCreditsPage if available */}
+            </PublicLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sms-credits/success"
+        element={
+          <ProtectedRoute>
+              <SMSCreditsSuccessPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sms-credits/cancel"
+        element={
+          <ProtectedRoute>
+              <SMSCreditsCancelPage />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/settings"
         element={

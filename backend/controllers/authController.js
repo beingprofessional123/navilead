@@ -140,6 +140,9 @@ exports.register = async (req, res) => {
           autoRenew: false,
           cancelledAt: null
         });
+
+          // ✅ Update user's SMS balance based on free plan
+          await user.update({ smsBalance: freePlan.Total_SMS_allowed || 0 });
       }
     }
      

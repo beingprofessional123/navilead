@@ -3,6 +3,7 @@ const { sendMail } = require("../utils/mail");
 const { sendSms } = require("../utils/sms");
 const { htmlToText } = require("html-to-text");
 const UserVariable = db.UserVariable;
+const User = db.User;
 const cronLog = db.cronLog;
 const StatusUpdateLog = db.StatusUpdateLog;
 
@@ -117,6 +118,17 @@ async function executeSingleStep(logRow, stepRow, configObj, variablesMap, baseT
       return { executed: true, ready: true };
     }
 
+    const userId = lead.userId;
+    const user = await db.User.findByPk(userId);
+
+    // Check SMS balance
+    if (!user || user.smsBalance <= 0) {
+      console.warn(`User ${userId} has 0 SMS balance. SMS not sent.`);
+      await logRow.update({ status: "pending", executedAt: now });
+      return { executed: false, ready: true };
+    }
+
+
     let message = configObj.message || "Thanks for creating a lead.";
     let sender = (configObj.sender || "NaviLead").substring(0, 11);
 
@@ -131,6 +143,15 @@ async function executeSingleStep(logRow, stepRow, configObj, variablesMap, baseT
     console.log(`📱 Step ${logRow.orderNo} sendSms executed for lead ${logRow.leadId}`);
 
     await logRow.update({ status: "done", executedAt: now });
+
+    await db.User.update(
+      { smsBalance: user.smsBalance - 1 },
+      { where: { id: userId } }
+    );
+    user.smsBalance -= 1;
+    console.log(`💰 Deducted 1 SMS from user ${userId}. New balance: ${user.smsBalance}`);
+
+
     return { executed: true, ready: true };
   }
 
@@ -416,6 +437,16 @@ async function executeWorkflowCron(req, res) {
               continue;
             }
 
+            const userId = log.userId;
+            const user = await db.User.findByPk(userId);
+
+            // Check SMS balance before sending
+            if (!user || user.smsBalance <= 0) {
+              console.warn(`User ${userId} has 0 SMS balance. SMS not sent for lead ${log.leadId}.`);
+              await log.update({ status: "pending", executedAt: now });
+              continue;
+            }
+
             let message = configObj.message || "Thanks for creating a lead.";
             let sender = (configObj.sender || "NaviLead").substring(0, 11);
 
@@ -428,6 +459,15 @@ async function executeWorkflowCron(req, res) {
 
             await sendSms({ to: lead.phone, message, from: sender });
             console.log(`📱 Step ${log.orderNo} sendSms executed for lead ${log.leadId}`);
+
+           // Deduct 1 SMS from user balance
+            await db.User.update(
+              { smsBalance: user.smsBalance - 1 },
+              { where: { id: userId } }
+            );
+            user.smsBalance -= 1;
+            console.log(`💰 Deducted 1 SMS from user ${userId}. New balance: ${user.smsBalance}`);
+
           }
 
           if (fullStep.type === "updateStatus") {

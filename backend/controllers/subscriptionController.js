@@ -158,6 +158,13 @@ exports.verifySession = async (req, res) => {
       cancelledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null
     };
 
+    if (plan && user) {
+      const planSms = plan.Total_SMS_allowed || 0;
+      const newSmsBalance = (user.smsBalance || 0) + planSms;
+      await user.update({ smsBalance: newSmsBalance });
+    }
+
+
     if (userPlan) {
       await userPlan.update(userPlanData);
     } else {
@@ -183,6 +190,7 @@ exports.verifySession = async (req, res) => {
           currency: invoice?.currency || null,
           invoiceUrl: invoice?.hosted_invoice_url || null,
           invoiceNo: invoice?.number || null,
+          type: 'subscription'
         });
       }
     }

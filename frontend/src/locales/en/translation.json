@@ -76,7 +76,8 @@
     "billing": "Billing",
     "settings": "Settings",
     "adminPanel": "Admin Panel",
-    "logout": "Logout"
+    "logout": "Logout",
+    "smsCredits": "SMS Credits"
   },
   "leadsPage": {
     "title": "Lead Management",
@@ -1011,7 +1012,7 @@
   },
   "button": {
     "upgradePlan": "Upgrade Plan",
-    "choosePlan": "Choose Plan",
+    "choosePlan": "sidebar Plan",
     "currentPlan": "Current Plan",
     "cancel": "Cancel",
     "confirmUpgrade": "Confirm Upgrade",

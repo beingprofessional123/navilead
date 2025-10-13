@@ -176,6 +176,5 @@ exports.deleteEmailTemplate = async (req, res) => {
     res.status(500).json({ error: 'api.emailTemplates.deleteError' });
   }
 };
-
 // Expose the upload middleware so it can be used in your route definitions
 exports.upload = upload;

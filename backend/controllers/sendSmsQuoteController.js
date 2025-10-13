@@ -5,6 +5,7 @@ const UserVariable = db.UserVariable;
 const Quote = db.Quote;
 const Lead = db.Lead;
 const Status = db.Status;
+const User = db.User;
 const { sendSms } = require('../utils/sms'); // using GatewayAPI
 const sequelize = db.sequelize;
 
@@ -66,18 +67,35 @@ exports.storeSendSmsQuote = async (req, res) => {
     );
 
     // Optionally send SMS via GatewayAPI (uncomment if needed)
+
     try {
+      // Fetch user first
+      const user = await User.findByPk(userId, { transaction: t });
+
+      // Check SMS balance before sending
+      if (!user || user.smsBalance <= 0) {
+        console.warn(`User ${userId} has 0 SMS balance. SMS not sent to ${recipientPhone}.`);
+        await smsRecord.update({ status: 'pending' }, { transaction: t });
+        return; // exit the try block
+      }
+
+      // Send SMS
       await sendSms({
         to: recipientPhone,
         message: replacedMessage,
         from: (senderName || 'NaviLead').substring(0, 11), // max 11 chars
       });
 
+      // ✅ Deduct 1 SMS from user balance
+      user.smsBalance -= 1;
+      await user.save({ transaction: t });
+      console.log(`💰 Deducted 1 SMS from user ${userId}. New balance: ${user.smsBalance}`);
+
     } catch (smsError) {
       console.error('Error sending SMS:', smsError);
       await smsRecord.update({ status: 'Failed' }, { transaction: t });
     }
-
+    
     // Update Lead status to "Offer Sent"
     const quote = await Quote.findByPk(quoteId);
     if (quote) {

@@ -39,7 +39,6 @@ module.exports = (sequelize, DataTypes) => {
       updatedAt: false // You might only need createdAt for accepted offers
     }
   );
-
   AcceptedOffer.associate = (models) => {
     AcceptedOffer.belongsTo(models.Quote, { foreignKey: 'quoteId', as: 'quote',onDelete: "CASCADE", });
   };

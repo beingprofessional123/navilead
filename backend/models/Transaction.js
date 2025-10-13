@@ -14,9 +14,18 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    smsPlanId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     subscriptionId: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+     type: {
+      type: DataTypes.ENUM('subscription', 'credit'),
+      allowNull: false,
+      defaultValue: 'subscription',
     },
     status: {
       type: DataTypes.STRING,
@@ -52,6 +61,11 @@ module.exports = (sequelize, DataTypes) => {
     Transaction.belongsTo(models.Plan, {   // 👈 Direct link
       foreignKey: 'planId',
       as: 'plan',
+    });
+    
+    Transaction.belongsTo(models.SMSCreditPlan, {   // 👈 Direct link
+      foreignKey: 'smsPlanId',
+      as: 'smsPlan',
     });
   };
 

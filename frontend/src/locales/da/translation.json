@@ -76,7 +76,8 @@
     "billing": "Fakturering",
     "settings": "Indstillinger",
     "adminPanel": "Administratorpanel",
-    "logout": "Log ud"
+    "logout": "Log ud",
+     "smsCredits": "SMS kreditter"
   },
   "leadsPage": {
     "title": "Leadhåndtering",
