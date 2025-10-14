@@ -17,6 +17,7 @@ const AskQuestion = db.AskQuestion;
 const User = db.User;
 const StatusUpdateLog = db.StatusUpdateLog;
 const OfferTemplate = db.OfferTemplate;
+const Settings = db.Settings;
 
 exports.getOfferByQuoteId = async (req, res) => {
   try {
@@ -309,11 +310,22 @@ exports.askedQuestion = async (req, res) => {
           customerEmail: lead.email
         });
 
-      await sendMail({
-        to: lead.user.email,
-        subject: `Customer Question About Offer #${quote.id}`,
-        html: emailHtml
+      const emailSetting = await Settings.findOne({
+        where: { userId: lead.user.id, key: 'emailNotifications' },
       });
+
+      if (emailSetting.value === 'true') {
+        await sendMail({
+          to: lead.user.email,
+          subject: `Customer Question About Offer #${quote.id}`,
+          html: emailHtml,
+        });
+        console.log(`📧 Email sent to user ${lead.user.email} for offer #${quote.id}`);
+      } else {
+        console.log(`📵 Email notifications are disabled for user ${lead.user.id}. Skipping email.`);
+      }
+
+      
     }
 
     res.status(200).json({

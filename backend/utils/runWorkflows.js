@@ -6,6 +6,7 @@ const UserVariable = db.UserVariable;
 const User = db.User;
 const cronLog = db.cronLog;
 const StatusUpdateLog = db.StatusUpdateLog;
+const Settings = db.Settings;
 
 /**
  * Safely parse step config (string or object)
@@ -102,11 +103,23 @@ async function executeSingleStep(logRow, stepRow, configObj, variablesMap, baseT
     text = replaceVariables(text, variablesMap);
     if (html) html = replaceVariables(html, variablesMap);
 
-    await sendMail({ to: lead.email, subject, text, html, cc, attachments });
-    console.log(`📩 Step ${logRow.orderNo} sendEmail executed for lead ${logRow.leadId}`);
 
-    await logRow.update({ status: "done", executedAt: now });
-    return { executed: true, ready: true };
+    const emailSetting = await Settings.findOne({
+      where: { userId: lead.userId, key: 'emailNotifications' },
+    });
+
+
+    if (emailSetting.value === 'true') {
+      await sendMail({ to: lead.email, subject, text, html, cc, attachments });
+      console.log(`📩 Step ${logRow.orderNo} sendEmail executed for lead ${logRow.leadId}`);
+      await logRow.update({ status: "done", executedAt: now });
+      return { executed: true, ready: true };
+    } else {
+      console.log(`📵 Email notifications are disabled for user ${lead.userId}. Skipping email.`);
+      await logRow.update({ status: "pending", executedAt: now });
+      return { executed: true, ready: true };
+    }
+
   }
 
   // sendSms
@@ -139,18 +152,28 @@ async function executeSingleStep(logRow, stepRow, configObj, variablesMap, baseT
 
     message = replaceVariables(message, variablesMap);
 
-    await sendSms({ to: lead.phone, message, from: sender });
-    console.log(`📱 Step ${logRow.orderNo} sendSms executed for lead ${logRow.leadId}`);
+    const smsSetting = await Settings.findOne({
+      where: { userId: user.id, key: 'smsNotifications' },
+    });
 
-    await logRow.update({ status: "done", executedAt: now });
 
-    await db.User.update(
-      { smsBalance: user.smsBalance - 1 },
-      { where: { id: userId } }
-    );
-    user.smsBalance -= 1;
-    console.log(`💰 Deducted 1 SMS from user ${userId}. New balance: ${user.smsBalance}`);
+    if (smsSetting.value === 'true') {
+      await sendSms({ to: lead.phone, message, from: sender });
+      console.log(`📱 Step ${logRow.orderNo} sendSms executed for lead ${logRow.leadId}`);
 
+      await logRow.update({ status: "done", executedAt: now });
+
+      await db.User.update(
+        { smsBalance: user.smsBalance - 1 },
+        { where: { id: userId } }
+      );
+      user.smsBalance -= 1;
+      console.log(`💰 Deducted 1 SMS from user ${userId}. New balance: ${user.smsBalance}`);
+
+    } else {
+      console.log(`📵 SMS notifications are disabled for user ${user.id}. Skipping SMS.`);
+      await logRow.update({ status: "pending", executedAt: now });
+    }
 
     return { executed: true, ready: true };
   }
@@ -425,8 +448,20 @@ async function executeWorkflowCron(req, res) {
             text = replaceVariables(text, variablesMap);
             if (html) html = replaceVariables(html, variablesMap);
 
-            await sendMail({ to: lead.email, subject, text, html, cc, attachments });
-            console.log(`📩 Step ${log.orderNo} sendEmail executed for lead ${log.leadId}`);
+            const emailSetting = await Settings.findOne({
+              where: { userId: lead.userId, key: 'emailNotifications' },
+            });
+
+
+            if (emailSetting.value === 'true') {
+              await sendMail({ to: lead.email, subject, text, html, cc, attachments });
+              console.log(`📩 Step ${log.orderNo} sendEmail executed for lead ${lead.leadId}`);
+            } else {
+              console.log(`📵 Email notifications are disabled for user ${lead.userId}. Skipping email.`);
+            }
+
+
+
           }
 
           if (fullStep.type === "sendSms") {
@@ -457,17 +492,27 @@ async function executeWorkflowCron(req, res) {
 
             message = replaceVariables(message, variablesMap);
 
-            await sendSms({ to: lead.phone, message, from: sender });
-            console.log(`📱 Step ${log.orderNo} sendSms executed for lead ${log.leadId}`);
 
-           // Deduct 1 SMS from user balance
-            await db.User.update(
-              { smsBalance: user.smsBalance - 1 },
-              { where: { id: userId } }
-            );
-            user.smsBalance -= 1;
-            console.log(`💰 Deducted 1 SMS from user ${userId}. New balance: ${user.smsBalance}`);
+            const smsSetting = await Settings.findOne({
+              where: { userId: user.id, key: 'smsNotifications' },
+            });
 
+
+            if (smsSetting.value === 'true') {
+              await sendSms({ to: lead.phone, message, from: sender, userId: user.id });
+              console.log(`📱 Step ${log.orderNo} sendSms executed for lead ${log.leadId}`);
+
+              // Deduct 1 SMS from user balance
+              await db.User.update(
+                { smsBalance: user.smsBalance - 1 },
+                { where: { id: userId } }
+              );
+              user.smsBalance -= 1;
+              console.log(`💰 Deducted 1 SMS from user ${userId}. New balance: ${user.smsBalance}`);
+
+            } else {
+              console.log(`📵 SMS notifications are disabled for user ${user.id}. Skipping SMS.`);
+            }
           }
 
           if (fullStep.type === "updateStatus") {

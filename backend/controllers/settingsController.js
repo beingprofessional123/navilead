@@ -1,6 +1,6 @@
 const multer = require('multer');
 const path = require('path');
-const { User, sequelize } = require('../models');
+const { User,Settings, sequelize } = require('../models');
 const BACKEND_URL = process.env.BACKEND_URL;
 
 // -------------------------
@@ -46,7 +46,9 @@ exports.getSettings = async (req, res) => {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    res.status(200).json(user);
+    const settings = await Settings.findAll({ where: { userId: req.user.id } });
+
+    res.status(200).json({ user, settings });
   } catch (error) {
     res.status(500).json({
       message: 'Error fetching settings.',
@@ -191,4 +193,30 @@ exports.updateLanguage = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: "Error updating language", error: error.message });
   }
+};
+
+exports.updateNotifications = async (req, res) => {
+    const { emailNotifications, smsNotifications } = req.body;
+    const userId = req.user.id; // Assuming your auth middleware sets req.user
+
+    try {
+        // Update or create emailNotifications
+        await Settings.upsert({
+            userId,
+            key: 'emailNotifications',
+            value: emailNotifications.toString(),
+        });
+
+        // Update or create smsNotifications
+        await Settings.upsert({
+            userId,
+            key: 'smsNotifications',
+            value: smsNotifications.toString(),
+        });
+
+        res.json({ success: true, message: 'Notifications updated successfully!' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to update notifications' });
+    }
 };

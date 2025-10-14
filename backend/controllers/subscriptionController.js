@@ -1,5 +1,5 @@
 const stripe = require('../utils/stripe');
-const { User, Plan, UserPlan, Transaction, PaymentMethod } = require('../models');
+const { User, Plan, UserPlan, Transaction, PaymentMethod, Settings } = require('../models');
 const { sendMail } = require('../utils/mail');
 const InvoiceUpcomingTemplate = require('../EmailTemplate/InvoiceUpcomingTemplate');
 
@@ -475,16 +475,28 @@ exports.subscriptionRenewWebhook = async (req, res) => {
             dueDate: invoice.due_date || invoice.created,
           });
 
-          if (PaymentMethods.emailNotifications === true) {
-            await sendMail({
-              to: user.email,
-              subject: 'Upcoming Invoice Reminder',
-              text: `Dear ${user.name}, your subscription will renew soon. Invoice: ${invoice.hosted_invoice_url}`,
-              html: htmlTemplate,
-            });
+          const emailSetting = await Settings.findOne({
+            where: { userId: user.id, key: 'emailNotifications' },
+          });
 
-            console.log(`📧 Upcoming invoice email sent to ${user.email}`);
+
+          if (emailSetting.value === 'true') {
+            if (PaymentMethods.emailNotifications === true) {
+              await sendMail({
+                to: user.email,
+                subject: 'Upcoming Invoice Reminder',
+                text: `Dear ${user.name}, your subscription will renew soon. Invoice: ${invoice.hosted_invoice_url}`,
+                html: htmlTemplate,
+              });
+
+              console.log(`📧 Upcoming invoice email sent to ${user.email}`);
+            }
+          } else {
+            console.log(`📵 Email notifications are disabled for user ${user.id}. Skipping email.`);
           }
+
+
+
 
 
 

@@ -6,6 +6,7 @@ const Quote = db.Quote;
 const Lead = db.Lead;
 const Status = db.Status;
 const User = db.User;
+const Settings = db.Settings;
 const { sendSms } = require('../utils/sms'); // using GatewayAPI
 const sequelize = db.sequelize;
 
@@ -79,17 +80,25 @@ exports.storeSendSmsQuote = async (req, res) => {
         return; // exit the try block
       }
 
-      // Send SMS
-      await sendSms({
-        to: recipientPhone,
-        message: replacedMessage,
-        from: (senderName || 'NaviLead').substring(0, 11), // max 11 chars
-      });
+       const smsSetting = await Settings.findOne({
+          where: { userId: user.id, key: 'smsNotifications' },
+        });
 
-      // ✅ Deduct 1 SMS from user balance
-      user.smsBalance -= 1;
-      await user.save({ transaction: t });
-      console.log(`💰 Deducted 1 SMS from user ${userId}. New balance: ${user.smsBalance}`);
+
+      if (smsSetting.value === 'true') {
+        await sendSms({
+          to: recipientPhone,
+          message: replacedMessage,
+          from: (senderName || 'NaviLead').substring(0, 11), // max 11 chars
+        });
+
+         // ✅ Deduct 1 SMS from user balance
+        user.smsBalance -= 1;
+        await user.save({ transaction: t });
+        console.log(`💰 Deducted 1 SMS from user ${userId}. New balance: ${user.smsBalance}`);
+      } else {
+        console.log(`📵 SMS notifications are disabled for user ${user.id}. Skipping SMS.`);
+      }
 
     } catch (smsError) {
       console.error('Error sending SMS:', smsError);

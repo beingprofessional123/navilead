@@ -2,9 +2,10 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const db = require('../models');
-const { User, UserVariable, OfferTemplate, UserPlan, Plan } = db;
+const { User, UserVariable, Settings, OfferTemplate, UserPlan, Plan } = db;
 const stripe = require('../utils/stripe'); // Your Stripe instance
 const status = require('../models/status');
+
 
 
 function generateApiKey(userId) {
@@ -54,6 +55,32 @@ async function createStripeCustomer(user) {
   await user.update({ stripeCustomerId: customer.id });
 
   return customer.id;
+}
+
+
+async function ensureDefaultSettings(userId) {
+  const existingSettings = await Settings.findAll({ where: { userId } });
+  const keys = existingSettings.map(s => s.key);
+
+  const defaultSettings = [
+    { key: 'emailNotifications', value: 'true' },
+    { key: 'smsNotifications', value: 'true' },
+  ];
+
+  const toCreate = defaultSettings.filter(s => !keys.includes(s.key))
+                                  .map(s => ({ ...s, userId }));
+
+  if (toCreate.length > 0) {
+    await Settings.bulkCreate(toCreate);
+  }
+
+  // Return current settings in a convenient object
+  const updatedSettings = await Settings.findAll({ where: { userId } });
+  const settingsObj = {};
+  updatedSettings.forEach(s => {
+    settingsObj[s.key] = s.value === 'true';
+  });
+  return settingsObj;
 }
 
 
@@ -160,6 +187,8 @@ exports.register = async (req, res) => {
       { expiresIn: '6h' }
     );
 
+    await ensureDefaultSettings(user.id);
+
     res.status(201).json({
       message: 'api.register.success',
       token,
@@ -263,6 +292,8 @@ exports.login = async (req, res) => {
         where: { userId: user.id },  // ✅ use user.id, not userPlan.id
         include: [{ model: Plan, as: 'plan' }]
     });
+
+    await ensureDefaultSettings(user.id);
 
 
     res.status(200).json({ message: 'api.login.success', token, user: userData, userPlan: userPlanWithDetails });

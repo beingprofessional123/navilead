@@ -29,7 +29,6 @@ const SettingsPage = () => {
     // State for Notifications
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [smsNotifications, setSmsNotifications] = useState(false);
-    const [desktopNotifications, setDesktopNotifications] = useState(true);
 
     // State for Corporate Branding (Logo)
     const [companyLogoFile, setCompanyLogoFile] = useState(null);
@@ -65,6 +64,13 @@ const SettingsPage = () => {
                 primaryColor: data.primaryColor || "#00ffff", // Assuming API returns this
                 secondaryColor: data.secondaryColor || "#1a1a2e", // Assuming API returns this
             });
+
+            // Extract notification settings from array
+            const emailSetting = data.settings.find(s => s.key === "emailNotifications");
+            const smsSetting = data.settings.find(s => s.key === "smsNotifications");
+
+            setEmailNotifications(emailSetting?.value === "true");  
+            setSmsNotifications(smsSetting?.value === "true");
 
             // Set logo state if it exists
            if (data.companyLogo) {
@@ -108,55 +114,55 @@ const SettingsPage = () => {
     };
 
     // Save all changes
-const handleSaveChanges = async () => {
-    try {
-        // Prepare data to send
-        const updateData = {};
-        Object.keys(formData).forEach((key) => {
-            if (formData[key] !== "" && formData[key] !== null) {
-                updateData[key] = formData[key];
+    const handleSaveChanges = async () => {
+        try {
+            // Prepare data to send
+            const updateData = {};
+            Object.keys(formData).forEach((key) => {
+                if (formData[key] !== "" && formData[key] !== null) {
+                    updateData[key] = formData[key];
+                }
+            });
+
+            if (Object.keys(updateData).length === 0) {
+                toast.warn("No changes to update.");
+                return;
             }
-        });
 
-        if (Object.keys(updateData).length === 0) {
-            toast.warn("No changes to update.");
-            return;
+            // Send update request
+            const response = await api.put("/settings", updateData, {
+                headers: { Authorization: `Bearer ${authToken}` }
+            });
+
+            const updatedUser = response.data.user;
+            console.log("Updated user from API:", updatedUser);
+
+            if (updatedUser) {
+                // Get existing user from localStorage
+                const existingUser = JSON.parse(localStorage.getItem("user")) || {};
+
+                // Only update specific fields from API user object
+                const newUser = {
+                    ...existingUser,
+                    name: updatedUser.name,
+                    phone: updatedUser.phone,
+                    currency: updatedUser.currency,
+                    language: updatedUser.language,
+                    companyName: updatedUser.companyName,
+                    companyLogo: updatedUser.companyLogo,
+                };
+
+                // Save back to localStorage
+                localStorage.setItem("user", JSON.stringify(newUser));
+                localStorage.setItem("i18nextLng", newUser.language || "en");
+            }
+            toast.success("Settings updated successfully!");
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to update settings.");
         }
-
-        // Send update request
-        const response = await api.put("/settings", updateData, {
-            headers: { Authorization: `Bearer ${authToken}` }
-        });
-
-        const updatedUser = response.data.user;
-        console.log("Updated user from API:", updatedUser);
-
-        if (updatedUser) {
-            // Get existing user from localStorage
-            const existingUser = JSON.parse(localStorage.getItem("user")) || {};
-
-            // Only update specific fields from API user object
-            const newUser = {
-                ...existingUser,
-                name: updatedUser.name,
-                phone: updatedUser.phone,
-                currency: updatedUser.currency,
-                language: updatedUser.language,
-                companyName: updatedUser.companyName,
-                companyLogo: updatedUser.companyLogo,
-            };
-
-            // Save back to localStorage
-            localStorage.setItem("user", JSON.stringify(newUser));
-            localStorage.setItem("i18nextLng", newUser.language || "en");
-        }
-        toast.success("Settings updated successfully!");
-        window.location.reload();
-    } catch (error) {
-        console.error(error);
-        toast.error("Failed to update settings.");
-    }
-};
+    };
 
 
 
@@ -225,6 +231,30 @@ const handleSaveChanges = async () => {
                 confirmButton: 'custom-swal-button'
             }
         });
+    };
+
+    const handleNotificationChange = async (type, value) => {
+        // Update local state immediately
+        if (type === 'email') setEmailNotifications(value);
+        if (type === 'sms') setSmsNotifications(value);
+
+        try {
+            // Send update to backend
+            await api.put('/settings/notifications', 
+                { 
+                    emailNotifications: type === 'email' ? value : emailNotifications,
+                    smsNotifications: type === 'sms' ? value : smsNotifications
+                }, 
+                { headers: { Authorization: `Bearer ${authToken}` } }
+            );
+
+            toast.success('Notification settings updated!');
+        } catch (error) {
+            toast.error('Failed to update notification settings.');
+            // Optionally revert toggle on error
+            if (type === 'email') setEmailNotifications(!value);
+            if (type === 'sms') setSmsNotifications(!value);
+        }
     };
 
 
@@ -342,7 +372,7 @@ const handleSaveChanges = async () => {
                             </div>
                             <div className="switchbtn">
                                 <label className="switch">
-                                    <input type="checkbox" checked={emailNotifications} onChange={(e) => setEmailNotifications(e.target.checked)} />
+                                    <input type="checkbox" checked={emailNotifications} onChange={(e) => handleNotificationChange('email', e.target.checked)} />
                                     <span className="slider round"></span>
                                 </label>
                             </div>
@@ -354,19 +384,7 @@ const handleSaveChanges = async () => {
                             </div>
                             <div className="switchbtn">
                                 <label className="switch">
-                                    <input type="checkbox" checked={smsNotifications} onChange={(e) => setSmsNotifications(e.target.checked)} />
-                                    <span className="slider round"></span>
-                                </label>
-                            </div>
-                        </li>
-                        <li>
-                            <div className="notification-settings-left">
-                                <h4>{translate('settingsPage.desktopNotificationsTitle')}</h4>
-                                <h6>{translate('settingsPage.desktopNotificationsDescription')}</h6>
-                            </div>
-                            <div className="switchbtn">
-                                <label className="switch">
-                                    <input type="checkbox" checked={desktopNotifications} onChange={(e) => setDesktopNotifications(e.target.checked)} />
+                                    <input type="checkbox" checked={smsNotifications} onChange={(e) => handleNotificationChange('sms', e.target.checked)} />
                                     <span className="slider round"></span>
                                 </label>
                             </div>

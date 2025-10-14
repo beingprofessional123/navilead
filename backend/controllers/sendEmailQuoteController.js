@@ -4,6 +4,7 @@ const UserVariable = db.UserVariable;
 const Quote = db.Quote;
 const Lead = db.Lead;
 const Status = db.Status;
+const Settings = db.Settings;
 const { sendMail } = require('../utils/mail');
 
 function convertUrlsToLinks(text) {
@@ -53,12 +54,26 @@ exports.storeSendEmailQuote = async (req, res) => {
 
     const htmlBody = convertUrlsToLinks(replacedEmailBody).replace(/\n/g, '<br>');
 
-    await sendMail({
-      to: recipientEmail,
-      subject: replacedEmailSubject,
-      text: replacedEmailBody,
-      html: htmlBody,
+      const emailSetting = await Settings.findOne({
+      where: { userId, key: 'emailNotifications' },
     });
+
+
+    if (emailSetting.value === 'true') {
+       await sendMail({
+          to: recipientEmail,
+          subject: replacedEmailSubject,
+          text: replacedEmailBody,
+          html: htmlBody,
+        });
+      console.log(`📧 Email sent to user ${recipientEmail}.`);
+    } else {
+      console.log(`📵 Email notifications are disabled for user ${userId}. Skipping email.`);
+    }
+
+
+  
+   
 
     // --- NEW: Update Lead status to "Offer Sent" ---
     // 1. Find the quote to get the leadId
