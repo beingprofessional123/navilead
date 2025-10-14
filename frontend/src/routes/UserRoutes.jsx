@@ -27,7 +27,7 @@ import SMSCreditsPage from '../pages/SMSCredits/SMSCreditsPage';
 import SMSCreditsSuccessPage from '../pages/SMSCredits/SMSCreditsSuccessPage';
 import SMSCreditsCancelPage from '../pages/SMSCredits/SMSCreditsCancelPage';
 
-const RouterSetup = () => {
+const UserRouterSetup = () => {
   return (
     <Routes>
       {/* PUBLIC ROUTES */}
@@ -287,4 +287,4 @@ const RouterSetup = () => {
   );
 };
 
-export default RouterSetup;
+export default UserRouterSetup;

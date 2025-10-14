@@ -12,6 +12,10 @@ router.route('/')
   .get(settingsController.getSettings) // GET request to fetch all settings
   .put(settingsController.updateGeneralSettings); // PUT request to update all general and notification settings
 
+  // Notifications route
+router.put('/notifications', settingsController.updateNotifications); // PUT request to update email/sms notifications
+
+
 // Corporate branding routes
 router.post('/upload-logo', settingsController.uploadMiddleware, settingsController.uploadLogo);
 router.delete('/remove-logo', settingsController.removeLogo);

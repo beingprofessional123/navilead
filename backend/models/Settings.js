@@ -3,6 +3,10 @@ module.exports = (sequelize, DataTypes) => {
   const Settings = sequelize.define(
     "Settings",
     {
+       userId: {
+        type: DataTypes.INTEGER,
+        allowNull: true, // Every setting must belong to a user
+      },
       key: {
         type: DataTypes.STRING,
         allowNull: false,
