@@ -10,7 +10,6 @@ module.exports = (sequelize, DataTypes) => {
       key: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true, // Each key should be unique
       },
       value: {
         type: DataTypes.TEXT, // Store any value as string/JSON
