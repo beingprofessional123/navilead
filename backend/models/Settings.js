@@ -3,22 +3,29 @@ module.exports = (sequelize, DataTypes) => {
   const Settings = sequelize.define(
     "Settings",
     {
-       userId: {
+      userId: {
         type: DataTypes.INTEGER,
-        allowNull: true, // Every setting must belong to a user
+        allowNull: true,
+        field: "user_id",
       },
       key: {
         type: DataTypes.STRING,
         allowNull: false,
       },
       value: {
-        type: DataTypes.TEXT, // Store any value as string/JSON
+        type: DataTypes.TEXT,
         allowNull: true,
       },
     },
     {
       tableName: "settings",
-      timestamps: true, // createdAt and updatedAt
+      timestamps: true,
+      indexes: [
+        {
+          unique: true,
+          fields: ["user_id", "key"], // 🔑 unique per user
+        },
+      ],
     }
   );
 
