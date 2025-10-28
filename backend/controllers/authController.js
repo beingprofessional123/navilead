@@ -59,29 +59,41 @@ async function createStripeCustomer(user) {
 
 
 async function ensureDefaultSettings(userId) {
+  // 🟢 Fetch all settings for this user
   const existingSettings = await Settings.findAll({ where: { userId } });
-  const keys = existingSettings.map(s => s.key);
 
+  // 🟢 Extract existing keys for this user
+  const existingKeys = existingSettings.map(s => s.key);
+
+  // 🟢 Define default settings
   const defaultSettings = [
     { key: 'emailNotifications', value: 'true' },
     { key: 'smsNotifications', value: 'true' },
   ];
 
-  const toCreate = defaultSettings.filter(s => !keys.includes(s.key))
-                                  .map(s => ({ ...s, userId }));
+  // 🟢 Only keep settings that are missing
+  const settingsToCreate = defaultSettings
+    .filter(s => !existingKeys.includes(s.key))
+    .map(s => ({ ...s, userId }));
 
-  if (toCreate.length > 0) {
-    await Settings.bulkCreate(toCreate);
+  // 🟢 If user already has all defaults, skip insertion
+  if (settingsToCreate.length === 0) {
+    console.log(`⚙️ Settings already exist for userId=${userId}, skipping creation.`);
+  } else {
+    await Settings.bulkCreate(settingsToCreate, { ignoreDuplicates: true });
+    console.log(`✅ Default settings created for userId=${userId}`);
   }
 
-  // Return current settings in a convenient object
+  // 🟢 Return current settings as an object
   const updatedSettings = await Settings.findAll({ where: { userId } });
   const settingsObj = {};
   updatedSettings.forEach(s => {
     settingsObj[s.key] = s.value === 'true';
   });
+
   return settingsObj;
 }
+
 
 
 // REGISTER
