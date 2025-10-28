@@ -4317,3 +4317,58 @@ ul.newoffertop-system li.active a svg {
 .sms-creditscard .smsprices h4 {
     font-size: 18px;
 }
+
+
+
+.admin_tabledesign .MuiPaper-root {
+    background: none;
+    color: var(--card-foreground);
+    font-weight: 500;
+}
+.admin_tabledesign .MuiPaper-root tbody tr td {
+    font-weight: 300;
+    background: none;
+    font-size: 13px;
+    color: var(--muted-foreground);
+    border-bottom: 1px solid #202e3c;
+}
+.admin_tabledesign .MuiPaper-root tbody tr td a.leadlink {
+    color: var(--card-foreground);
+    font-weight: 500;
+}
+.admin_tabledesign .MuiPaper-root thead tr th {
+    color: var(--card-foreground);
+    font-weight: 500;
+    background: none;
+    font-size: 13px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #202e3c;
+}
+.admin_tabledesign .MuiPaper-root thead tr th button {
+    padding: 0px;
+    justify-content: flex-start;
+    text-transform: capitalize;
+}
+.admin_tabledesign .MuiPaper-root table.tss-5jmwmz-MUIDataTableFooter-root td {
+    border: none;
+}
+.admin_tabledesign .MuiPaper-root table.tss-5jmwmz-MUIDataTableFooter-root td .MuiToolbar-root.MuiToolbar-gutters p {
+    margin: 0px;
+}
+.admin_tabledesign .MuiPaper-root table.tss-5jmwmz-MUIDataTableFooter-root td .MuiToolbar-root.MuiToolbar-gutters {
+    color: var(--card-foreground);
+}
+.admin_tabledesign .MuiPaper-root table.tss-5jmwmz-MUIDataTableFooter-root td .MuiToolbar-root.MuiToolbar-gutters .MuiTablePagination-actions button {
+    background: #00d4f0;
+    color: #000;
+    margin: 0px 6px;
+}
+.admin_tabledesign .MuiPaper-root table.tss-5jmwmz-MUIDataTableFooter-root td .MuiToolbar-root.MuiToolbar-gutters svg.MuiSelect-icon {
+    fill: #fff;
+}
+.admin_tabledesign .MuiPaper-root h6.MuiTypography-root {
+    font-size: 16px;
+}
+.admin_tabledesign .MuiPaper-root .tss-qbo1l6-MUIDataTableToolbar-actions button svg {
+    fill: #ffffff;
+}

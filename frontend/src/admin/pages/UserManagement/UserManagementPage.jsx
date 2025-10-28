@@ -341,7 +341,7 @@ const UserManagementPage = () => {
                     <div className="row">
                         <div className="col-md-12">
                             <div className="carddesign leadstable">
-                                <div className="tabledesign">
+                                <div className="admin_tabledesign">
                                     <MUIDataTable
                                         title={"User List"}
                                         data={users}
