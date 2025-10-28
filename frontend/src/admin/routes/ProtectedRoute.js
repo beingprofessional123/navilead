@@ -14,9 +14,9 @@ const ProtectedRoute = ({ children }) => {
     // If no token or token expired, log out and redirect to login
     if (!authToken || isTokenExpired(authToken)) {
         if (isAuthenticated) {
-            logout(); // Clears localStorage and state, then navigates to /login
+            logout(); // Clears localStorage and state, then navigates to /admin/Login
         }
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/admin/login" replace />;
     }
 
     // Authenticated, render children

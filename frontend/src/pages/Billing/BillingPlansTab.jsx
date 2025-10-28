@@ -61,6 +61,10 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
   };
 
 
+  const displayedPlans = filteredPlans.filter(plan => 
+  plan.status === 'active' || plan.id === userPlan?.plan?.id
+);
+
 
 
   return (
@@ -94,7 +98,7 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
 
       </div>
       <div className="row">
-        {filteredPlans.map(plan => (
+        {displayedPlans.map(plan => (
           <div className="col-md-4" key={plan.id}>
             <div className={`carddesign plancard ${userPlan?.plan?.id === plan.id ? 'mostplancard' : ''}`}>
 

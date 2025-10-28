@@ -18,7 +18,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/dashboard");
+      navigate("/admin/dashboard");
     }
   }, [isAuthenticated, navigate]);
 
@@ -27,18 +27,18 @@ const LoginPage = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/auth/login`,
+        `${process.env.REACT_APP_API_BASE_URL}/auth/admin/login`,
         {
           email: loginEmail,
           password: loginPassword,
         }
       );
 
-      const { token, user, userPlan, message } = res.data;
+      const { token, user, message } = res.data;
 
-      login(token, user, userPlan);
+      login(token, user);
       toast.success(t(message) || t("api.login.success"));
-      navigate("/dashboard");
+      navigate("/admin/dashboard");
     } catch (err) {
       console.error(err);
       const errorMessage =
@@ -54,7 +54,7 @@ const LoginPage = () => {
       <div className="logo">
         <Link href="#">
           <img
-            src="assets/images/logo.svg"
+            src="/assets/images/logo.svg"
             className="img-fluid"
             alt="Logo"
           />
@@ -105,20 +105,12 @@ const LoginPage = () => {
                 </span>
               </div>
             </div>
-
-            <div className="form-group forgotpassword">
-              <Link to="/forgot-password">{t("login.forgotPassword")}</Link>
-            </div>
             <div className="login-btn">
               <button type="submit" className="btn btn-send" disabled={loading}>
                 {loading ? t("login.button.loggingIn") : t("login.button.submit")}
               </button>
             </div>
           </form>
-
-          <h5>
-            {t("login.noAccount")} <Link to="/register">{t("login.signup")}</Link>
-          </h5>
         </div>
       </div>
     </div>

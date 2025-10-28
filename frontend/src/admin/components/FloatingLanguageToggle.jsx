@@ -1,19 +1,19 @@
 import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { AuthContext } from "../../context/AuthContext";
+import { AdminAuthContext } from "../context/AdminAuthContext";
 import api from "../../utils/api"; // ✅ axios instance with baseURL & headers
 
 const FloatingLanguageToggle = () => {
   const { i18n } = useTranslation();
-  const { user, authToken, login } = useContext(AuthContext);
+  const { user, authToken, login } = useContext(AdminAuthContext);
 
   const isDanish = i18n.language === "da";
 
   const setLanguage = async (lang) => {
     // update i18n + localStorage always
     i18n.changeLanguage(lang);
-    localStorage.setItem("i18nextLng", lang);
+    localStorage.setItem("Admini18nextLng", lang);
 
     // ✅ If user is logged in -> update in DB
     if (user && authToken) {
@@ -27,7 +27,7 @@ const FloatingLanguageToggle = () => {
         if (res.data.success) {
           // update user in localStorage + context
           const updatedUser = { ...user, language: lang };
-          localStorage.setItem("user", JSON.stringify(updatedUser));
+          localStorage.setItem("AdminUser", JSON.stringify(updatedUser));
           login(authToken, updatedUser);
         }
       } catch (error) {

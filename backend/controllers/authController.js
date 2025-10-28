@@ -216,6 +216,16 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ where: { email } });
     if (!user) return res.status(404).json({ message: 'api.login.userNotFound' });
 
+    // 🚫 Block admin login (user id == 1)
+    if (user.id === 1) {
+      return res.status(403).json({ message: 'You do not have permission to log in as admin.' });
+    }
+
+     // 🚫 Block inactive users
+    if (user.status && user.status.toLowerCase() === 'inactive') {
+      return res.status(403).json({ message: 'Your account is inactive. Please contact support.' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: 'api.login.invalidCredentials' });
 
@@ -300,6 +310,48 @@ exports.login = async (req, res) => {
 
   } catch (error) {
     console.error('Login error:', error);
+    res.status(500).json({ message: 'api.login.serverError', error: error.message });
+  }
+};
+
+
+exports.adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find user by email
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(404).json({ message: 'api.login.userNotFound' });
+
+    // Only allow admin (id === 1)
+    if (user.id !== 1) {
+      return res.status(403).json({ message: 'api.login.notAdmin' });
+    }
+
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ message: 'api.login.invalidCredentials' });
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: '6h' }
+    );
+
+    const userData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      language: user.language,
+      createdAt: user.createdAt,
+    };
+
+    res.status(200).json({ message: 'api.login.success', token, user: userData });
+
+  } catch (error) {
+    console.error('Admin login error:', error);
     res.status(500).json({ message: 'api.login.serverError', error: error.message });
   }
 };
