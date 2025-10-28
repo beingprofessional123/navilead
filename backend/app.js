@@ -6,6 +6,8 @@ const path = require('path');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
+const UserRoutes = require('./routes/admin/UserRoutes');
+const PlanManagementRoutes = require('./routes/admin/PlanManagementRoutes');
 const leadRoutes = require('./routes/leadRoutes');
 const statusRoutes = require('./routes/statusRoutes');
 const pricingTemplateRoutes = require('./routes/pricingTemplateRoutes'); 
@@ -50,9 +52,14 @@ app.use((req, res, next) => {
 });
 
 
-// General user authentication routes
+// General user and admin authentication routes
 app.use('/api/auth', authRoutes);
 
+//Admin
+app.use('/api/admin/users', UserRoutes);
+app.use('/api/admin/plan-management', PlanManagementRoutes);
+
+//User
 app.use('/api/leads', leadRoutes);
 app.use('/api/statuses', statusRoutes);
 app.use('/api/pricing-templates', pricingTemplateRoutes);

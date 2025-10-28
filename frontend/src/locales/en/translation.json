@@ -77,7 +77,9 @@
     "settings": "Settings",
     "adminPanel": "Admin Panel",
     "logout": "Logout",
-    "smsCredits": "SMS Credits"
+    "smsCredits": "SMS Credits",
+    "users-management": "Users Management",
+    "plan-management": "Plan Management"
   },
   "leadsPage": {
     "title": "Lead Management",

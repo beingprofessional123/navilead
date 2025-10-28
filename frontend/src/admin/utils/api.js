@@ -1,5 +1,5 @@
 import axios from 'axios';
-import appConfig from '../config/appConfig'; // Make sure path is correct
+import appConfig from '../../config/appConfig'; // Make sure path is correct
 import { toast } from 'react-toastify';
 import { jwtDecode } from 'jwt-decode';
 
@@ -24,14 +24,14 @@ export const isTokenExpired = (token) => {
 // 🔐 Request interceptor: attach token and check expiration
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('AdminAuthToken');
 
     if (token) {
       if (isTokenExpired(token)) {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
+        localStorage.removeItem('AdminAuthToken');
+        localStorage.removeItem('AdminUser');
         toast.error('Session expired. Please login again.');
-        window.location.href = '/login'; // redirect to login
+        window.location.href = '/admin/login'; // redirect to login
         return Promise.reject(new Error('Token expired. Redirecting to login.'));
       }
       config.headers.Authorization = `Bearer ${token}`;
@@ -47,10 +47,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+      localStorage.removeItem('AdminAuthToken');
+      localStorage.removeItem('AdminUser');
       toast.error('Authentication failed. Please login again.');
-      window.location.href = '/login'; // redirect to login
+      window.location.href = '/admin/login'; // redirect to login
     } else {
       const msg = error.response?.data?.message || 'Something went wrong';
       toast.error(msg);
