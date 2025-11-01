@@ -4372,3 +4372,66 @@ ul.newoffertop-system li.active a svg {
 .admin_tabledesign .MuiPaper-root .tss-qbo1l6-MUIDataTableToolbar-actions button svg {
     fill: #ffffff;
 }
+
+.admin_tabledesign .MuiPaper-root .tss-1ufdzki-MUIDataTableSearch-main svg {
+    fill: #fff;
+}
+.admin_tabledesign .MuiPaper-root .tss-1ufdzki-MUIDataTableSearch-main input {
+    color: #fff;
+    background: #101418;
+    border-radius: 5px;
+    font-size: 12px;
+    padding: 7px 15px;
+    font-weight: 300;
+}
+.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded fieldset.MuiFormControl-root {
+    padding: 10px 20px;
+}
+.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded fieldset.MuiFormControl-root label {
+    margin: 0px;
+}
+.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded fieldset.MuiFormControl-root label span.MuiCheckbox-colorPrimary {
+    padding-left: 0px;
+}
+
+
+.view-user-details p {
+    font-size: 13px;
+    margin-bottom: 10px;
+    font-weight: 400;
+    color: var(--muted-foreground);
+    display: flex;
+    justify-content: space-between;
+}
+.view-user-details p strong {
+    font-weight: 500;
+    color: var(--card-foreground);
+    margin-right: 10px;
+}
+.view-user-details p .badge4 {
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 5px 9px;
+    text-transform: capitalize;
+}
+.formdesign .form-group a.btn.btn-link.text-decoration-none {
+    padding: 7px 14px;
+    color: var(--primary-foreground) !important;
+    background-color: var(--primary);
+    font-size: 12.25px;
+    border: 1px solid var(--border) !important;
+    border-radius: 8.7px;
+    outline: none !important;
+    box-shadow: none !important;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.formdesign .form-group p.text-blue {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin: 4px 0px 0px 0px;
+    font-weight: 400;
+}

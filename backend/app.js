@@ -8,6 +8,8 @@ const path = require('path');
 const authRoutes = require('./routes/authRoutes');
 const UserRoutes = require('./routes/admin/UserRoutes');
 const PlanManagementRoutes = require('./routes/admin/PlanManagementRoutes');
+const TransactionManagementRoutes = require('./routes/admin/TransactionManagementRoutes');
+
 const leadRoutes = require('./routes/leadRoutes');
 const statusRoutes = require('./routes/statusRoutes');
 const pricingTemplateRoutes = require('./routes/pricingTemplateRoutes'); 
@@ -58,6 +60,7 @@ app.use('/api/auth', authRoutes);
 //Admin
 app.use('/api/admin/users', UserRoutes);
 app.use('/api/admin/plan-management', PlanManagementRoutes);
+app.use('/api/admin/transaction-management', TransactionManagementRoutes);
 
 //User
 app.use('/api/leads', leadRoutes);

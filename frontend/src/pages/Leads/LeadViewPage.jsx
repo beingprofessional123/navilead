@@ -15,9 +15,9 @@ import { useLimit } from "../../context/LimitContext";
 const LeadViewPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { authToken, userPlan } = useContext(AuthContext);
+  const { authToken } = useContext(AuthContext);
   const { t: translate } = useTranslation(); // Initialize the translation hook
-  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal } = useLimit();
+  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, refreshPlan, userPlan } = useLimit();
   const [activeTab, setActiveTab] = useState("create");
   const [lead, setLead] = useState(null);
   const [totalSmsSend, setTotalSmsSend] = useState(0);
@@ -138,6 +138,7 @@ const LeadViewPage = () => {
       );
       toast.success(translate('leadViewPage.fieldUpdateSuccess', { field: field })); // Translated success message
       fetchLeadDetails();
+      refreshPlan();
       setIsEditing((prev) => ({ ...prev, [field]: false }));
     } catch (err) {
       console.error(`Error saving ${field}:`, err);
@@ -152,6 +153,7 @@ const LeadViewPage = () => {
       });
       toast.success(translate(response.data.message || 'api.leads.statusUpdateSuccess')); // Translated toast message
       fetchLeadDetails();
+      refreshPlan();
     } catch (err) {
       console.error('Error updating status:', err);
       const errorMessage = err.response?.data?.message || 'api.leads.statusUpdateError';
@@ -269,6 +271,7 @@ const LeadViewPage = () => {
       setAllQuotesHistory(response.data.quotes || []); // Access quotes from response.data.quotes
       setTotalSmsSend(response.data.totalSmsSend); // Access quotes from response.data.quotes
       setTotalEmailsSend(response.data.totalEmailsSend); // Access quotes from response.data.quotes
+      refreshPlan();
     } catch (err) {
       console.error('Error fetching quotes history:', err);
       toast.error(translate('api.quotes.historyFetchError')); // Translated error message
@@ -423,7 +426,24 @@ const LeadViewPage = () => {
   const handleCopyQuote = async (quote) => {
     setLoading(true);
     try {
-      const currentOfferCount = quotesHistory.length; // total offers used
+      // 🗓️ Ensure plan start date exists
+      if (!userPlan?.startDate) {
+        toast.error("Plan start date not found");
+        setLoading(false);
+        return;
+      }
+
+      const planStartDate = new Date(userPlan.startDate);
+
+      // ✅ Count only quotes created on/after plan start date
+      const filteredQuotes = quotesHistory.filter((q) => {
+        const createdAt = new Date(q.createdAt);
+        return createdAt >= planStartDate;
+      });
+
+      const currentOfferCount = filteredQuotes.length;
+
+      // ✅ Check offer limit
       const canProceed = checkLimit(currentOfferCount, "Offers");
       if (!canProceed) return;
 
@@ -463,6 +483,7 @@ const LeadViewPage = () => {
       toast.success(translate('leadViewPage.quoteCopySuccess', { quoteTitle: response.data.quotes.title })); // Translated success message
       fetchAllQuotesHistory();
       fetchQuotesHistory();
+      refreshPlan();
     } catch (err) {
       console.error('Error copying and saving quote:', err);
       toast.error(translate('leadViewPage.quoteCopyError'));
@@ -475,7 +496,23 @@ const LeadViewPage = () => {
   const handleSaveQuote = async (e) => {
     e.preventDefault();
 
-    const currentOfferCount = allquotesHistory.length; // total offers used
+    // 🗓️ Ensure plan start date exists
+    if (!userPlan?.startDate) {
+      toast.error("Plan start date not found");
+      return;
+    }
+
+    const planStartDate = new Date(userPlan.startDate);
+
+    // ✅ Count only quotes created on or after plan start date
+    const filteredQuotes = allquotesHistory.filter((quote) => {
+      const createdAt = new Date(quote.createdAt);
+      return createdAt >= planStartDate;
+    });
+
+    const currentOfferCount = filteredQuotes.length;
+
+    // ✅ Enforce offer (quote) plan limit
     const canProceed = checkLimit(currentOfferCount, "Offers");
     if (!canProceed) return;
 
@@ -510,6 +547,7 @@ const LeadViewPage = () => {
       toast.success(translate(response.data.message || 'leadViewPage.quoteSaveSuccess')); // Translated success message
       fetchAllQuotesHistory();
       fetchQuotesHistory();
+      refreshPlan();
       setQuoteToActOn(response.data.quotes); // Store the newly created quote (response.data.quote)
       if (action === "saveAndSend") {
         // Open send modal immediately
@@ -592,6 +630,7 @@ const LeadViewPage = () => {
       // ✅ Only reload if everything succeeded
       await fetchQuotesHistory();
       await fetchLeadDetails();
+      await refreshPlan();
     } catch (err) {
       console.error('Error performing quote actions:', err);
       const errorMessage = err.response?.data?.message || 'leadViewPage.quoteActionsError';
@@ -1577,6 +1616,7 @@ const LeadViewPage = () => {
           onSend={handleSendQuoteActions}
           totalSmsSend={totalSmsSend}
           totalEmailsSend={totalEmailsSend}
+          fetchAllQuotesHistory={fetchAllQuotesHistory}
         />
       )}
       {/* Limit Modal */}
@@ -1585,6 +1625,8 @@ const LeadViewPage = () => {
         onClose={closeLimitModal}
         usedLimit={currentLimit.usage}
         totalAllowed={currentLimit.totalAllowed}
+        currentLimit={currentLimit}
+        userPlan={userPlan}
       />
     </>
   );

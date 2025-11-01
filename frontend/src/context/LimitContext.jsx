@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import api from "../utils/api";
+import { toast } from "react-toastify";
 import { AuthContext } from "./AuthContext";
 
 const LimitContext = createContext();
@@ -6,15 +8,41 @@ const LimitContext = createContext();
 export const useLimit = () => useContext(LimitContext);
 
 export const LimitProvider = ({ children }) => {
-  const { userPlan } = useContext(AuthContext); // your plan object
+  const { authToken } = useContext(AuthContext);
+  const [userPlan, setUserPlan] = useState(null);
   const [isLimitModalOpen, setIsModalOpen] = useState(false);
   const [currentLimit, setCurrentLimit] = useState({
     usage: 0,
     totalAllowed: 0,
     type: "",
+    cycleStart: null,
+    cycleEnd: null,
+    remainingDays: 0,
   });
 
-  // Map the feature type to the correct plan key
+  // ✅ Fetch user plan
+  const fetchUserPlan = async () => {
+    try {
+      const res = await api.get("/auth/user-current-plan", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      if (res.data.success) {
+        setUserPlan(res.data.plan);
+      } else {
+        toast.error("Failed to load plan details");
+      }
+    } catch (error) {
+      console.error("Error fetching user plan:", error);
+      toast.error("Error fetching plan details");
+    }
+  };
+
+  useEffect(() => {
+    if (authToken) fetchUserPlan();
+  }, [authToken]);
+
+  // ✅ Plan feature keys
   const planKeysMap = {
     Leads: "Total_Leads_Allowed",
     SMS_Templates: "Total_SMS_Templates_Allowed",
@@ -28,32 +56,94 @@ export const LimitProvider = ({ children }) => {
     API: "api_access",
   };
 
-  // Check limit for any feature
+  // ✅ Compute cycle for all plan types (Free → Monthly reset)
+  const getCurrentCycle = (planData) => {
+    const now = new Date();
+    const startDate = new Date(planData.startDate);
+    const renewalDate = planData.renewalDate ? new Date(planData.renewalDate) : null;
+
+    // 🟢 Free plan → Monthly reset
+    if (planData.plan.billing_type === "free") {
+      const cycleStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const cycleEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const remainingDays = Math.ceil((cycleEnd - now) / (1000 * 60 * 60 * 24));
+      return { start: cycleStart, end: cycleEnd, remainingDays, label: "Free (Monthly reset)" };
+    }
+
+    // 🟡 Monthly plan
+    if (planData.plan.billing_type === "monthly") {
+      const cycleStart = startDate;
+      const cycleEnd = renewalDate;
+      const remainingDays = Math.max(
+        0,
+        Math.ceil((cycleEnd - now) / (1000 * 60 * 60 * 24))
+      );
+      return { start: cycleStart, end: cycleEnd, remainingDays, label: "Monthly" };
+    }
+
+    // 🔵 Yearly plan → monthly sub-cycle reset
+    if (planData.plan.billing_type === "yearly") {
+      let currentCycleStart = new Date(startDate);
+      let currentCycleEnd = new Date(startDate);
+      currentCycleEnd.setMonth(currentCycleEnd.getMonth() + 1);
+
+      const yearlyEnd = new Date(startDate);
+      yearlyEnd.setFullYear(startDate.getFullYear() + 1);
+
+      while (now >= currentCycleEnd && currentCycleEnd < yearlyEnd) {
+        currentCycleStart = new Date(currentCycleEnd);
+        currentCycleEnd = new Date(currentCycleStart);
+        currentCycleEnd.setMonth(currentCycleEnd.getMonth() + 1);
+      }
+
+      const remainingDays = Math.max(
+        0,
+        Math.ceil((currentCycleEnd - now) / (1000 * 60 * 60 * 24))
+      );
+
+      return {
+        start: currentCycleStart,
+        end: currentCycleEnd,
+        remainingDays,
+        label: "Yearly (Monthly reset)",
+      };
+    }
+
+    return null;
+  };
+
+  // ✅ Check limit usage
   const checkLimit = (usage, type) => {
-    if (!userPlan) return true; // no plan? allow everything
+    if (!userPlan || !userPlan.plan) return true;
 
     const totalAllowedKey = planKeysMap[type];
     const totalAllowed = userPlan.plan[totalAllowedKey] ?? 0;
 
+    if (totalAllowed === 0) return true;
+
+    // Get current cycle
+    const cycle = getCurrentCycle(userPlan);
+
     if (usage >= totalAllowed) {
-      setCurrentLimit({ usage, totalAllowed, type });
+      setCurrentLimit({
+        usage,
+        totalAllowed,
+        type,
+        cycleStart: cycle.start,
+        cycleEnd: cycle.end,
+        remainingDays: cycle.remainingDays,
+      });
       setIsModalOpen(true);
-      return false; // limit exceeded
+      return false;
     }
 
-    return true; // limit not exceeded
+    return true;
   };
 
-  // Check if offer page customization is allowed
+  // ✅ Offer customization check
   const isOfferPageCustomizationAllowed = () => {
-    if (!userPlan) return true; // allow if no plan
-    return userPlan.plan?.is_offerPage_customization_allowed ?? false;
-  };
-
-  // Check if API access is allowed
-  const isApiAccessAllowed = () => {
-    if (!userPlan) return true;
-    return userPlan.plan?.api_access ?? false;
+    if (!userPlan || !userPlan.plan) return false;
+    return userPlan.plan.is_offerPage_customization_allowed === true;
   };
 
   const closeLimitModal = () => setIsModalOpen(false);
@@ -61,12 +151,13 @@ export const LimitProvider = ({ children }) => {
   return (
     <LimitContext.Provider
       value={{
+        userPlan,
         isLimitModalOpen,
         currentLimit,
         checkLimit,
         closeLimitModal,
+        refreshPlan: fetchUserPlan,
         isOfferPageCustomizationAllowed,
-        isApiAccessAllowed
       }}
     >
       {children}

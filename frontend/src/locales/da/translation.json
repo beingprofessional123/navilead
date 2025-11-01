@@ -79,7 +79,9 @@
     "logout": "Log ud",
     "smsCredits": "SMS kreditter",
     "users-management": "Brugerstyring",
-    "plan-management": "Planstyring"
+    "plan-management": "Planstyring",
+    "transaction-management": "Transaktion"
+    
   },
   "leadsPage": {
     "title": "Leadhåndtering",

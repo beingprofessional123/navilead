@@ -32,9 +32,10 @@ module.exports = (sequelize, DataTypes) => {
 
   SendSms.associate = function(models) {
     SendSms.belongsTo(models.User, { foreignKey: 'userId' });
-    SendSms.belongsTo(models.Quote, { foreignKey: 'quoteId' });
+    SendSms.belongsTo(models.Quote, { foreignKey: 'quoteId', onDelete: 'CASCADE' }); // ✅
     SendSms.belongsTo(models.SmsTemplate, { foreignKey: 'smsTemplateId' });
   };
+
 
   return SendSms;
 };

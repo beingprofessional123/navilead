@@ -5,6 +5,8 @@ import api from '../../utils/api';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { AuthContext } from '../../context/AuthContext';
 import { useTranslation } from "react-i18next";
+// ✅ Legacy-safe import
+import parsePhoneNumberFromString from 'libphonenumber-js/min';
 
 const SignupPage = () => {
   const { t } = useTranslation();
@@ -31,28 +33,57 @@ const SignupPage = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       const fullName = `${firstName} ${lastName}`.trim();
+
+      // ✅ Parse and validate phone number
+      const phoneNumber = parsePhoneNumberFromString(phone);
+
+      if (!phoneNumber || !phoneNumber.isValid()) {
+        toast.error(t('register.invalidPhone') || 'Please enter a valid phone number.');
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Allow regions: USD, EUR, DKK, and India 🇮🇳
+      const allowedRegions = [
+        'US', // United States (USD)
+        'DK', // Denmark (DKK)
+        'DE', 'FR', 'IT', 'ES', 'NL', 'SE', 'NO', 'FI', 'IE', 'PT', // Europe (EUR)
+        'IN'  // India (INR)
+      ];
+
+      if (!allowedRegions.includes(phoneNumber.country)) {
+        toast.error(t('register.unsupportedRegion') || 'Phone numbers from this region are not supported.');
+        setLoading(false);
+        return;
+      }
+
+      const formattedPhone = phoneNumber.formatInternational();
+
+      // ✅ Proceed with signup
       const res = await api.post('/auth/register', {
         name: fullName,
         email,
-        phone,
+        phone: formattedPhone,
         password,
       });
 
-      // Automatically login after signup
+      // Auto login after signup
       login(res.data.token, res.data.user, res.data.userPlan);
-      toast.success(t("api.register.success"));
+      toast.success(t('api.register.success') || 'Registration successful!');
       navigate('/dashboard');
     } catch (err) {
       const errorMessageKey = err.response?.data?.message || 'api.register.serverError';
-      toast.error(t(errorMessageKey));
+      toast.error(t(errorMessageKey) || 'Server error, please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-return (
+
+  return (
     <div className="loginmain">
       <div className="logo">
         <Link to="#"><img src="assets/images/logo.svg" className="img-fluid" alt="Logo" /></Link>
@@ -71,11 +102,18 @@ return (
                     className="form-control"
                     placeholder={t('register.firstnamePlaceholder')}
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // ✅ Only letters allowed, no spaces or special chars
+                      if (/^[A-Za-z]*$/.test(value)) {
+                        setFirstName(value);
+                      }
+                    }}
                     required
                   />
                 </div>
               </div>
+
               <div className="col-md-6">
                 <div className="form-group">
                   <label className="form-label">{t('register.lastnameLabel')}</label>
@@ -84,12 +122,19 @@ return (
                     className="form-control"
                     placeholder={t('register.lastnamePlaceholder')}
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // ✅ Only letters allowed, no spaces or special chars
+                      if (/^[A-Za-z]*$/.test(value)) {
+                        setLastName(value);
+                      }
+                    }}
                     required
                   />
                 </div>
               </div>
             </div>
+
 
             <div className="row">
               <div className="col-md-6">

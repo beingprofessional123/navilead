@@ -1,5 +1,6 @@
 const db = require('../models');
-const { Quote, QuoteService, Status ,SendEmail,SendSms } = db;
+const { Op } = require("sequelize");
+const { Quote, QuoteService, Status,UserPlan,Plan ,SendEmail,SendSms } = db;
 
 // Get all quotes (optionally filter by leadId or userId via query params)
 exports.getQuotes = async (req, res) => {
@@ -9,24 +10,56 @@ exports.getQuotes = async (req, res) => {
     if (req.query.leadId) filter.leadId = req.query.leadId;
     if (req.query.userId) filter.userId = req.query.userId;
 
+    // ✅ Fetch user's active plan (to get startDate)
+    const userPlan = await UserPlan.findOne({
+      where: { userId, status: "active" },
+      include: { model: Plan, as: "plan" },
+    });
+
+    let planStartDate = null;
+    if (userPlan?.startDate) {
+      planStartDate = new Date(userPlan.startDate);
+    }
+
+    // ✅ Base query for quotes
     const quotes = await Quote.findAll({
       where: filter,
       include: [
-        { model: QuoteService, as: 'services' },
-         { model: Status, as: "status" }
+        { model: QuoteService, as: "services" },
+        { model: Status, as: "status" },
       ],
-      order: [['createdAt', 'DESC']],
+      order: [["createdAt", "DESC"]],
     });
 
-  const totalSmsSend = await SendSms.count({ where: { userId: req.user.id } });
-  const totalEmailsSend = await SendEmail.count({ where: { userId: req.user.id } });
+    // ✅ Count SMS and Emails *only after plan start date*
+    const smsFilter = { userId };
+    const emailFilter = { userId };
 
+    if (planStartDate) {
+      smsFilter.createdAt = { [Op.gte]: planStartDate };
+      emailFilter.createdAt = { [Op.gte]: planStartDate };
+    }
 
-    res.status(200).json({ message: 'api.quotes.fetchSuccess', quotes,totalSmsSend,totalEmailsSend });
+    const totalSmsSend = await SendSms.count({ where: smsFilter });
+    const totalEmailsSend = await SendEmail.count({ where: emailFilter });
+
+    res.status(200).json({
+      success: true,
+      message: "api.quotes.fetchSuccess",
+      quotes,
+      totalSmsSend,
+      totalEmailsSend,
+    });
   } catch (err) {
-    res.status(500).json({ message: 'api.quotes.historyFetchError', error: err.message });
+    console.error("Error fetching quotes:", err);
+    res.status(500).json({
+      success: false,
+      message: "api.quotes.historyFetchError",
+      error: err.message,
+    });
   }
 };
+
 
 // Get single quote by ID including services
 exports.getQuoteById = async (req, res) => {

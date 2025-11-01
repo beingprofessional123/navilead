@@ -9,11 +9,10 @@ import LimitModal from '../../components/LimitModal'; // the modal we created ea
 import { useLimit } from "../../context/LimitContext";
 
 
-const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, totalSmsSend, totalEmailsSend }) => {
-  const { authToken, user, userPlan } = useContext(AuthContext);
+const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, totalSmsSend, totalEmailsSend, fetchAllQuotesHistory }) => {
+  const { authToken, user } = useContext(AuthContext);
   const { t: translate } = useTranslation(); // Initialize translation hook
-  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal } = useLimit();
-
+  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal,refreshPlan,userPlan } = useLimit();
   const [currentStatusId, setCurrentStatusId] = useState(quoteData?.statusId || '');
   const [sendSmsChecked, setSendSmsChecked] = useState(false);
   const [smsFromName, setSmsFromName] = useState(user.name); // Default from name
@@ -79,6 +78,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
 
   useEffect(() => {
     fetchVariables();
+    refreshPlan();
     if (show && authToken) {
       fetchEmailTemplates();
       fetchSmsTemplates();
@@ -226,6 +226,8 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
       // ✅ Only close modal if sending succeeded
       if (result?.success) {
         onHide(); // Close modal
+        refreshPlan();
+        fetchAllQuotesHistory();
       } else {
         console.warn("Offer send failed. Modal will remain open.");
       }

@@ -158,7 +158,8 @@ async function executeSingleStep(logRow, stepRow, configObj, variablesMap, baseT
 
 
     if (smsSetting.value === 'true') {
-      await sendSms({ to: lead.phone, message, from: sender });
+      
+      await sendSms({ to: lead.phone, message, from: (sender || 'NaviLead').substring(0, 10), });
       console.log(`📱 Step ${logRow.orderNo} sendSms executed for lead ${logRow.leadId}`);
 
       await logRow.update({ status: "done", executedAt: now });
@@ -499,7 +500,7 @@ async function executeWorkflowCron(req, res) {
 
 
             if (smsSetting.value === 'true') {
-              await sendSms({ to: lead.phone, message, from: sender, userId: user.id });
+              await sendSms({ to: lead.phone, message, from: (sender || 'NaviLead').substring(0, 10), userId: user.id  });
               console.log(`📱 Step ${log.orderNo} sendSms executed for lead ${log.leadId}`);
 
               // Deduct 1 SMS from user balance
