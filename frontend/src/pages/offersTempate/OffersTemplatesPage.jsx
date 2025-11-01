@@ -12,7 +12,7 @@ import { useLimit } from "../../context/LimitContext";
 
 const OffersTemplatesPage = () => {
     const { t } = useTranslation();
-    const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, isOfferPageCustomizationAllowed } = useLimit(); // use limit context
+    const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal,isOfferPageCustomizationAllowed, refreshPlan, userPlan } = useLimit();
     const { authToken, user } = useContext(AuthContext);
     const [offerTemplates, setTemplate] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,18 +20,34 @@ const OffersTemplatesPage = () => {
     const navigate = useNavigate();
 
     const handleCreateOfferClick = () => {
-
+        // 🚫 Check if offer customization is allowed for current plan
         if (!isOfferPageCustomizationAllowed()) {
             Swal.fire({
-                icon: 'warning',
-                title: 'Access Denied',
-                text: 'Your current plan does not allow creating or customizing templates. Please upgrade to access this feature.',
-                confirmButtonText: 'OK',
+            icon: "warning",
+            title: "Access Denied",
+            text: "Your current plan does not allow creating or customizing templates. Please upgrade to access this feature.",
+            confirmButtonText: "OK",
             });
             return;
         }
 
-        const currentOfferCount = offerTemplates.length; // total offers used
+        // 🗓️ Check if plan start date exists
+        if (!userPlan?.startDate) {
+            toast.error("Plan start date not found");
+            return;
+        }
+
+        const planStartDate = new Date(userPlan.startDate);
+
+        // ✅ Count only offers created on/after plan start date
+        const filteredOffers = offerTemplates.filter((offer) => {
+            const createdAt = new Date(offer.createdAt);
+            return createdAt >= planStartDate;
+        });
+
+        const currentOfferCount = filteredOffers.length;
+
+        // ✅ Check plan limit
         const canProceed = checkLimit(currentOfferCount, "Offers_Templates");
 
         if (canProceed) {
@@ -414,13 +430,13 @@ const OffersTemplatesPage = () => {
 
                         {/* Create New Template Card */}
                         <div className="col-xl-4 col-lg-6 col-md-6">
-                            <Link onClick={handleCreateOfferClick}>
+                            <a href='#' onClick={handleCreateOfferClick}>
                                 <div className="carddesign opennew-template">
                                     <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>
                                     <h4>{t('offerTemplate.createNewTemplateTitle')}</h4>
                                     <p>{t('offerTemplate.createNewTemplateDesc')}</p>
                                 </div>
-                            </Link>
+                            </a>
                         </div>
 
                         {/* About Templates Card */}
@@ -442,12 +458,15 @@ const OffersTemplatesPage = () => {
                 </div>
             </div>
 
-            <LimitModal
+           <LimitModal
                 isOpen={isLimitModalOpen}
                 onClose={closeLimitModal}
                 usedLimit={currentLimit.usage}
                 totalAllowed={currentLimit.totalAllowed}
+                currentLimit={currentLimit}
+                userPlan={userPlan}
             />
+          
         </>
     );
 };

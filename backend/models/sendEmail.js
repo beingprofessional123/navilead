@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
 
   SendEmail.associate = function(models) {
     SendEmail.belongsTo(models.User, { foreignKey: 'userId' });
-    SendEmail.belongsTo(models.Quote, { foreignKey: 'quoteId' });
+    SendEmail.belongsTo(models.Quote, { foreignKey: 'quoteId', onDelete: 'CASCADE' }); // ✅
   };
 
   return SendEmail;

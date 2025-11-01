@@ -12,7 +12,7 @@ import { useLimit } from "../../context/LimitContext";
 
 const WorkflowsPage = () => {
     const { authToken } = useContext(AuthContext);
-    const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal } = useLimit(); // use limit context
+    const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, refreshPlan, userPlan } = useLimit();
     const { t } = useTranslation();
     const [workflows, setWorkflows] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -222,6 +222,7 @@ const WorkflowsPage = () => {
         fetchWorkflows();
         fetchStatuses();
         fetchLeads();
+        refreshPlan();
     }, []);
 
     // Handle Input Change
@@ -277,7 +278,7 @@ const WorkflowsPage = () => {
             }
 
             fetchWorkflows();
-
+            refreshPlan();
             // Reset form
             setFormData({ name: "", triggerEvent: "", description: "", isActive: true });
             setSteps([]);
@@ -862,11 +863,26 @@ const WorkflowsPage = () => {
 
 
     const openCreateModal = () => {
-        const currentOfferCount = totalWorkflows; // total offers used
-        const canProceed = checkLimit(currentOfferCount, "Workflows"); // check workflow/offer limit
+        if (!userPlan?.startDate) {
+            toast.error("Plan start date not found");
+            return;
+        }
+
+        const planStartDate = new Date(userPlan.startDate);
+
+        // ✅ Count only workflows created after the plan start date
+        const workflowsAfterStart = workflows.filter((workflow) => {
+            const createdAt = new Date(workflow.createdAt);
+            return createdAt >= planStartDate;
+        });
+
+        const currentWorkflowCount = workflowsAfterStart.length;
+
+        // ✅ Check plan limit
+        const canProceed = checkLimit(currentWorkflowCount, "Workflows");
 
         if (canProceed) {
-            setIsEditing(false); // we are creating
+            setIsEditing(false); // creating new workflow
             setFormData({
                 name: "",
                 triggerEvent: "",
@@ -1196,6 +1212,8 @@ const WorkflowsPage = () => {
                 onClose={closeLimitModal}
                 usedLimit={currentLimit.usage}
                 totalAllowed={currentLimit.totalAllowed}
+                currentLimit={currentLimit}
+                userPlan={userPlan}
             />
         </>
     );

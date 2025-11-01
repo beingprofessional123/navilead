@@ -19,8 +19,7 @@ const LeadsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentLead, setCurrentLead] = useState(null); // Used for editing or null for creating
   const [statuses, setStatuses] = useState([]); // State to store statuses from backend
-  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal } = useLimit(); // use limit context
-
+  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal,refreshPlan,userPlan } = useLimit();
 
   // Filter and Sort states
   const [searchTerm, setSearchTerm] = useState('');
@@ -85,6 +84,7 @@ const LeadsPage = () => {
           });
           toast.success(t('api.leads.deleteSuccess')); // Translated toast message
           fetchLeads(); // Refresh the list after deletion
+          refreshPlan(); 
         } catch (err) {
           console.error('Error deleting lead:', err);
           toast.error(t('api.leads.deleteError')); // Translated toast message
@@ -99,13 +99,32 @@ const LeadsPage = () => {
   };
 
   const handleCreateNew = () => {
-    setCurrentLead(null); // Clear currentLead to indicate new creation
-    const currentLeadCount = leads.length; // total leads used
-    const canProceed = checkLimit(currentLeadCount, 'Leads'); // matches userPlan key
-    if (canProceed) {
-      setIsModalOpen(true); // open the Add/Edit Lead modal
-    }
-  };
+    console.log(userPlan);
+      setCurrentLead(null); // Clear currentLead to indicate new creation
+
+      // Ensure both leads and plan data are loaded
+        if (!userPlan?.startDate) {
+          toast.error("Plan start date not found");
+          return;
+        }
+      const planStartDate = new Date(userPlan.startDate);
+
+      // Count only leads created on or after plan start date
+      const leadsAfterStart = leads.filter((lead) => {
+        const leadCreatedAt = new Date(lead.createdAt);
+        return leadCreatedAt >= planStartDate; // ✅ includes same date
+      });
+
+      const currentLeadCount = leadsAfterStart.length;
+
+      // Check if user is within the limit
+      const canProceed = checkLimit(currentLeadCount, 'Leads');
+
+      if (canProceed) {
+        setIsModalOpen(true); // open the Add/Edit Lead modal
+      }
+    };
+
 
 
   const handleStatusChange = async (leadId, newStatusId) => {
@@ -418,10 +437,10 @@ const LeadsPage = () => {
                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>
                                       {t('leadsPage.edit')}
                                     </Link></li>
-                                    <li><Link className="dropdown-item" to="#">
+                                    {/* <li><Link className="dropdown-item" to="#">
                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
                                       {t('leadsPage.sendMessage')}
-                                    </Link></li>
+                                    </Link></li> */}
                                     <li className="sletborder"><Link className="dropdown-item" to="#" onClick={(e) => { e.preventDefault(); handleDelete(lead.id); }}>
                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                       {t('leadsPage.delete')}
@@ -462,7 +481,10 @@ const LeadsPage = () => {
         onClose={closeLimitModal}
         usedLimit={currentLimit.usage}
         totalAllowed={currentLimit.totalAllowed}
+        currentLimit={currentLimit}
+        userPlan={userPlan}
       />
+
     </>
   );
 };

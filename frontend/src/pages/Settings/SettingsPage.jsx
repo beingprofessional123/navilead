@@ -53,16 +53,16 @@ const SettingsPage = () => {
 
             const data = response.data;
             setFormData({
-                companyName: data.companyName || "",
-                email: data.email || "",
-                phone: data.phone || "",
-                websiteUrl: data.websiteUrl || "",
-                timezone: data.timezone || "",
-                currency: data.currency || "",
-                language: data.language || "en",
-                emailSignature: data.emailSignature || "",
-                primaryColor: data.primaryColor || "#00ffff", // Assuming API returns this
-                secondaryColor: data.secondaryColor || "#1a1a2e", // Assuming API returns this
+                companyName: data.user.companyName || "",
+                email: data.user.email || "",
+                phone: data.user.phone || "",
+                websiteUrl: data.user.websiteUrl || "",
+                timezone: data.user.timezone || "",
+                currency: data.user.currency || "",
+                language: data.user.language || "en",
+                emailSignature: data.user.emailSignature || "",
+                primaryColor: data.user.primaryColor || "#00ffff", // Assuming API returns this
+                secondaryColor: data.user.secondaryColor || "#1a1a2e", // Assuming API returns this
             });
 
             // Extract notification settings from array
@@ -73,8 +73,8 @@ const SettingsPage = () => {
             setSmsNotifications(smsSetting?.value === "true");
 
             // Set logo state if it exists
-           if (data.companyLogo) {
-            const logoUrl = data.companyLogo; // Already full URL
+           if (data.user.companyLogo) {
+            const logoUrl = data.user.companyLogo; // Already full URL
             setCurrentLogo({
                 url: logoUrl,
                 name: logoUrl.split("/").pop(), // extract filename like 1756718625055-26.jpeg
@@ -531,7 +531,7 @@ const SettingsPage = () => {
                                     </span>
                                     <label className="label">
                                         <span className="browse-files">
-                                            <input type="file" className="default-file-input" onChange={handleLogoUpload} ref={logoFileInputRef} />
+                                            <input type="file" className="default-file-input" accept="image/*" onChange={handleLogoUpload} ref={logoFileInputRef} />
                                             <span className="browse-files-text">{translate('settingsPage.uploadLogoText')}</span>
                                         </span>
                                     </label>
@@ -559,7 +559,7 @@ const SettingsPage = () => {
                                         </span>
                                         <div className="uploadview-info">
                                             <h4>{companyLogoFile ? companyLogoFile.name : currentLogo.name}</h4>
-                                            <h5>{translate('settingsPage.currentLogoUploadDate')}</h5>
+                                            {/* <h5>{translate('settingsPage.currentLogoUploadDate')}</h5> */}
                                         </div>
                                     </div>
                                     <button className="btn btn-add" onClick={handleRemoveLogo}>

@@ -7,6 +7,7 @@ import ErrorPage from '../pages/Auth/ErrorPage';
 import Dashboard from '../pages/Dashboard';
 import UserManagementPage from '../pages/UserManagement/UserManagementPage';
 import PlanManagementPage from '../pages/PlanManagement/PlanManagementPage';
+import TransactionManagementPage from '../pages/TransactionManagement/TransactionManagementPage';
 
 const AdminRouterSetup = () => {
   return (
@@ -44,6 +45,16 @@ const AdminRouterSetup = () => {
           <ProtectedRoute>
             <AdminLayout>
               <PlanManagementPage />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/transaction-management"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <TransactionManagementPage />
             </AdminLayout>
           </ProtectedRoute>
         }

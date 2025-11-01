@@ -381,3 +381,60 @@ exports.logout = async (req, res) => {
     res.status(500).json({ message: 'api.logout.serverError', error: error.message });
   }
 };
+
+exports.userCurrentPlan = async (req, res) => {
+  try {
+    const userId = req.user?.id; // added by authMiddleware
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: User not found",
+      });
+    }
+
+    // 🧠 Find user's active plan
+    const userPlan = await UserPlan.findOne({
+      where: { userId, status: "active" },
+      include: [
+        {
+          model: Plan,
+          as: "plan",
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    // 🧩 If no plan found, fall back to Free Plan
+    if (!userPlan) {
+      const freePlan = await Plan.findOne({
+        where: { billing_type: "free", status: "active" },
+      });
+
+      if (!freePlan) {
+        return res.status(404).json({
+          success: false,
+          message: "No active or free plan found",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        plan: { plan: freePlan, billing_type: "free", isDefault: true },
+      });
+    }
+
+    // ✅ Return active plan details
+    return res.status(200).json({
+      success: true,
+      plan: userPlan,
+    });
+  } catch (error) {
+    console.error("Error fetching current plan:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching user plan",
+      error: error.message,
+    });
+  }
+};

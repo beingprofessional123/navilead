@@ -1,7 +1,7 @@
 require('dotenv').config();
+const { Op } = require("sequelize");
 const db = require("../models");
 const { Lead, Status, User, Plan, UserPlan, ApiLog, Settings, StatusUpdateLog } = db;
-const { Op } = require("sequelize");
 const { runWorkflows } = require('../utils/runWorkflows');
 
 const BACKEND_URL = process.env.BACKEND_URL;
@@ -350,9 +350,14 @@ exports.createPublicLead = async (req, res) => {
     // ✅ 2️⃣ Check if plan allows total leads limit
     const totalAllowed = planDetails.Total_Leads_Allowed;
 
+    const planStartDate = new Date(UserCurrentPlan.startDate);
+
     // Count how many leads user has already created
     const totalLeadsUsed = await Lead.count({
-      where: { userId: user.id },
+      where: {
+        userId: user.id,
+        createdAt: { [Op.gte]: planStartDate },
+      },
     });
 
     // ✅ If user exceeds allowed limit, block and show message

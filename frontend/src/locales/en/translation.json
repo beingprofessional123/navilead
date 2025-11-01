@@ -79,7 +79,8 @@
     "logout": "Logout",
     "smsCredits": "SMS Credits",
     "users-management": "Users Management",
-    "plan-management": "Plan Management"
+    "plan-management": "Plan Management",
+    "transaction-management": "Transaction"
   },
   "leadsPage": {
     "title": "Lead Management",

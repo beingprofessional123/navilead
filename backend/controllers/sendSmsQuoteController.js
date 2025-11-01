@@ -89,7 +89,7 @@ exports.storeSendSmsQuote = async (req, res) => {
         await sendSms({
           to: recipientPhone,
           message: replacedMessage,
-          from: (senderName || 'NaviLead').substring(0, 11), // max 11 chars
+          from: (senderName || 'NaviLead').substring(0, 10),
         });
 
          // ✅ Deduct 1 SMS from user balance

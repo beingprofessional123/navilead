@@ -72,6 +72,10 @@ module.exports = (sequelize, DataTypes) => {
     Quote.hasMany(models.QuoteService, { foreignKey: 'quoteId', as: 'services' });
     Quote.hasMany(models.AcceptedOffer, { foreignKey: 'quoteId', as: 'acceptedOffers',onDelete: "CASCADE", });
     Quote.hasMany(models.AskQuestion, { foreignKey: 'quoteId', as: 'questions' });
+
+     // 👇 Add missing cascade
+  Quote.hasMany(models.SendEmail, { foreignKey: 'quoteId', as: 'emails', onDelete: "CASCADE" });
+  Quote.hasMany(models.SendSms, { foreignKey: 'quoteId', as: 'sms', onDelete: "CASCADE" });
   };
 
   return Quote;

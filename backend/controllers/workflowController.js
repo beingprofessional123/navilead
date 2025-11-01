@@ -3,7 +3,10 @@ const { Workflow, WorkflowStep, WorkflowLog } = db;
 
 exports.getWorkflows = async (req, res) => {
   try {
+
+     const userId = req.user.id;
     const workflows = await Workflow.findAll({
+      where: { userId }, 
       include: [
         {
           model: WorkflowStep,

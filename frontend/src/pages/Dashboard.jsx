@@ -22,7 +22,7 @@ const Dashboard = () => {
           <div className="col-md-6">
             <div className="dashright">
               {/* Add Lead Button */}
-              <Link to="/add-lead" className="btn btn-add">
+              <Link to="/leads" className="btn btn-add">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true">
                   <path d="M5 12h14"></path>
                   <path d="M12 5v14"></path>
@@ -30,7 +30,7 @@ const Dashboard = () => {
                 {translate('dashboard.addLead')} {/* Translated text */}
               </Link>
               {/* Send Offer Button */}
-              <Link to="/send-offer" className="btn btn-send">
+              <Link to="/leads" className="btn btn-send">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true">
                   <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path>
                   <path d="m21.854 2.147-10.94 10.939"></path>
@@ -204,7 +204,7 @@ const Dashboard = () => {
           <h2 className="card-title">{translate('dashboard.quickActions')}</h2> {/* Translated text */}
           <div className="row">
             <div className="col-md-4">
-              <Link to="/create-lead" className="handler-card">
+              <Link to="/leads" className="handler-card">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true">
                   <path d="M5 12h14"></path>
                   <path d="M12 5v14"></path>
@@ -213,7 +213,7 @@ const Dashboard = () => {
               </Link>
             </div>
             <div className="col-md-4">
-              <Link to="/send-email-campaign" className="handler-card">
+              <Link to="/email-sms" className="handler-card">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true">
                   <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path>
                   <path d="m21.854 2.147-10.94 10.939"></path>
@@ -222,7 +222,7 @@ const Dashboard = () => {
               </Link>
             </div>
             <div className="col-md-4">
-              <Link to="/create-offer-template" className="handler-card">
+              <Link to="/templatesoffers" className="handler-card">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text" aria-hidden="true">
                   <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
                   <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>

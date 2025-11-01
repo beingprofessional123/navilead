@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { useTranslation } from "react-i18next";
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../utils/api';
+import MobileHeader from '../../components/common/MobileHeader';
 
 
 // Import Components
@@ -99,6 +100,7 @@ const BillingPage = () => {
   return (
     <div className="mainbody">
       <div className="container-fluid">
+         <MobileHeader />
         <div className="row top-row">
           <div className="col-md-6"><div className="dash-heading"><h2><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-credit-card" aria-hidden="true"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" x2="22" y1="10" y2="10"></line></svg>{t('billing.title')}</h2><p>{t('billing.description')}</p></div></div>
           <div className="col-md-6">

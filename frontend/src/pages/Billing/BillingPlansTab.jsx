@@ -10,9 +10,14 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const { authToken } = useContext(AuthContext);
-  const [billingType, setBillingType] = useState(() => {
-    return userPlan?.plan?.billing_type === 'free' ? 'free' : userPlan?.plan?.billing_type;
-  });
+ const [billingType, setBillingType] = useState(() => {
+  // If user has a free plan, default view should be 'monthly'
+  if (userPlan?.plan?.billing_type === 'free') {
+    return 'monthly';
+  }
+  return userPlan?.plan?.billing_type || 'monthly';
+});
+
 
   // Filter plans based on selected billing type
   const filteredPlans = plans.filter(plan => plan.billing_type === billingType);
@@ -61,9 +66,13 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
   };
 
 
-  const displayedPlans = filteredPlans.filter(plan => 
-  plan.status === 'active' || plan.id === userPlan?.plan?.id
-);
+ const displayedPlans = filteredPlans.filter(plan => {
+  // Hide 'free' plan if user's current plan is free
+  if (userPlan?.plan?.billing_type === 'free' && plan.billing_type === 'free') {
+    return false;
+  }
+  return plan.status === 'active' || plan.id === userPlan?.plan?.id;
+});
 
 
 
@@ -73,7 +82,7 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
         <h3>{t('plans.choosePlan')}</h3>
         <p>{t('plans.subheading')}</p>
         <div className="planscheck">
-          {['free', 'monthly', 'yearly'].map(type => (
+          {['monthly', 'yearly'].map(type => (
             <div className="form-check" key={type}>
               <label className="form-check-label" htmlFor={type}>
                 <input

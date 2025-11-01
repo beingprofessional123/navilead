@@ -13,8 +13,8 @@ import { useLimit } from "../../context/LimitContext";
 const PricingTemplatesPage = () => {
     const { authToken } = useContext(AuthContext);
     const { t: translate } = useTranslation(); // Initialize the translation hook
-    const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal } = useLimit(); // use limit context
-
+    const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, refreshPlan, userPlan } = useLimit();
+    
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalShow, setModalShow] = useState(false);
@@ -45,12 +45,30 @@ const PricingTemplatesPage = () => {
         fetchPricingTemplates();
     }, [authToken, translate]); // Added translate to dependencies
 
-    const handleCreateTemplate = () => {
-        const currentCount = templates.length; // total templates used
-        const canProceed = checkLimit(currentCount, "Pricing_Templates"); // match your plan key
-        if (!canProceed) return; // stops if limit reached
-        setCurrentTemplate(null);
-        setModalShow(true);
+  const handleCreateTemplate = () => {
+    if (!userPlan?.startDate) {
+        toast.error("Plan start date not found");
+        return;
+    }
+
+    const planStartDate = new Date(userPlan.startDate);
+
+    // ✅ Count only pricing templates created after or on plan start date
+    const filteredTemplates = templates.filter((template) => {
+        const createdAt = new Date(template.createdAt);
+        return createdAt >= planStartDate;
+    });
+
+    const currentCount = filteredTemplates.length;
+
+    // ✅ Check plan limit
+    const canProceed = checkLimit(currentCount, "Pricing_Templates");
+
+    if (!canProceed) return;
+
+    // ✅ Open modal if allowed
+    setCurrentTemplate(null);
+    setModalShow(true);
     };
 
 
@@ -77,6 +95,7 @@ const PricingTemplatesPage = () => {
                     });
                     toast.success(translate(response.data.message || 'api.pricingTemplates.deleteSuccess')); // Translated
                     fetchPricingTemplates();
+                    refreshPlan();
                 } catch (error) {
                     console.error("Error deleting template:", error);
                     const errorMessage = error.response?.data?.error || 'api.pricingTemplates.deleteError'; // Use backend message or default
@@ -88,6 +107,7 @@ const PricingTemplatesPage = () => {
 
     const handleSaveTemplate = () => {
         fetchPricingTemplates();
+        refreshPlan();
         setModalShow(false);
     };
 
@@ -129,6 +149,7 @@ const PricingTemplatesPage = () => {
 
             // Refresh list
             fetchPricingTemplates();
+            refreshPlan();
         } catch (error) {
             console.error("Error copying template:", error);
             toast.error(translate('api.pricingTemplates.copyError'));
@@ -217,12 +238,16 @@ const PricingTemplatesPage = () => {
             )}
 
          {/* Limit Modal */}
-        <LimitModal
-            isOpen={isLimitModalOpen}
-            onClose={closeLimitModal}
-            usedLimit={currentLimit.usage}
-            totalAllowed={currentLimit.totalAllowed}
-        />
+         <LimitModal
+                isOpen={isLimitModalOpen}
+                onClose={closeLimitModal}
+                usedLimit={currentLimit.usage}
+                totalAllowed={currentLimit.totalAllowed}
+                currentLimit={currentLimit}
+                userPlan={userPlan}
+            />
+          
+
         </>
     );
 };
