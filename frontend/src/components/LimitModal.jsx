@@ -13,7 +13,7 @@ const LimitModal = ({
 
   const { type } = currentLimit || {};
 
-  const billingType = userPlan?.plan?.billing_type || "free";
+  const billingType = userPlan?.plan?.billing_type;
   const startDate = userPlan?.startDate ? dayjs(userPlan.startDate) : null;
   const renewalDate = userPlan?.renewalDate ? dayjs(userPlan.renewalDate) : null;
   const endDate = userPlan?.endDate ? dayjs(userPlan.endDate) : null;
@@ -23,10 +23,7 @@ const LimitModal = ({
   let remainingDaysText = "";
 
   // 🧭 Handle billing cycles
-  if (billingType === "free") {
-    remainingDaysText = "Your free plan has lifetime access.";
-  } 
-  else if (billingType === "monthly") {
+  if (billingType === "monthly") {
     cycleStart = startDate || dayjs();
     cycleEnd = renewalDate || dayjs().add(1, "month");
     const remainingDays = cycleEnd.diff(dayjs(), "day");
@@ -123,12 +120,7 @@ const LimitModal = ({
                 <p>
                   <strong>Remaining:</strong> {remaining}
                 </p>
-
-                {billingType !== "free" && (
-                  <>
-                    <p className="mt-2 text-sm text-gray-600">
-                      {remainingDaysText}
-                    </p>
+                <p className="mt-2 text-sm text-gray-600">{remainingDaysText}</p>
                     {cycleStart && cycleEnd && (
                       <p className="text-sm text-gray-500">
                         <strong>Cycle:</strong>{" "}
@@ -136,11 +128,7 @@ const LimitModal = ({
                         {cycleEnd.format("DD MMM YYYY")}
                       </p>
                     )}
-                  </>
-                )}
-                {billingType === "free" && (
-                  <p className="text-sm text-gray-600">{remainingDaysText}</p>
-                )}
+             
               </div>
 
               <p className="text-sm text-gray-600">

@@ -65,6 +65,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    emailVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false, // By default, email is not verified
+    },
     stripeCustomerId: {            // <-- NEW FIELD
       type: DataTypes.STRING,
       allowNull: true,
@@ -96,8 +101,8 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.OfferTemplate, { foreignKey: "userId", as: "offerTemplates" });
     User.hasMany(models.UserPlan, { foreignKey: 'userId', as: 'userPlans' });
     User.hasMany(models.Settings, { foreignKey: 'userId', as: 'settings' });
-
-
+    User.hasMany(models.AcceptedOffer, { foreignKey: 'userId', as: 'acceptedOffers' });
+     User.hasMany(models.AskQuestion, { foreignKey: 'userId', as: 'askQuestions' });
   };
 
   return User;

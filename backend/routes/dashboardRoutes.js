@@ -1,13 +1,12 @@
-// routes/user/authRoutes.js
+// routes/dashboardRoutes.js
 const express = require('express');
 const router = express.Router();
-const authController = require('../controllers/authController');
+const dashboradController = require('../controllers/dashboradController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 router.use(authMiddleware);
 
 // ✅ Protected Auth Routes
-router.get('/user-current-plan', authController.userCurrentPlan);
-router.post('/logout', authController.logout);
+router.get('/', dashboradController.getDashboardData);
 
 module.exports = router;

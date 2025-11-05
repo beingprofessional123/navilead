@@ -22,7 +22,7 @@ exports.getPlanById = async (req, res) => {
   }
 };
 
-// CREATE plan (DB + Stripe if not free)
+// CREATE plan (DB + Stripe)
 exports.createPlan = async (req, res) => {
   try {
     const {
@@ -42,13 +42,9 @@ exports.createPlan = async (req, res) => {
       total_pricing_templates_allowed,
       total_workflows_allowed,
       is_offer_page_customization_allowed,
-      status
+      status,
     } = req.body;
 
-    let stripeProductId = null;
-    let stripePriceId = null;
-
-    if (billing_type !== 'free') {
     // Map billing_type to Stripe interval
     let stripeInterval;
     if (billing_type === 'monthly') stripeInterval = 'month';
@@ -57,19 +53,15 @@ exports.createPlan = async (req, res) => {
     // Create Stripe Product
     const stripeProduct = await stripe.products.create({ name, description });
 
-    // Create Stripe Price in DKK
+    // Create Stripe Price (default currency DKK)
     const stripePrice = await stripe.prices.create({
-        product: stripeProduct.id,
-        unit_amount: Math.round(price * 100), // Stripe uses smallest currency unit (øre)
-        currency: 'dkk', // <-- Danish Krone
-        recurring: stripeInterval ? { interval: stripeInterval } : undefined
+      product: stripeProduct.id,
+      unit_amount: Math.round(price * 100), // smallest unit
+      currency: 'dkk',
+      recurring: stripeInterval ? { interval: stripeInterval } : undefined,
     });
 
-    stripeProductId = stripeProduct.id;
-    stripePriceId = stripePrice.id;
-    }
-
-
+    // Create Plan in DB
     const plan = await Plan.create({
       name,
       shortdescription,
@@ -88,8 +80,8 @@ exports.createPlan = async (req, res) => {
       total_workflows_allowed,
       is_offer_page_customization_allowed,
       status: status || 'active',
-      stripe_product_id: stripeProductId,
-      stripe_price_id: stripePriceId
+      stripe_product_id: stripeProduct.id,
+      stripe_price_id: stripePrice.id,
     });
 
     res.status(201).json(plan);
@@ -99,7 +91,7 @@ exports.createPlan = async (req, res) => {
   }
 };
 
-// UPDATE plan (DB + Stripe if not free)
+// UPDATE plan (DB + Stripe)
 exports.updatePlan = async (req, res) => {
   try {
     const plan = await Plan.findByPk(req.params.id);
@@ -122,29 +114,32 @@ exports.updatePlan = async (req, res) => {
       total_pricing_templates_allowed,
       total_workflows_allowed,
       is_offer_page_customization_allowed,
-      status
+      status,
     } = req.body;
 
-    if (billing_type !== 'free' && plan.billing_type !== 'free') {
-      // Update Stripe Product
-      if (plan.stripe_product_id) {
-        await stripe.products.update(plan.stripe_product_id, { name, description });
-      }
-
-      // Update Stripe Price
-      if (plan.stripe_price_id) {
-        await stripe.prices.update(plan.stripe_price_id, { active: false });
-
-        const newStripePrice = await stripe.prices.create({
-          product: plan.stripe_product_id,
-          unit_amount: Math.round(price * 100),
-          currency: 'usd',
-          recurring: billing_type === 'monthly' || billing_type === 'yearly' ? { interval: billing_type } : undefined
-        });
-
-        req.body.stripe_price_id = newStripePrice.id;
-      }
+    // Update Stripe Product
+    if (plan.stripe_product_id) {
+      await stripe.products.update(plan.stripe_product_id, { name, description });
     }
+
+    // Deactivate old price and create a new one
+    if (plan.stripe_price_id) {
+      await stripe.prices.update(plan.stripe_price_id, { active: false });
+    }
+
+    const stripeInterval =
+      billing_type === 'monthly'
+        ? 'month'
+        : billing_type === 'yearly'
+        ? 'year'
+        : undefined;
+
+    const newStripePrice = await stripe.prices.create({
+      product: plan.stripe_product_id,
+      unit_amount: Math.round(price * 100),
+      currency: 'usd',
+      recurring: stripeInterval ? { interval: stripeInterval } : undefined,
+    });
 
     await plan.update({
       name,
@@ -164,7 +159,7 @@ exports.updatePlan = async (req, res) => {
       total_workflows_allowed,
       is_offer_page_customization_allowed,
       status: status || plan.status,
-      stripe_price_id: req.body.stripe_price_id || plan.stripe_price_id
+      stripe_price_id: newStripePrice.id,
     });
 
     res.json(plan);
@@ -174,17 +169,16 @@ exports.updatePlan = async (req, res) => {
   }
 };
 
-// DELETE plan (soft delete: set inactive for free / archive Stripe for paid)
+// DELETE plan (soft delete + deactivate on Stripe)
 exports.deletePlan = async (req, res) => {
   try {
     const plan = await Plan.findByPk(req.params.id);
     if (!plan) return res.status(404).json({ error: 'Plan not found' });
 
-    if (plan.billing_type !== 'free' && plan.stripe_product_id) {
+    if (plan.stripe_product_id) {
       await stripe.products.update(plan.stripe_product_id, { active: false });
     }
 
-    // Soft delete by setting status inactive
     await plan.update({ status: 'inactive' });
 
     res.json({ message: 'Plan set to inactive successfully' });

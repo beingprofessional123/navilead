@@ -4,6 +4,8 @@ import { AuthContext } from '../../context/AuthContext';
 import api from '../../utils/api';
 import { useTranslation } from "react-i18next";
 import { Link } from 'react-router-dom';
+import { parsePhoneNumberFromString } from "libphonenumber-js";
+
 
 
 const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
@@ -35,6 +37,7 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
   const [statuses, setStatuses] = useState([]); // State to store statuses fetched from backend
   const [currentTagInput, setCurrentTagInput] = useState(''); // State for the current tag being typed
   const fileInputRef = useRef(null); // Ref for the hidden file input
+  const [phoneError, setPhoneError] = useState('');
 
   // Fetch statuses when the component mounts or authToken changes
   useEffect(() => {
@@ -164,12 +167,21 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
     setNewlyAddedFiles(newlyAddedFiles.filter((_, i) => i !== index));
   };
 
+    // ✅ International phone number validation
+  const validatePhone = (phone) => {
+    try {
+      const parsed = parsePhoneNumberFromString(phone);
+      return parsed && parsed.isValid();
+    } catch {
+      return false;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const apiEndpoint = leadData ? `/leads/${leadData.id}` : '/leads';
     const method = leadData ? 'put' : 'post';
-
     const form = new FormData();
     for (const key in formData) {
       if (key === 'tags') {
@@ -195,6 +207,8 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
     if (leadData && removedAttachmentFilenames.length > 0) {
       form.append('removedAttachments', JSON.stringify(removedAttachmentFilenames));
     }
+
+    
 
     try {
       const response = await api[method](apiEndpoint, form, {
@@ -259,9 +273,29 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
                       <div className="form-group">
                         <label>{t('addEditLeadModal.phoneLabel')}</label>
                         <div className="inputicon">
-                          <input type="text" className="form-control" name="phone" value={formData.phone} onChange={handleChange} placeholder={t('addEditLeadModal.phonePlaceholder')} />
+                          <input
+                            type="text"
+                            className="form-control"
+                            name="phone"
+                            value={formData.phone}
+                              onChange={(e) => {
+                              handleChange(e);
+                              setPhoneError(''); // clear error while typing
+                            }}
+                            onBlur={() => {
+                              if (formData.phone && !validatePhone(formData.phone)) {
+                                setPhoneError('Please enter a valid phone number.');
+                              } else {
+                                setPhoneError('');
+                              }
+                            }}
+                            placeholder={t('addEditLeadModal.phonePlaceholder')}
+                          />
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg>
                         </div>
+                        {phoneError && (
+                          <small className="text-danger d-block mt-1">{phoneError}</small>
+                        )}
                       </div>
                     </div>
                     <div className="col-md-6">

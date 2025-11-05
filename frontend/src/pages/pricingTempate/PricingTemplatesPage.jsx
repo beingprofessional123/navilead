@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../../context/AuthContext';
@@ -19,6 +19,16 @@ const PricingTemplatesPage = () => {
     const [loading, setLoading] = useState(true);
     const [modalShow, setModalShow] = useState(false);
     const [currentTemplate, setCurrentTemplate] = useState(null);
+     const navigate = useNavigate();
+      const location = useLocation();
+
+        useEffect(() => {
+          const params = new URLSearchParams(location.search);
+          if (params.get("create") === "true") {
+            handleCreateTemplate();
+            navigate("/pricing-templates", { replace: true }); // ✅ removes ?create=true
+          }
+        }, [location.search]);
 
     const fetchPricingTemplates = async () => {
         if (!authToken) {

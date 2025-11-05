@@ -8,6 +8,12 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
         allowNull: false,
       },
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+      },
       quoteId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -39,9 +45,12 @@ module.exports = (sequelize, DataTypes) => {
       updatedAt: false // You might only need createdAt for accepted offers
     }
   );
+
   AcceptedOffer.associate = (models) => {
-    AcceptedOffer.belongsTo(models.Quote, { foreignKey: 'quoteId', as: 'quote',onDelete: "CASCADE", });
+    AcceptedOffer.belongsTo(models.User, { foreignKey: "userId", as: "user" });
+    AcceptedOffer.belongsTo(models.Quote, { foreignKey: "quoteId", as: "quote", onDelete: "CASCADE" });
   };
+
 
   return AcceptedOffer;
 };

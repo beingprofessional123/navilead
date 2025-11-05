@@ -1,18 +1,49 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
-import { AuthContext } from '../../context/AuthContext';
-import api from '../../utils/api';
-import { toast } from 'react-toastify';
-import Swal from 'sweetalert2';
-import { Link } from 'react-router-dom';
+import Swal from "sweetalert2"; // ✅ Fix #1
+import api from "../../utils/api"; // ✅ Fix #2 (your Axios instance path)
+import { useLimit } from "../../context/LimitContext";
+import { AuthContext } from "../../context/AuthContext";
+import UpgradePlanModal from '../Billing/UpgradePlanModal';
 
-const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
+const PlanPage = () => {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
+  const { userPlan, refreshPlan } = useLimit();
   const { authToken } = useContext(AuthContext);
+  const [plans, setPlans] = useState([]); // ✅ Fix #3 (declare plans)
+  const [loading, setLoading] = useState(true);
   const [billingType, setBillingType] = useState(() => {
-    return userPlan?.plan?.billing_type || 'monthly';
+    return userPlan?.plan?.billing_type || "monthly";
   });
+  const navigate = useNavigate();
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+
+    fetchPlans();
+
+    if (userPlan && userPlan.plan) {
+      navigate('/dashboard');
+    }
+  }, [userPlan, navigate]);
+
+  const fetchPlans = async () => {
+    try {
+      const response = await api.get('/plans', {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setPlans(response.data || []); // use response.data directly
+    } catch (error) {
+      console.error('Failed to fetch plans:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   // Filter plans based on selected billing type
@@ -52,11 +83,7 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
 
       localStorage.setItem('userPlan', JSON.stringify(response.data.userPlan));
       toast.success(response.data.message);
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 1200);
-
+      await refreshPlan();
     } catch (err) {
       console.error(err);
       toast.error('Failed to cancel subscription.');
@@ -67,11 +94,31 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
     return plan.status === 'active' || plan.id === userPlan?.plan?.id;
   });
 
+  const handleCloseUpgradeModal = () => {
+    setSelectedPlan(null);
+    setIsModalOpen(false);
+  };
+
+  const handleOpenUpgradeModal = (plan) => {
+    console.log('Selected plan for upgrade:', plan);
+    setSelectedPlan(plan);
+    setIsModalOpen(true);
+  };
 
 
 
   return (
-    <div id="menu2" className="tab-pane fade">
+    <div className="p-5">
+      <div className="logo">
+        <Link href="#">
+          <img
+            src="assets/images/logo.svg"
+            className="img-fluid"
+            alt="Logo"
+          />
+        </Link>
+      </div>
+
       <div className="plans-heading">
         <h3>{t('plans.choosePlan')}</h3>
         <p>{t('plans.subheading')}</p>
@@ -168,17 +215,27 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
         ))}
       </div>
 
-      {/* SMS Prices - Static/Translated */}
-      <div className="carddesign smsprices">
-        <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg>{t('smsPrices.title')}</h2>
-        <div className="row">
-          <div className="col-md-4"><h4 className="smsprices-a">{t('smsPrices.starter')}</h4><p>{t('smsPrices.perSms', { plan: 'Starter' })}</p></div>
-          <div className="col-md-4"><h4 className="smsprices-b">{t('smsPrices.professional')}</h4><p>{t('smsPrices.perSms', { plan: 'Professional & Enterprise' })}</p></div>
-          <div className="col-md-4"><h4 className="smsprices-c">{t('smsPrices.payAsYouGoTitle')}</h4><p>{t('smsPrices.payAsYouGoDescription')}</p></div>
-        </div>
-      </div>
+      <UpgradePlanModal
+        id="upgradeModal1"
+        onClose={handleCloseUpgradeModal}
+        isModalOpen={isModalOpen}
+        planDetails={selectedPlan}
+        authToken={authToken}
+        userPlan={
+          userPlan && userPlan.plan
+            ? userPlan
+            : {
+              plan: {
+                id: 0,
+                name: "No Active Plan",
+                price: 0,
+              },
+            }
+        }
+      />
+
     </div>
   );
 };
 
-export default BillingPlansTab;
+export default PlanPage;

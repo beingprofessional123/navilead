@@ -8,22 +8,25 @@ const Settings = db.Settings;
 const { sendMail } = require('../utils/mail');
 
 function convertUrlsToLinks(text) {
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const urlRegex = /(?<!href=")(https?:\/\/[^\s<]+)/g;
   return text.replace(urlRegex, (url) => {
     return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
   });
 }
+
+
 
 exports.storeSendEmailQuote = async (req, res) => {
   try {
     const userId = req.user.id;
     const { quoteId, recipientEmail, emailSubject, emailBody, emailTemplateId } = req.body;
 
+    // ✅ Basic validation
     if (!quoteId || !recipientEmail || !emailSubject || !emailBody) {
-      // Changed message to i18n key
       return res.status(400).json({ message: 'api.emailQuotes.missingFields' });
     }
 
+    // ✅ Fetch user-defined variables
     const userVariables = await UserVariable.findAll({ where: { userId } });
 
     const variablesMap = {};
@@ -31,10 +34,14 @@ exports.storeSendEmailQuote = async (req, res) => {
       variablesMap[variableName] = variableValue;
     });
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    // ✅ Define the offer link cleanly
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+    const offerUrl = `${frontendUrl}/offer/${quoteId}`;
 
-    variablesMap.offer_link = `${frontendUrl}/offer/${quoteId}`;
+    // ✅ Make the offer link a proper HTML link
+    variablesMap.offer_link = `<a href="${offerUrl}" target="_blank" rel="noopener noreferrer">${offerUrl}</a>`;
 
+    // ✅ Replace variables in body and subject
     const replacedEmailBody = emailBody.replace(/\{\{(\w+)\}\}/g, (match, varName) =>
       variablesMap[varName] !== undefined ? variablesMap[varName] : match
     );
@@ -43,6 +50,7 @@ exports.storeSendEmailQuote = async (req, res) => {
       variablesMap[varName] !== undefined ? variablesMap[varName] : match
     );
 
+    // ✅ Store the record in DB
     const sendEmailRecord = await SendEmail.create({
       userId,
       quoteId,
@@ -52,38 +60,32 @@ exports.storeSendEmailQuote = async (req, res) => {
       emailTemplateId,
     });
 
-    const htmlBody = convertUrlsToLinks(replacedEmailBody).replace(/\n/g, '<br>');
+    // ✅ Prepare HTML safely (no extra </p> issues)
+    const htmlBody = replacedEmailBody.replace(/\n/g, '<br>');
 
-      const emailSetting = await Settings.findOne({
+    // ✅ Check if email sending is enabled
+    const emailSetting = await Settings.findOne({
       where: { userId, key: 'emailNotifications' },
     });
 
-
-    if (emailSetting.value === 'true') {
-       await sendMail({
-          to: recipientEmail,
-          subject: replacedEmailSubject,
-          text: replacedEmailBody,
-          html: htmlBody,
-        });
+    if (emailSetting && emailSetting.value === 'true') {
+      await sendMail({
+        to: recipientEmail,
+        subject: replacedEmailSubject,
+        text: replacedEmailBody,
+        html: htmlBody,
+      });
       console.log(`📧 Email sent to user ${recipientEmail}.`);
     } else {
       console.log(`📵 Email notifications are disabled for user ${userId}. Skipping email.`);
     }
 
-
-  
-   
-
-    // --- NEW: Update Lead status to "Offer Sent" ---
-    // 1. Find the quote to get the leadId
+    // ✅ Update Lead status to "Offer Sent"
     const quote = await Quote.findByPk(quoteId);
     if (!quote) {
-      // Changed message to i18n key
       return res.status(404).json({ message: 'api.emailQuotes.quoteNotFoundForLeadUpdate' });
     }
 
-    // 2. Find the "Offer Sent" status for Lead
     const offerSentStatus = await Status.findOne({
       where: { name: 'Offer Sent', statusFor: 'Lead' },
     });
@@ -95,10 +97,12 @@ exports.storeSendEmailQuote = async (req, res) => {
       );
     }
 
+    // ✅ Success
     res.status(201).json(sendEmailRecord);
+
   } catch (error) {
     console.error('Error storing and sending email quote:', error);
-    // Changed message to i18n key
     res.status(500).json({ message: 'api.emailQuotes.serverError', error: error.message });
   }
 };
+

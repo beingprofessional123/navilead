@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     endDate: {
       type: DataTypes.DATE,
-      allowNull: true, // null for lifetime/free plans
+      allowNull: true, // null
     },
     renewalDate: {
       type: DataTypes.DATE,

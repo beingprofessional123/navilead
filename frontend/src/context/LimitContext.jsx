@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import api from "../utils/api";
 import { toast } from "react-toastify";
 import { AuthContext } from "./AuthContext";
+import { useNavigate } from "react-router-dom";
+
 
 const LimitContext = createContext();
 
@@ -11,6 +13,7 @@ export const LimitProvider = ({ children }) => {
   const { authToken } = useContext(AuthContext);
   const [userPlan, setUserPlan] = useState(null);
   const [isLimitModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
   const [currentLimit, setCurrentLimit] = useState({
     usage: 0,
     totalAllowed: 0,
@@ -20,23 +23,62 @@ export const LimitProvider = ({ children }) => {
     remainingDays: 0,
   });
 
-  // ✅ Fetch user plan
   const fetchUserPlan = async () => {
-    try {
-      const res = await api.get("/auth/user-current-plan", {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
+  try {
+    const currentPath = window.location.pathname; // ✅ current route check
 
-      if (res.data.success) {
-        setUserPlan(res.data.plan);
-      } else {
-        toast.error("Failed to load plan details");
+    const res = await api.get("/auth/user-current-plan", {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+
+    if (res.data.success && res.data.plan) {
+      const userPlanData = res.data.plan;
+      const now = new Date();
+      const renewalDate = userPlanData.renewalDate ? new Date(userPlanData.renewalDate) : null;
+      const endDate = userPlanData.endDate ? new Date(userPlanData.endDate) : null;
+      const status = userPlanData.status;
+
+      let allowAccess = false;
+
+      // ✅ Active plan and renewal still valid
+      if (status === "active" && renewalDate && now < renewalDate) {
+        allowAccess = true;
       }
-    } catch (error) {
-      console.error("Error fetching user plan:", error);
-      toast.error("Error fetching plan details");
+      // ✅ Cancelled but endDate not yet passed
+      else if (status === "cancelled" && endDate && now <= endDate) {
+        allowAccess = true;
+      }
+      // 🚫 Renewal date passed or expired
+      else {
+        allowAccess = false;
+      }
+
+      // ✅ Skip redirect if user is on /subscription/success
+      if (allowAccess) {
+        setUserPlan(userPlanData);
+      } else if (currentPath === "/subscription/success") {
+        setUserPlan(userPlanData || null); // no redirect on success page
+      } else {
+        toast.warning("Your subscription has expired or not renewed. Please choose a plan to continue.");
+        setUserPlan(null);
+        navigate("/plans");
+      }
+    } else {
+      const currentPath = window.location.pathname;
+      if (currentPath !== "/subscription/success") {
+        toast.info("No active plan found. Please choose a plan to continue.");
+        setUserPlan(null);
+        navigate("/plans");
+      }
     }
-  };
+  } catch (error) {
+    console.error("Error fetching user plan:", error);
+    toast.error("Error fetching plan details");
+  }
+};
+
+
+
 
   useEffect(() => {
     if (authToken) fetchUserPlan();
@@ -56,19 +98,12 @@ export const LimitProvider = ({ children }) => {
     API: "api_access",
   };
 
-  // ✅ Compute cycle for all plan types (Free → Monthly reset)
+  // ✅ Compute cycle for all plan types (Monthly reset)
   const getCurrentCycle = (planData) => {
     const now = new Date();
     const startDate = new Date(planData.startDate);
     const renewalDate = planData.renewalDate ? new Date(planData.renewalDate) : null;
 
-    // 🟢 Free plan → Monthly reset
-    if (planData.plan.billing_type === "free") {
-      const cycleStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const cycleEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      const remainingDays = Math.ceil((cycleEnd - now) / (1000 * 60 * 60 * 24));
-      return { start: cycleStart, end: cycleEnd, remainingDays, label: "Free (Monthly reset)" };
-    }
 
     // 🟡 Monthly plan
     if (planData.plan.billing_type === "monthly") {
@@ -148,6 +183,22 @@ export const LimitProvider = ({ children }) => {
 
   const closeLimitModal = () => setIsModalOpen(false);
 
+
+  // ✅ Access guard (for use in components)
+  const hasValidAccess = () => {
+    if (!userPlan) return false;
+
+    const now = new Date();
+    const { status, endDate, renewalDate } = userPlan;
+    const planEnd = endDate ? new Date(endDate) : null;
+    const renewal = renewalDate ? new Date(renewalDate) : null;
+
+    if (status === "active") return true;
+    if (status === "cancelled" && planEnd && now <= planEnd) return true;
+    if (renewal && now > renewal) return false;
+    return false;
+  };
+
   return (
     <LimitContext.Provider
       value={{
@@ -158,6 +209,7 @@ export const LimitProvider = ({ children }) => {
         closeLimitModal,
         refreshPlan: fetchUserPlan,
         isOfferPageCustomizationAllowed,
+        hasValidAccess,
       }}
     >
       {children}

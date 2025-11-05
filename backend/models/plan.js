@@ -29,9 +29,8 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 0.00,
     },
     billing_type: {
-      type: DataTypes.ENUM('free','monthly', 'yearly'),
+      type: DataTypes.ENUM('monthly', 'yearly'),
       allowNull: false,
-      defaultValue: 'free',
     },
     api_access: {
       type: DataTypes.BOOLEAN,

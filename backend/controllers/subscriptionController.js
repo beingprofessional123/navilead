@@ -16,27 +16,6 @@ exports.checkout = async (req, res) => {
     if (!plan) return res.status(404).json({ message: 'Plan not found' });
     if (!PaymentMethods) return res.status(404).json({ message: 'Billing details not found' });
 
-    // If plan is free, assign directly
-    if (plan.billing_type === 'free') {
-      const userPlan = await UserPlan.create({
-        userId,
-        planId: plan.id,
-        status: 'active',
-        startDate: new Date(),
-        endDate: null,
-        renewalDate: null,
-        subscriptionId: null,
-        invoiceUrl: null,
-        invoiceNo: null,
-        autoRenew: false,
-        cancelledAt: null
-      });
-      return res.status(200).json({
-        message: 'Free plan assigned successfully',
-        userPlan
-      });
-    }
-
     // For paid plans, first check if user already exists in Stripe
     let stripeCustomerId = req.user.stripeCustomerId; // From User model
 
@@ -510,43 +489,23 @@ exports.subscriptionRenewWebhook = async (req, res) => {
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object;
-
-        // Find user via Stripe customer ID
-        const user = await User.findOne({
-          where: { stripeCustomerId: subscription.customer }
-        });
+        const user = await User.findOne({ where: { stripeCustomerId: subscription.customer } });
 
         if (!user) {
           console.error(`❌ No user found for customer ${subscription.customer}`);
           break;
         }
 
-        // Fetch free plan
-        const freePlan = await Plan.findOne({ where: { billing_type: 'free' } });
-        if (!freePlan) {
-          console.error("❌ Free plan not found in DB");
-          break;
-        }
+        // Just mark user's plan as cancelled
+        await UserPlan.update(
+          { status: 'cancelled', endDate: new Date(), autoRenew: false },
+          { where: { userId: user.id } }
+        );
 
-        // Assign free plan
-        const userPlan = await UserPlan.create({
-          userId: user.id,
-          planId: freePlan.id,
-          status: 'active',
-          startDate: new Date(),
-          endDate: null,
-          renewalDate: null,
-          subscriptionId: null,
-          invoiceUrl: null,
-          invoiceNo: null,
-          autoRenew: false,
-          cancelledAt: null
-        });
-
-        console.log(`🔄 User ${user.id} auto switched to free plan after cancellation`);
-
+        console.log(`🛑 Subscription deleted for user ${user.id}, marked as cancelled`);
         break;
       }
+
 
 
       default:

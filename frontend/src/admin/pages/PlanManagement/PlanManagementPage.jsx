@@ -187,13 +187,13 @@ const PlanManagementPage = () => {
                                 <p>Create, view, and manage subscription plans.</p>
                             </div>
                         </div>
-                        <div className="col-md-6">
+                        {/* <div className="col-md-6">
                             <div className="dashright">
                                 <Link to="#" onClick={openAddModal} className="btn btn-send">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>New Plan
                                 </Link>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
 
                     <div className="row">
@@ -443,7 +443,6 @@ const PlanManagementPage = () => {
                                                 <div className="form-group">
                                                     <label>Billing Type *</label>
                                                     <select className="form-control" name="billing_type" value={modalPlan.billing_type} onChange={handleModalChange} required>
-                                                        <option value="free">Free</option>
                                                         <option value="monthly">Monthly</option>
                                                         <option value="yearly">Yearly</option>
                                                     </select>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../../context/AuthContext'; // Assuming AuthContext provides authToken
@@ -9,6 +9,9 @@ import { useTranslation } from "react-i18next";
 import MobileHeader from '../../components/common/MobileHeader';
 import LimitModal from '../../components/LimitModal'; // the modal we created earlier
 import { useLimit } from "../../context/LimitContext";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
 
 
 const LeadsPage = () => {
@@ -19,7 +22,9 @@ const LeadsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentLead, setCurrentLead] = useState(null); // Used for editing or null for creating
   const [statuses, setStatuses] = useState([]); // State to store statuses from backend
-  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal,refreshPlan,userPlan } = useLimit();
+  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, refreshPlan, userPlan } = useLimit();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Filter and Sort states
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,6 +40,15 @@ const LeadsPage = () => {
     fetchLeads();
     fetchStatuses();
   }, [authToken]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("create") === "true") {
+      handleCreateNew();
+      navigate("/leads", { replace: true }); // ✅ removes ?create=true
+    }
+  }, [location.search]);
+
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -84,7 +98,7 @@ const LeadsPage = () => {
           });
           toast.success(t('api.leads.deleteSuccess')); // Translated toast message
           fetchLeads(); // Refresh the list after deletion
-          refreshPlan(); 
+          refreshPlan();
         } catch (err) {
           console.error('Error deleting lead:', err);
           toast.error(t('api.leads.deleteError')); // Translated toast message
@@ -100,30 +114,30 @@ const LeadsPage = () => {
 
   const handleCreateNew = () => {
     console.log(userPlan);
-      setCurrentLead(null); // Clear currentLead to indicate new creation
+    setCurrentLead(null); // Clear currentLead to indicate new creation
 
-      // Ensure both leads and plan data are loaded
-        if (!userPlan?.startDate) {
-          toast.error("Plan start date not found");
-          return;
-        }
-      const planStartDate = new Date(userPlan.startDate);
+    // Ensure both leads and plan data are loaded
+    if (!userPlan?.startDate) {
+      toast.error("Plan start date not found");
+      return;
+    }
+    const planStartDate = new Date(userPlan.startDate);
 
-      // Count only leads created on or after plan start date
-      const leadsAfterStart = leads.filter((lead) => {
-        const leadCreatedAt = new Date(lead.createdAt);
-        return leadCreatedAt >= planStartDate; // ✅ includes same date
-      });
+    // Count only leads created on or after plan start date
+    const leadsAfterStart = leads.filter((lead) => {
+      const leadCreatedAt = new Date(lead.createdAt);
+      return leadCreatedAt >= planStartDate; // ✅ includes same date
+    });
 
-      const currentLeadCount = leadsAfterStart.length;
+    const currentLeadCount = leadsAfterStart.length;
 
-      // Check if user is within the limit
-      const canProceed = checkLimit(currentLeadCount, 'Leads');
+    // Check if user is within the limit
+    const canProceed = checkLimit(currentLeadCount, 'Leads');
 
-      if (canProceed) {
-        setIsModalOpen(true); // open the Add/Edit Lead modal
-      }
-    };
+    if (canProceed) {
+      setIsModalOpen(true); // open the Add/Edit Lead modal
+    }
+  };
 
 
 
@@ -209,6 +223,40 @@ const LeadsPage = () => {
   const totalValue = filteredAndSortedLeads.reduce((sum, lead) => sum + (lead.value || 0), 0);
   const avgValue = totalLeads > 0 ? Math.round(totalValue / totalLeads) : 0;
 
+  const handleExportToExcel = () => {
+    if (!leads || leads.length === 0) {
+      toast.warning("No leads available to export.");
+      return;
+    }
+
+    // Transform data into a simpler format for Excel
+    const exportData = leads.map((lead) => ({
+      "Lead ID": lead.leadNumber || lead.id,
+      "Full Name": lead.fullName || "",
+      "Company": lead.companyName || "",
+      "Email": lead.email || "",
+      "Phone": lead.phone || "",
+      "Status": lead.status?.name || "",
+      "Value": lead.value || "",
+      "Source": lead.leadSource || "",
+      "Created At": new Date(lead.createdAt).toLocaleString(),
+    }));
+
+    // Create a worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    // Create a new workbook and append the worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Leads");
+
+    // Generate Excel file and trigger download
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(blob, `Leads_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
+
 
 
   return (
@@ -226,7 +274,8 @@ const LeadsPage = () => {
             </div>
             <div className="col-md-6">
               <div className="dashright">
-                <Link to="#" className="btn btn-add">
+                <Link to="#" className="btn btn-add" onClick={handleExportToExcel}>
+
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download w-4 h-4 mr-2" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>
                   {t('leadsPage.exportButton')}
                 </Link>

@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     emailTemplateId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     quoteId: {
       type: DataTypes.INTEGER,

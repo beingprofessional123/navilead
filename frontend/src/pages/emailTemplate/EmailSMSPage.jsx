@@ -32,6 +32,8 @@ const EmailSMSPage = () => {
     const [variableCategories, setVariableCategories] = useState({});
     const [loadingVariables, setLoadingVariables] = useState(true);
     const [focusedRef, setFocusedRef] = useState(null);
+    const [phoneError, setPhoneError] = useState('');
+
 
     const [viewContent, setViewContent] = useState('');
     const [isEditing, setIsEditing] = useState(false);
@@ -47,6 +49,13 @@ const EmailSMSPage = () => {
         recipientPhone: '',
         smsContent: '', // SMS message content
     });
+
+    // Validate phone with country code (e.g. +91, +44, +1)
+    const validatePhoneWithCountryCode = (phone) => {
+        const regex = /^\+\d{1,3}\d{7,14}$/; // +<country_code><number>
+        return regex.test(phone.trim());
+    };
+
 
     const [selectedFiles, setSelectedFiles] = useState([]); // For new files to be uploaded
     const fileInputRef = useRef(null); // Ref for the file input
@@ -939,8 +948,35 @@ const EmailSMSPage = () => {
                                                     <div className="col-md-6">
                                                         <div className="form-group">
                                                             <label>{translate('emailSmsPage.recipientPhoneLabel')}</label>
-                                                            <input type="text" className="form-control" name="recipientPhone" ref={recipientPhoneRef} value={currentTemplate.recipientPhone} onChange={handleInputChange} onFocus={() => setFocusedRef(recipientPhoneRef)} placeholder={translate('emailSmsPage.recipientPhonePlaceholder')} />
-                                                            <span className="inputnote">{translate('emailSmsPage.recipientPhoneNote', { contact_phone: '{{contact_phone}}' })}</span>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control"
+                                                                name="recipientPhone"
+                                                                ref={recipientPhoneRef}
+                                                                value={currentTemplate.recipientPhone}
+                                                                onChange={(e) => {
+                                                                    handleInputChange(e);
+                                                                    setPhoneError(''); // clear error on typing
+                                                                }}
+                                                                onBlur={() => {
+                                                                    const phone = currentTemplate.recipientPhone;
+                                                                    if (phone && !validatePhoneWithCountryCode(phone)) {
+                                                                        setPhoneError('Please enter a valid phone number with country code (e.g. +91XXXXXXXXXX)');
+                                                                    } else {
+                                                                        setPhoneError('');
+                                                                    }
+                                                                }}
+                                                                onFocus={() => setFocusedRef(recipientPhoneRef)}
+                                                                placeholder={translate('emailSmsPage.recipientPhonePlaceholder')}
+                                                            />
+                                                            <span className="inputnote">
+                                                                {translate('emailSmsPage.recipientPhoneNote', { contact_phone: '{{contact_phone}}' })}
+                                                            </span>
+
+                                                            {/* ✅ Inline error */}
+                                                            {phoneError && (
+                                                                <small className="text-danger d-block mt-1">{phoneError}</small>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>

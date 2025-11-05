@@ -17,7 +17,7 @@ const getStripeInterval = (billing_type) => {
     case 'yearly':
       return 'year';
     default:
-      return null; // free plans or invalid types
+      return null;
   }
 };
 
@@ -140,7 +140,7 @@ const PlanManagementController = {
         description: formatDescription(description),
         price: price || 0,
         discount_percentage: discount_percentage || 0,
-        billing_type: billing_type || 'free',
+        billing_type: billing_type,
         api_access: api_access || false,
         Total_Leads_Allowed: Total_Leads_Allowed || 0,
         Total_offers_Allowed: Total_offers_Allowed || 0,

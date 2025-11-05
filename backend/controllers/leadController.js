@@ -1,7 +1,8 @@
 require('dotenv').config();
 const { Op } = require("sequelize");
 const db = require("../models");
-const { Lead, Status, User, Plan, UserPlan, ApiLog, Settings, StatusUpdateLog } = db;
+const { Lead, Status, User, Plan, UserPlan, ApiLog, Settings, StatusUpdateLog, AskQuestion, AcceptedOffer, SendSms, SendEmail, Quote } = db;
+
 const { runWorkflows } = require('../utils/runWorkflows');
 
 const BACKEND_URL = process.env.BACKEND_URL;
@@ -243,19 +244,157 @@ exports.getAllLeads = async (req, res) => {
 };
 
 // Get a single lead by ID
+// exports.getLeadById = async (req, res) => {
+//   try {
+//     const lead = await Lead.findOne({
+//       where: { id: req.params.id, userId: req.user.id },
+//       include: [{ model: Status, as: "status" }],
+//     });
+//     if (!lead) {
+//       return res.status(404).json({ message: "api.leads.notFound" });
+//     }
+//     res.json(lead);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "api.leads.fetchError", error: err.message });
+//   }
+// };
+
 exports.getLeadById = async (req, res) => {
   try {
     const lead = await Lead.findOne({
       where: { id: req.params.id, userId: req.user.id },
-      include: [{ model: Status, as: "status" }],
+      include: [
+         {
+          model: User,
+          as: "user",
+          attributes: ["id", "name", "email"], // ✅ include only useful fields
+        },
+        { model: Status, as: "status" },
+        {
+          model: StatusUpdateLog,
+          as: "statusLogs",
+          include: [{ model: Status, as: "status" }],
+        },
+        {
+          model: Quote,
+          as: "quotes",
+          include: [
+            { model: Status, as: "status" },
+            { model: SendEmail, as: "emails" },
+            { model: SendSms, as: "sms" },
+            { model: AcceptedOffer, as: "acceptedOffers" },
+            { model: AskQuestion, as: "questions" },
+          ],
+        },
+      ],
+      order: [
+        [{ model: StatusUpdateLog, as: "statusLogs" }, "createdAt", "ASC"],
+        [{ model: Quote, as: "quotes" }, "createdAt", "ASC"],
+      ],
     });
-    if (!lead) {
-      return res.status(404).json({ message: "api.leads.notFound" });
+
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    // Construct timeline
+    const timeline = [];
+
+    // Lead created
+    timeline.push({
+      type: "LeadCreated",
+      message: "Lead created",
+      time: lead.createdAt,
+    });
+
+    // Status updates
+    if (lead.statusLogs && lead.statusLogs.length) {
+      lead.statusLogs.forEach((log) => {
+        timeline.push({
+          type: "StatusUpdate",
+          status: log.status ? log.status.name : "Unknown",
+          time: log.createdAt,
+          leadTitle: lead.fullName,
+        });
+      });
     }
-    res.json(lead);
+
+    // Quotes & related activities
+    if (lead.quotes && lead.quotes.length) {
+      for (const quote of lead.quotes) {
+        timeline.push({
+          type: "QuoteCreated",
+          quoteTitle: quote.title,
+          total: quote.total,
+          time: quote.createdAt,
+        });
+
+        // Emails
+        if (quote.emails?.length) {
+          quote.emails.forEach((email) => {
+            timeline.push({
+              type: "EmailSent",
+              subject: email.emailSubject,
+              recipient: email.recipientEmail,
+              time: email.createdAt,
+              quoteTitle: quote.title,
+            });
+          });
+        }
+
+        // SMS
+        if (quote.sms?.length) {
+          quote.sms.forEach((sms) => {
+            timeline.push({
+              type: "SmsSent",
+              recipient: sms.recipientPhone,
+              message: sms.smsMessage.slice(0, 60),
+              time: sms.createdAt,
+              quoteTitle: quote.title,
+            });
+          });
+        }
+
+        // Accepted Offers
+        if (quote.acceptedOffers?.length) {
+          quote.acceptedOffers.forEach((offer) => {
+            timeline.push({
+              type: "OfferAccepted",
+              totalPrice: offer.totalPrice,
+              time: offer.acceptedAt,
+              quoteTitle: quote.title,
+            });
+          });
+        }
+
+        // Asked Questions
+        if (quote.questions?.length) {
+          quote.questions.forEach((q) => {
+            timeline.push({
+              type: "QuestionAsked",
+              question: q.question,
+              answer: q.answer,
+              time: q.createdAt,
+              quoteTitle: quote.title,
+            });
+          });
+        }
+      }
+    }
+
+    // Sort timeline by time ascending
+    timeline.sort((a, b) => new Date(a.time) - new Date(b.time));
+
+    // Send final response
+    res.json({
+      ...lead.toJSON(),
+      timeline,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "api.leads.fetchError", error: err.message });
+    console.error("Error in getLeadById:", err);
+    res.status(500).json({
+      message: "Failed to fetch lead details",
+      error: err.message,
+    });
   }
 };
 

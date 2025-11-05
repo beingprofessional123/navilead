@@ -40,7 +40,7 @@ const UserManagementController = {
           plan: activePlan ? activePlan.name : 'No Plan',
           planSmsLimit: activePlan ? activePlan.Total_SMS_allowed : 0,
           planPrice: activePlan ? activePlan.price : 0,
-          planBillingType: activePlan ? activePlan.billing_type : 'free',
+          planBillingType: activePlan ? activePlan.billing_type : '',
           createdAt: user.createdAt,
         };
       });
@@ -93,7 +93,7 @@ const UserManagementController = {
     }
   },
 
-  // CREATE new user with default free plan
+  // CREATE new user
   createUser: async (req, res) => {
     try {
       const { name, email, phone, password, companyName } = req.body;
@@ -108,19 +108,7 @@ const UserManagementController = {
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = await User.create({ name, email, phone, password: hashedPassword, companyName });
 
-      // Assign free plan
-      const freePlan = await Plan.findOne({ where: { billing_type: 'free' } });
-      if (freePlan) {
-        await UserPlan.create({
-          userId: newUser.id,
-          planId: freePlan.id,
-          status: 'active',
-          startDate: new Date(),
-          endDate: null,
-        });
-      }
-
-      res.status(201).json({ success: true, user: { ...newUser.dataValues, plan: freePlan ? freePlan.name : 'No Plan' } });
+      res.status(201).json({ success: true, user: { ...newUser.dataValues } });
     } catch (error) {
       console.error('❌ Error creating user:', error);
       res.status(500).json({ success: false, message: 'Server error', error: error.message });
