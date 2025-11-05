@@ -1,3 +1,4 @@
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
@@ -5,6 +6,11 @@ const db = require('../models');
 const { User, UserVariable, Settings, OfferTemplate, UserPlan, Plan } = db;
 const stripe = require('../utils/stripe'); // Your Stripe instance
 const status = require('../models/status');
+const OtpVerificationTemplate = require('../EmailTemplate/OtpVerificationTemplate');
+const { sendMail } = require('../utils/mail');
+const otpStore = new Map(); // Temporary in-memory store, can replace with Redis
+
+
 
 
 
@@ -102,12 +108,14 @@ exports.register = async (req, res) => {
     const { name, email, password, phone } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
+    
+     const user = await User.create({
       name,
       email,
       phone,
       password: hashedPassword,
+      status: 'inactive',
+      emailVerified: false,
     });
 
     await OfferTemplate.create({
@@ -143,69 +151,13 @@ exports.register = async (req, res) => {
     );
 
     // -------------------- Create Stripe Customer --------------------
-    const stripeCustomerId = await createStripeCustomer(user);
+    await createStripeCustomer(user);
 
-
-    // Prepare user data (exclude password)
-    const userData = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      apikey: user.apikey,
-      language: user.language,
-      currency: user.currency,
-      companyName: user.companyName,
-      companyLogo: user.companyLogo,
-      createdAt: user.createdAt,
-      stripeCustomerId: stripeCustomerId,
-    };
-
-    // -------------------- Check User Plan --------------------
-    let userPlan = await UserPlan.findOne({ where: { userId: user.id }, include: [{ model: Plan, as: 'plan' }] });
-    if (!userPlan) {
-      const freePlan = await Plan.findOne({ where: { billing_type: 'free' } });
-      if (freePlan) {
-        userPlan = await UserPlan.create({
-          userId: user.id,
-          planId: freePlan.id,
-          status: 'active',
-          startDate: new Date(),
-          endDate: null,
-          renewalDate: null,
-          subscriptionId: null,
-          invoiceUrl: null,
-          invoiceNo: null,
-          autoRenew: false,
-          cancelledAt: null
-        });
-
-          // ✅ Update user's SMS balance based on free plan
-          await user.update({ smsBalance: freePlan.Total_SMS_allowed || 0 });
-      }
-    }
-     
-
-    const userPlanWithDetails = await UserPlan.findOne({
-        where: { userId: user.id },  // ✅ use user.id, not userPlan.id
-        include: [{ model: Plan, as: 'plan' }]
-    });
-
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: '6h' }
-    );
-
+    
     await ensureDefaultSettings(user.id);
 
     res.status(201).json({
       message: 'api.register.success',
-      token,
-      user: userData,
-      userPlan: userPlanWithDetails,
     });
 
   } catch (error) {
@@ -216,8 +168,6 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: 'api.register.serverError', error: error.message });
   }
 };
-
-
 
 
 // LOGIN
@@ -233,10 +183,55 @@ exports.login = async (req, res) => {
       return res.status(403).json({ message: 'You do not have permission to log in as admin.' });
     }
 
-     // 🚫 Block inactive users
+    // 🚫 Block inactive users
     if (user.status && user.status.toLowerCase() === 'inactive') {
       return res.status(403).json({ message: 'Your account is inactive. Please contact support.' });
     }
+
+    // ✅ Check email verification
+    if (!user.emailVerified || user.emailVerified === false) {
+      const existingOtp = otpStore.get(email);
+
+      // 🔹 Check if OTP already sent and still valid
+      if (
+        existingOtp &&
+        existingOtp.type === 'emailverification' &&
+        Date.now() < existingOtp.expiresAt
+      ) {
+        const remainingSeconds = Math.ceil((existingOtp.expiresAt - Date.now()) / 1000);
+        return res.status(200).json({
+          success: false,
+          message: `OTP already sent. Please check your email. You can request a new one after ${remainingSeconds} seconds.`,
+          otpSent: true,
+          type: 'emailverification',
+        });
+      }
+
+      // 🔹 Otherwise, generate new OTP
+      const otp = Math.floor(1000 + Math.random() * 9000).toString();
+      const expiresAt = Date.now() + 10 * 60 * 1000; // valid for 10 min
+      otpStore.set(email, { otp, expiresAt, type: 'emailverification' });
+
+      const html = OtpVerificationTemplate({
+        firstName: user.name || 'User',
+        otpCode: otp,
+      });
+
+      await sendMail({
+        to: email,
+        subject: 'Verify Your Email - NaviLead',
+        text: `Your OTP code is ${otp}. It is valid for 10 minutes.`,
+        html,
+      });
+
+      return res.status(200).json({
+        success: false,
+        message: 'Your email is not verified. An OTP has been sent to your email for verification.',
+        otpSent: true,
+        type: 'emailverification',
+      });
+    }
+
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: 'api.login.invalidCredentials' });
@@ -246,6 +241,7 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '6h' }
     );
+    
 
     // ✅ Generate API key only if missing
     let apiKey = user.apikey;
@@ -254,7 +250,7 @@ exports.login = async (req, res) => {
       await user.update({ apikey: apiKey });
     }
 
-     let stripeCustomerId = user.stripeCustomerId;
+    let stripeCustomerId = user.stripeCustomerId;
     if (!stripeCustomerId) {
       // Will create Stripe customer and default PaymentMethod if needed
       stripeCustomerId = await createStripeCustomer(user);
@@ -274,27 +270,6 @@ exports.login = async (req, res) => {
       stripeCustomerId: stripeCustomerId,
     };
 
-    // -------------------- Check User Plan --------------------
-   let userPlan = await UserPlan.findOne({ where: { userId: user.id }, include: [{ model: Plan, as: 'plan' }] });
-    if (!userPlan) {
-      const freePlan = await Plan.findOne({ where: { billing_type: 'free' } });
-      if (freePlan) {
-        userPlan = await UserPlan.create({
-          userId: user.id,
-          planId: freePlan.id,
-          status: 'active',
-          startDate: new Date(),
-          endDate: null,
-          renewalDate: null,
-          subscriptionId: null,
-          invoiceUrl: null,
-          invoiceNo: null,
-          autoRenew: false,
-          cancelledAt: null
-        });
-      }
-    }
-
     const existingTemplate = await OfferTemplate.findOne({ where: { userId: user.id, status: 'active' } });
     if (!existingTemplate) {
       await OfferTemplate.create({
@@ -310,9 +285,9 @@ exports.login = async (req, res) => {
       });
     }
 
-   const userPlanWithDetails = await UserPlan.findOne({
-        where: { userId: user.id },  // ✅ use user.id, not userPlan.id
-        include: [{ model: Plan, as: 'plan' }]
+    const userPlanWithDetails = await UserPlan.findOne({
+      where: { userId: user.id },  // ✅ use user.id, not userPlan.id
+      include: [{ model: Plan, as: 'plan' }]
     });
 
     await ensureDefaultSettings(user.id);
@@ -395,7 +370,7 @@ exports.userCurrentPlan = async (req, res) => {
 
     // 🧠 Find user's active plan
     const userPlan = await UserPlan.findOne({
-      where: { userId, status: "active" },
+      where: { userId },
       include: [
         {
           model: Plan,
@@ -404,25 +379,6 @@ exports.userCurrentPlan = async (req, res) => {
       ],
       order: [["createdAt", "DESC"]],
     });
-
-    // 🧩 If no plan found, fall back to Free Plan
-    if (!userPlan) {
-      const freePlan = await Plan.findOne({
-        where: { billing_type: "free", status: "active" },
-      });
-
-      if (!freePlan) {
-        return res.status(404).json({
-          success: false,
-          message: "No active or free plan found",
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        plan: { plan: freePlan, billing_type: "free", isDefault: true },
-      });
-    }
 
     // ✅ Return active plan details
     return res.status(200).json({
@@ -438,3 +394,163 @@ exports.userCurrentPlan = async (req, res) => {
     });
   }
 };
+
+
+//////////////////////////////////////////////////////////////////
+// 🔹 SEND OTP (with type)
+//////////////////////////////////////////////////////////////////
+exports.sendOtp = async (req, res) => {
+  try {
+    const { email, type, pagesprocess } = req.body;
+
+    if (!email) return res.status(400).json({ message: 'Email is required.' });
+    if (!type) return res.status(400).json({ message: 'OTP type is required.' });
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    // Generate 4-digit OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const expiresAt = Date.now() + 10 * 60 * 1000; // valid for 10 mins
+
+    // Store OTP with type
+    otpStore.set(email, { otp, expiresAt, type });
+
+    const html = OtpVerificationTemplate({
+      firstName: user.name || 'User',
+      otpCode: otp,
+    });
+
+    // Email content
+    const subject =
+      type === 'emailverification'
+        ? 'Verify Your Email - NaviLead'
+        : type === 'passwordreset'
+          ? 'Reset Password OTP - NaviLead'
+          : 'Your OTP Code - NaviLead';
+
+    await sendMail({
+      to: email,
+      subject,
+      text: `Your OTP code is ${otp}. It is valid for 10 minutes.`,
+      html,
+    });
+
+    res.json({
+      success: true,
+      message: 'OTP sent successfully.',
+      type,
+      pagesprocess
+    });
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    res.status(500).json({ message: 'Error sending OTP email.' });
+  }
+};
+
+//////////////////////////////////////////////////////////////////
+// 🔹 VERIFY OTP (with type handling)
+//////////////////////////////////////////////////////////////////
+exports.verifyOtp = async (req, res) => {
+  try {
+    const { email, otp, type, pagesprocess } = req.body;
+    if (!email || !otp || !type)
+      return res.status(400).json({ message: 'Email, OTP, and type are required.' });
+
+    const record = otpStore.get(email);
+    if (!record) return res.status(400).json({ message: 'No OTP found or expired.' });
+
+    if (Date.now() > record.expiresAt) {
+      otpStore.delete(email);
+      return res.status(400).json({ message: 'OTP expired. Please request a new one.' });
+    }
+
+    if (record.otp !== otp)
+      return res.status(400).json({ message: 'Invalid OTP. Please try again.' });
+
+    // ✅ OTP verified successfully
+    otpStore.delete(email);
+
+    // Handle based on OTP type
+    if (type === 'emailverification') {
+      const user = await User.findOne({ where: { email } });
+      if (user) {
+        await user.update({ status: 'active', emailVerified: true }); // you can add emailVerified column
+      }
+
+       if (pagesprocess === 'login') {
+        return res.json({
+          success: true,
+          message: 'Your email has been verified successfully. You can now log in to your account.',
+          type,
+          pagesprocess,
+        });
+      }
+
+          // Prepare user data (exclude password)
+        const userData = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          apikey: user.apikey,
+          language: user.language,
+          currency: user.currency,
+          companyName: user.companyName,
+          companyLogo: user.companyLogo,
+          createdAt: user.createdAt,
+          stripeCustomerId: user.stripeCustomerId,
+        };
+
+      const userPlanWithDetails = await UserPlan.findOne({ where: { userId: user.id }, include: [{ model: Plan, as: 'plan' }] });
+      // Generate JWT token 
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '6h' });
+
+      return res.json({
+        success: true,
+        message: 'Email verified successfully. Logged in!',
+        token,
+        user: userData,
+        userPlan: userPlanWithDetails,
+        type,
+        pagesprocess
+      });
+    }
+
+    if (type === 'passwordreset') {
+      return res.json({
+        success: true,
+        message: 'OTP verified successfully. You can now reset your password.',
+      });
+    }
+
+    // fallback
+    res.json({ success: true, message: 'OTP verified successfully.' });
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ message: 'Error verifying OTP.' });
+  }
+};
+
+
+//////////////////////////////////////////////////////////////////
+// 🔹 RESET PASSWORD
+//////////////////////////////////////////////////////////////////
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword) return res.status(400).json({ message: 'Email and new password are required.' });
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await user.update({ password: hashedPassword });
+
+    res.json({ message: 'Password reset successfully.' });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ message: 'Error resetting password.' });
+  }
+};
+

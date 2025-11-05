@@ -24,13 +24,7 @@ const UpgradePlanModal = ({ id, onClose, isModalOpen, planDetails, userPlan, aut
         localStorage.setItem('user', JSON.stringify(storedUser));
       }
 
-      if (planDetails.billing_type === 'free') {
-        toast.success('Free plan assigned successfully!');
-        // Optionally update parent userPlan state here
-      } else {
-        // Paid plan → redirect to Stripe Checkout
-        window.location.href = response.data.checkoutUrl;
-      }
+      window.location.href = response.data.checkoutUrl;
 
     } catch (error) {
       console.error('Upgrade plan error:', error);
@@ -39,9 +33,6 @@ const UpgradePlanModal = ({ id, onClose, isModalOpen, planDetails, userPlan, aut
       setIsConfirming(false);
     }
   };
-
-  console.log(planDetails);
-
   if (!planDetails) return null;
 
   return (

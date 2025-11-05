@@ -4,6 +4,9 @@ import PublicLayout from '../layouts/PublicLayout';
 import ProtectedRoute from './ProtectedRoute';
 
 import LoginPage from '../pages/Auth/LoginPage';
+import ForgotPasswordPage from '../pages/Auth/ForgotPasswordPage';
+import OtpVerifyPage from '../pages/Auth/OtpVerifyPage';
+import ResetPasswordPage from '../pages/Auth/ResetPasswordPage';
 import RegisterPage from '../pages/Auth/RegisterPage';
 import OfferPage from '../pages/OfferPage';
 import ErrorPage from '../pages/Error/ErrorPage';
@@ -26,6 +29,7 @@ import SubscriptionCancelPage from '../pages/Billing/SubscriptionCancelPage';
 import SMSCreditsPage from '../pages/SMSCredits/SMSCreditsPage'; 
 import SMSCreditsSuccessPage from '../pages/SMSCredits/SMSCreditsSuccessPage';
 import SMSCreditsCancelPage from '../pages/SMSCredits/SMSCreditsCancelPage';
+import PlanPage from '../pages/Auth/PlanPage';
 
 const UserRouterSetup = () => {
   return (
@@ -33,10 +37,21 @@ const UserRouterSetup = () => {
       {/* PUBLIC ROUTES */}
       <Route path="/" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/otp-page" element={<OtpVerifyPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/offer/:id" element={<OfferPage />} />
 
       {/* PROTECTED ROUTES */}
+      <Route
+        path="/plans"
+        element={
+          <ProtectedRoute>
+              <PlanPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/dashboard"
         element={

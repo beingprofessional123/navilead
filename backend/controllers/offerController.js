@@ -212,22 +212,25 @@ exports.acceptOffer = async (req, res) => {
       return res.status(500).json({ message: 'Won status not configured in database.' });
     }
 
-    // Create a new AcceptedOffer record
+    // Update the quote status to "Accepted"
+     await Quote.update(
+      { statusId: acceptedStatus.id },
+      { where: { id: quoteId } }
+    );
+
+    const quote = await Quote.findByPk(quoteId);
+
+     // Create a new AcceptedOffer record
     const acceptedOffer = await AcceptedOffer.create({
       quoteId,
       chosenServices,
       totalPrice,
       rememberNotes: rememberNotes || null,
+      userId: quote.userId, // include this
     });
 
-    // Update the quote status to "Accepted"
-    await Quote.update(
-      { statusId: acceptedStatus.id },
-      { where: { id: quoteId } }
-    );
-
     // Also update the lead status to "Won"
-    const quote = await Quote.findByPk(quoteId);
+  
     if (quote && quote.leadId) {
       const lead = await Lead.findByPk(quote.leadId);
       const user = await User.findByPk(quote.userId);
@@ -282,7 +285,8 @@ exports.askedQuestion = async (req, res) => {
     const askQuestion = await AskQuestion.create({
       quoteId: quote.id,
       leadId: lead.id,
-      question
+      question,
+      userId: quote.userId, // include this
     });
 
     // Update status

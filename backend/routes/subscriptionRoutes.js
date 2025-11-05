@@ -6,7 +6,7 @@ const subscriptionController = require('../controllers/subscriptionController');
 // Protect all subscription routes
 router.use(authenticate);
 
-// Create a Stripe subscription / assign free plan
+// Create a Stripe subscription / assign plan
 router.post('/checkout', subscriptionController.checkout);
 router.post('/verify-session', authenticate, subscriptionController.verifySession);
 router.post('/cancel-now', subscriptionController.cancelSubscription);

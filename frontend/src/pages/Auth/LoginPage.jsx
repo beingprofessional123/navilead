@@ -27,14 +27,24 @@ const LoginPage = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/auth/login`,
+        `${process.env.REACT_APP_API_BASE_URL}/auth/public/login`,
         {
           email: loginEmail,
           password: loginPassword,
         }
       );
 
-      const { token, user, userPlan, message } = res.data;
+      const { token, user, userPlan, message, otpSent, type } = res.data;
+
+      // ✅ If email is not verified — redirect to OTP verification page
+      if (otpSent && type === "emailverification") {
+        toast.info(t(message) || "Please verify your email first.");
+        navigate(
+          `/otp-page?email=${encodeURIComponent(loginEmail)}&type=${type}&pagesprocess=login`
+        );
+        return;
+      }
+
 
       login(token, user, userPlan);
       toast.success(t(message) || t("api.login.success"));
@@ -107,7 +117,7 @@ const LoginPage = () => {
             </div>
 
             <div className="form-group forgotpassword">
-              <Link to="/forgot-password">{t("login.forgotPassword")}</Link>
+              <Link to="/">{t("login.forgotPassword")}</Link>
             </div>
             <div className="login-btn">
               <button type="submit" className="btn btn-send" disabled={loading}>

@@ -12,6 +12,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false
       },
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+      },
       leadId: {
         type: DataTypes.INTEGER,
         allowNull: false
@@ -43,6 +49,12 @@ module.exports = (sequelize, DataTypes) => {
     AskQuestion.belongsTo(models.Lead, {
       foreignKey: 'leadId',
       as: 'lead',
+      onDelete: 'CASCADE'
+    });
+     // ✅ AskQuestion belongs to a specific User
+    AskQuestion.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user',
       onDelete: 'CASCADE'
     });
   };

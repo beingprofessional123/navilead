@@ -1,10 +1,9 @@
 // sync.js
 require('dotenv').config();
-require('./models'); // make sure User model is registered
 const sequelize = require('./config/database');
 
-
-sequelize.sync({ alter: true })
+sequelize
+  .sync({ alter: true }) // or { force: true } if you want to recreate tables
   .then(() => {
     console.log('✅ Database synced successfully');
     process.exit();

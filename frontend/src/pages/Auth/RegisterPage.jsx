@@ -1,11 +1,10 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import api from '../../utils/api';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { AuthContext } from '../../context/AuthContext';
 import { useTranslation } from "react-i18next";
-// ✅ Legacy-safe import
+import axios from "axios";
 import parsePhoneNumberFromString from 'libphonenumber-js/min';
 
 const SignupPage = () => {
@@ -17,8 +16,10 @@ const SignupPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
 
-  const { login, isAuthenticated } = useContext(AuthContext);
+
+  const { isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
 
   // Redirect if already logged in
@@ -37,25 +38,29 @@ const SignupPage = () => {
     try {
       const fullName = `${firstName} ${lastName}`.trim();
 
-      // ✅ Parse and validate phone number
-      const phoneNumber = parsePhoneNumberFromString(phone);
-
-      if (!phoneNumber || !phoneNumber.isValid()) {
-        toast.error(t('register.invalidPhone') || 'Please enter a valid phone number.');
+      if (!phone.startsWith('+')) {
+        setPhoneError('Please include your country code (e.g., +91XXXXXXXXXX).');
         setLoading(false);
         return;
       }
 
-      // ✅ Allow regions: USD, EUR, DKK, and India 🇮🇳
-      const allowedRegions = [
-        'US', // United States (USD)
-        'DK', // Denmark (DKK)
-        'DE', 'FR', 'IT', 'ES', 'NL', 'SE', 'NO', 'FI', 'IE', 'PT', // Europe (EUR)
-        'IN'  // India (INR)
-      ];
+      const phoneNumber = parsePhoneNumberFromString(phone);
+      if (!phoneNumber || !phoneNumber.isValid()) {
+        setPhoneError('Please enter a valid phone number.');
+        setLoading(false);
+        return;
+      }
 
+
+      // ✅ Allow only supported regions
+      const allowedRegions = [
+        'US', 'DK', 'DE', 'FR', 'IT', 'ES', 'NL', 'SE', 'NO', 'FI', 'IE', 'PT', 'IN'
+      ];
       if (!allowedRegions.includes(phoneNumber.country)) {
-        toast.error(t('register.unsupportedRegion') || 'Phone numbers from this region are not supported.');
+        toast.error(
+          t('register.unsupportedRegion') ||
+          'Phone numbers from this region are not supported.'
+        );
         setLoading(false);
         return;
       }
@@ -63,17 +68,27 @@ const SignupPage = () => {
       const formattedPhone = phoneNumber.formatInternational();
 
       // ✅ Proceed with signup
-      const res = await api.post('/auth/register', {
-        name: fullName,
-        email,
-        phone: formattedPhone,
-        password,
-      });
+       await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/auth/public/register`,
+        { 
+          name: fullName,
+          email,
+          phone: formattedPhone,
+          password,
 
-      // Auto login after signup
-      login(res.data.token, res.data.user, res.data.userPlan);
-      toast.success(t('api.register.success') || 'Registration successful!');
-      navigate('/dashboard');
+        }
+      );
+
+      await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/auth/public/otp-send`,
+        { email, type: 'emailverification', pagesprocess: 'registration' }
+      );
+
+      toast.success('Registration successful! Please verify your email to continue.');
+      navigate(
+        `/otp-page?email=${encodeURIComponent(email)}&type=emailverification&pagesprocess=registration`
+      );
+
     } catch (err) {
       const errorMessageKey = err.response?.data?.message || 'api.register.serverError';
       toast.error(t(errorMessageKey) || 'Server error, please try again.');
@@ -81,6 +96,7 @@ const SignupPage = () => {
       setLoading(false);
     }
   };
+
 
 
   return (
@@ -155,14 +171,21 @@ const SignupPage = () => {
                   <label className="form-label">{t('register.phoneLabel')}</label>
                   <input
                     type="text"
-                    className="form-control"
-                    placeholder={t('register.phonePlaceholder')}
+                    className={`form-control ${phoneError ? 'is-invalid' : ''}`}
+                    placeholder={t('register.phonePlaceholder', { defaultValue: 'e.g., +91XXXXXXXXXX' })}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      setPhoneError(''); // clear error while typing
+                    }}
                     required
                   />
+                  {phoneError && (
+                    <small className="text-danger d-block mt-1">{phoneError}</small>
+                  )}
                 </div>
               </div>
+
             </div>
 
             <div className="form-group">
@@ -171,7 +194,7 @@ const SignupPage = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   className="form-control"
-                  placeholder={t('register.passwordPlaceholder')}
+                  placeholder={t('register.passwordPlaceholder', { defaultValue: 'Enter your password' })}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required

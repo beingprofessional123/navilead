@@ -118,9 +118,8 @@ const BillingOverviewTab = ({ handleOpenUpgradeModal, userPlan, plans, handleNew
             <a href="#" className="btn btn-add" onClick={(e) => {
               e.preventDefault();
 
-              // filter out free plan and currently active plan
               const filteredPlans = plans.filter(
-                (plan) => plan.name !== "Free" && plan.id !== userPlan?.planId
+                (plan) => plan.id !== userPlan?.planId
               );
 
               if (filteredPlans.length > 0) {

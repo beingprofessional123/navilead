@@ -364,7 +364,7 @@ const IntegrationsPage = () => {
                                         </div>
                                         <div className="col-md-4">
                                             <div className="carddesign">
-                                                <h3 className="text-green-500">{loading ? '...' : rateLimits.usedPercentage}%</h3>
+                                                <h3 className="text-green-500">{loading ? '...' : rateLimits.usedPercentage}</h3>
                                                 <p>{t('integrationsPage.apiAccess.rateLimits.used')}</p>
                                             </div>
                                         </div>

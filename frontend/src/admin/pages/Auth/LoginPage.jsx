@@ -27,7 +27,7 @@ const LoginPage = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/auth/admin/login`,
+        `${process.env.REACT_APP_API_BASE_URL}/auth/public/admin/login`,
         {
           email: loginEmail,
           password: loginPassword,

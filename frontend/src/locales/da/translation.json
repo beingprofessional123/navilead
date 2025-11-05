@@ -33,37 +33,82 @@
     "haveAccount": "Har du allerede en konto?",
     "signIn": "Log ind her"
   },
+  "forgotPassword": {
+    "title": "Glemt adgangskode",
+    "emailLabel": "E-mailadresse",
+    "emailPlaceholder": "Indtast din registrerede e-mail",
+    "emailRequired": "Indtast venligst din e-mail.",
+    "otpSent": "Din engangskode (OTP) er sendt!",
+    "submit": "Send OTP",
+    "loading": "Sender...",
+    "rememberPassword": "Kan du huske din adgangskode?",
+    "signIn": "Log ind her"
+  },
+  "otpVerify": {
+    "title": "Bekræft OTP",
+    "subtitle": "Indtast den 4-cifrede kode, der blev sendt til din e-mail",
+    "invalidOtp": "Indtast venligst en gyldig 4-cifret OTP.",
+    "success": "OTP er bekræftet!",
+    "submit": "Bekræft OTP",
+    "loading": "Bekræfter...",
+    "notReceived": "Har du ikke modtaget koden?",
+    "resend": "Send OTP igen"
+  },
+  "resetPassword": {
+    "title": "Nulstil adgangskode",
+    "subtitle": "Indstil en ny adgangskode til din konto",
+    "passwordLabel": "Ny adgangskode",
+    "passwordPlaceholder": "Indtast ny adgangskode",
+    "confirmPasswordLabel": "Bekræft adgangskode",
+    "confirmPasswordPlaceholder": "Indtast adgangskode igen",
+    "submit": "Nulstil adgangskode",
+    "loading": "Nulstiller...",
+    "success": "Adgangskoden blev nulstillet!",
+    "passwordMismatch": "Adgangskoderne stemmer ikke overens.",
+    "passwordLength": "Adgangskoden skal være mindst 6 tegn lang.",
+    "fillAll": "Udfyld venligst alle felter.",
+    "rememberPassword": "Kan du huske din adgangskode?",
+    "signIn": "Log ind"
+  },
   "dashboard": {
-    "heading": "Dashboard",
-    "welcomeMessage": "Velkommen tilbage! Her er dit overblik.",
-    "addLead": "Tilføj lead",
-    "sendOffer": "Send tilbud",
-    "newLeadsThisWeek": "Nye leads denne uge",
-    "fromLastMonth": "+{{percentage}}% fra sidste måned",
+    "heading": "Dashboard Oversigt",
+    "welcomeMessage": "Velkommen tilbage! Her er et resumé af dine nøgletal.",
+    "fetchError": "Kunne ikke indlæse dashboarddata. Prøv venligst igen.",
+    "newLeadsThisWeek": "Nye Leads Denne Uge",
     "conversionRate": "Konverteringsrate",
-    "conversionRateChange": "+{{percentage}}% fra sidste måned",
-    "offersSent": "Tilbud sendt",
-    "offersSentChange": "+{{count}} fra sidste måned",
-    "offersAccepted": "Tilbud accepteret",
-    "offersAcceptedChange": "+{{count}} fra sidste måned",
-    "recentActivity": "Seneste aktivitet",
-    "newLeadReceived": "Nyt lead modtaget",
-    "offerAccepted": "Tilbud accepteret",
-    "emailSent": "Email sendt",
-    "followUpLeads": "Follow-up til {{count}} leads",
-    "leadAssigned": "Lead tildelt",
-    "minAgo": "{minutes} min siden",
-    "hourAgo": "{hours} time siden",
-    "hoursAgo": "{hours} timer siden",
+    "offersSent": "Tilbud Sendt",
+    "offersAccepted": "Tilbud Accepteret",
+    "updatedNow": "Opdateret lige nu",
+    "recentActivity": "Seneste Aktivitet",
+    "newLeadReceived": "Nyt Lead Modtaget",
+    "offerAccepted": "Tilbud Accepteret",
+    "emailSent": "Email Sendt",
+    "smsSent": "SMS Sendt",
+    "questionAsked": "Spørgsmål Stillet",
+    "noRecentActivity": "Ingen nylig aktivitet at vise.",
     "notifications": "Notifikationer",
+    "viewLeads": "Se Leads",
+    "priceFolderCreditsLow": "Tilbudsmappe-kreditter er ved at løbe tør. Venligst fyld op.",
+    "quickActions": "Hurtige Handlinger",
+    "createNewLead": "Opret Nyt Lead",
+    "createPricingTemplate": "Opret Prisskabelon",
+    "sendEmailCampaign": "Send Email Kampagne",
+    "createOfferTemplate": "Opret Tilbudsskabelon"
+  },
+  "notification": {
     "leadsWaiting": "Du har {{count}} leads der venter på opfølgning",
-    "viewLeads": "Se leads",
-    "emailCampaignSent": "Email kampagne blev sendt til {{count}} kontakter",
-    "priceFolderCreditsLow": "Prisfolder er ved at løbe tør for kreditter",
-    "quickActions": "Hurtige handlinger",
-    "createNewLead": "Opret nyt lead",
-    "sendEmailCampaign": "Send email kampagne",
-    "createOfferTemplate": "Opret tilbudsskabelon"
+    "emailCampaignSent": "Email kampagne blev sendt til {{count}} kontakter"
+  },
+  "time": {
+    "justNow": "lige nu",
+    "minAgo": "for {{count}} min siden",
+    "hourAgo": "for {{count}} time siden",
+    "dayAgo": "for {{count}} dag siden"
+  },
+  "common": {
+    "untitled": "Uden Titel",
+    "untitledQuote": "Tilbud Uden Titel",
+    "unknownSender": "Ukendt Afsender"
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -81,7 +126,6 @@
     "users-management": "Brugerstyring",
     "plan-management": "Planstyring",
     "transaction-management": "Transaktion"
-    
   },
   "leadsPage": {
     "title": "Leadhåndtering",
@@ -1101,5 +1145,5 @@
     "screenSizeDesktop": "Desktop",
     "screenSizeTablet": "Tablet",
     "screenSizeMobile": "Mobil"
-}
+  }
 }

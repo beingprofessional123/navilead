@@ -799,7 +799,7 @@ const LeadViewPage = () => {
               </div>
             </div>
 
-            <div className="leads-infocol">
+            {/* <div className="leads-infocol">
               <h3 className="leads-subheading">{translate('leadViewPage.communicationSubheading')}</h3>
               <div className="leads-view-action">
                 <Link to="#" className="btn btn-add">
@@ -815,7 +815,7 @@ const LeadViewPage = () => {
                   {translate('leadViewPage.callUp')}
                 </Link>
               </div>
-            </div>
+            </div> */}
 
             <div className="leads-infocol">
               <div className="formdesign lead-message">
@@ -917,110 +917,166 @@ const LeadViewPage = () => {
                 {translate('leadViewPage.activityTimelineTitle')}
               </h3>
               <ul className="leads-timeline">
-                {/* Static Timeline Entries (Replace with dynamic data from backend if available) */}
-                <li>
-                  <div className="leads-timeline-box">
-                    <div className="leads-timeline-info">
-                      <div className="leads-timeline-profile">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up" aria-hidden="true" style={{ color: '#ecaf11' }}><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg>
-                        <h5>Sarah Nielsen</h5>
-                      </div>
-                      <div className="leads-timeline-date">2025-01-04 16:00</div>
-                    </div>
-                    <div className="leads-timeline-details"><span>Status changed: New → Proposal</span></div>
-                  </div>
-                </li>
-                <li>
-                  <div className="leads-timeline-box">
-                    <div className="leads-timeline-info">
-                      <div className="leads-timeline-profile">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-external-link" aria-hidden="true" style={{ color: '#00a63e' }}><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
-                        <h5><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bot " aria-hidden="true"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>System</h5>
-                      </div>
-                      <div className="leads-timeline-date">2025-01-04 14:25</div>
-                    </div>
-                    <div className="leads-timeline-details"><span>Quote page visited: Website Development Quote</span></div>
-                  </div>
-                </li>
-                <li>
-                  <div className="leads-timeline-box">
-                    <div className="leads-timeline-info">
-                      <div className="leads-timeline-profile">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true" style={{ color: '#00a63e' }}><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        <h5><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bot " aria-hidden="true"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>System</h5>
-                      </div>
-                      <div className="leads-timeline-date">2025-01-04 14:22</div>
-                    </div>
-                    <div className="leads-timeline-details"><span>Email opened by customer: Regarding quote from Kasperwest.dk</span></div>
-                  </div>
-                </li>
-                <li>
-                  <div className="leads-timeline-box">
-                    <div className="leads-timeline-info">
-                      <div className="leads-timeline-profile">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-check" aria-hidden="true" style={{ color: '#00a63e' }}><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>
-                        <h5><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bot " aria-hidden="true"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>System</h5>
-                      </div>
-                      <div className="leads-timeline-date">2025-01-04 09:01</div>
-                    </div>
-                    <div className="leads-timeline-details"><span>SMS delivered to customer</span></div>
-                  </div>
-                </li>
-                <li>
-                  <div className="leads-timeline-box">
-                    <div className="leads-timeline-info">
-                      <div className="leads-timeline-profile">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true" style={{ color: '#00a63e' }}><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
-                        <h5><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bot " aria-hidden="true"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>System</h5>
-                      </div>
-                      <div className="leads-timeline-date">2025-01-04 09:00</div>
-                    </div>
-                    <div className="leads-timeline-details"><span>Quote sent via email and SMS: Website Development Quote</span></div>
-                  </div>
-                </li>
-                <li>
-                  <div className="leads-timeline-box">
-                    <div className="leads-timeline-info">
-                      <div className="leads-timeline-profile">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user" aria-hidden="true" style={{ color: '#0ff' }}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        <h5>Sarah Nielsen</h5>
-                      </div>
-                      <div className="leads-timeline-date">2025-01-03 16:15</div>
-                    </div>
-                    <div className="leads-timeline-details"><span>Quote sent via email and SMS: Website Development Quote</span></div>
-                  </div>
-                </li>
-                <li>
-                  <div className="leads-timeline-box">
-                    <div className="leads-timeline-info">
-                      <div className="leads-timeline-profile">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail" aria-hidden="true" style={{ color: '#2a77ef' }}><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg>
-                        <h5>Sarah Nielsen</h5>
-                      </div>
-                      <div className="leads-timeline-date">2025-01-03 11:15</div>
-                    </div>
-                    <div className="leads-timeline-details"><span>Sent initial information</span></div>
-                  </div>
-                </li>
-                <li>
-                  <div className="leads-timeline-box">
-                    <div className="leads-timeline-info">
-                      <div className="leads-timeline-profile">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone" aria-hidden="true" style={{ color: '#2a77ef' }}><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg>
-                        <h5>Sarah Nielsen</h5>
-                      </div>
-                      <div className="leads-timeline-date">2025-01-03 10:30</div>
-                    </div>
-                    <div className="leads-timeline-details"><span>Initial conversation about website needs</span></div>
-                  </div>
-                </li>
+                {lead?.timeline && lead.timeline.length > 0 ? (
+                  lead.timeline.map((event, index) => {
+                    let icon, color, details;
+
+                    // 🎨 Choose icon + text based on event type
+                    switch (event.type) {
+                      case "LeadCreated":
+                        icon = (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            className="lucide lucide-user-plus" style={{ color: "#0ff" }}>
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="8.5" cy="7" r="4" />
+                            <line x1="20" y1="8" x2="20" y2="14" />
+                            <line x1="23" y1="11" x2="17" y2="11" />
+                          </svg>
+                        );
+                        color = "#0ff";
+                        details = "Lead created";
+                        break;
+
+                      case "StatusUpdate":
+                        icon = (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            className="lucide lucide-trending-up" style={{ color: "#ecaf11" }}>
+                            <path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path>
+                          </svg>
+                        );
+                        color = "#ecaf11";
+                        details = `Status changed to: ${event.status} -> ${event.leadTitle}`;
+                        break;
+                      case "QuestionAsked":
+                        icon = (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            className="lucide lucide-help-circle" style={{ color: "#ecaf11" }}>
+                            <path d="M12 8v4l4 2"></path>
+                            <circle cx="12" cy="12" r="10"></circle>
+                          </svg>
+                        );
+                        color = "#ecaf11";
+                        details = `Question asked: ${event.question} -> ${event.quoteTitle}`;
+                        break;        
+                      case "OfferAccepted":
+                         icon = (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            className="lucide lucide-file-text" style={{ color: "#00a63e" }}>
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <line x1="10" y1="9" x2="8" y2="9" />
+                          </svg>
+                        );
+                        color = "#00a63e";
+                        details = `Offer accepted By ${lead.fullName} -> ${event.quoteTitle}`;
+                        break;        
+
+                      case "QuoteCreated":
+                        icon = (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            className="lucide lucide-file-text" style={{ color: "#00a63e" }}>
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <line x1="10" y1="9" x2="8" y2="9" />
+                          </svg>
+                        );
+                        color = "#00a63e";
+                        details = `Quote created: ${event.quoteTitle} (Total: ${event.total})`;
+                        break;
+
+                      case "SmsSent":
+                        icon = (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            className="lucide lucide-send" style={{ color: "#00a63e" }}>
+                            <path d="M14.7 21.7a.5.5 0 0 0 .9-.1l6.4-19a.5.5 0 0 0-.6-.6l-19 6.4a.5.5 0 0 0-.1.9l7.9 3.2a2 2 0 0 1 1.1 1.1z"></path>
+                            <path d="m21.9 2.1-10.9 10.9"></path>
+                          </svg>
+                        );
+                        color = "#00a63e";
+                        details = `SMS sent to ${event.recipient}: ${event.message}  -> ${event.quoteTitle}`;
+                        break;
+
+                      case "EmailSent":
+                        icon = (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            className="lucide lucide-mail" style={{ color: "#2a77ef" }}>
+                            <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path>
+                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                          </svg>
+                        );
+                        color = "#2a77ef";
+                        details = `Email sent to ${event.recipient}: ${event.subject} -> ${event.quoteTitle}`;
+                        break;
+
+                      default:
+                        icon = (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            className="lucide lucide-clock" style={{ color: "#999" }}>
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                          </svg>
+                        );
+                        details = event.message || "Activity";
+                    }
+
+                    return (
+                      <li key={index}>
+                        <div className="leads-timeline-box">
+                          <div className="leads-timeline-info">
+                            <div className="leads-timeline-profile">
+                              {icon}
+                              <h5>{lead.user.name}</h5>
+                            </div>
+                            <div className="leads-timeline-date">
+                              {new Date(event.time).toLocaleString("sv-SE", {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              }).replace(" ", " ")}
+
+                            </div>
+                          </div>
+                          <div className="leads-timeline-details">
+                            <span>{details}</span>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })
+                ) : (
+                  <li><div className="text-muted">No timeline events found</div></li>
+                )}
+
               </ul>
-              <div className="formdesign timelinecomment">
+              {/* <div className="formdesign timelinecomment">
                 <div className="form-group">
                   <textarea className="form-control" rows="3" id="comment" name="text" placeholder={translate('leadViewPage.addInternalCommentPlaceholder')}></textarea>
                 </div>
                 <button className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send " aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>{translate('leadViewPage.addComment')}</button>
-              </div>
+              </div> */}
             </div>
 
             <div className="leads-infocol">

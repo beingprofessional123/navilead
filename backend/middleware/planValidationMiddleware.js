@@ -18,31 +18,37 @@ const getCurrentCycle = (planData) => {
   const startDate = new Date(planData.startDate);
   const renewalDate = planData.renewalDate ? new Date(planData.renewalDate) : null;
 
-  // 🟢 Free plan → monthly reset
-  if (planData.plan.billing_type === "free") {
-    const cycleStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const cycleEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const remainingDays = Math.ceil((cycleEnd - now) / (1000 * 60 * 60 * 24));
-    return { start: cycleStart, end: cycleEnd, remainingDays, label: "Free (Monthly reset)" };
-  }
-
   // 🟡 Monthly plan
   if (planData.plan.billing_type === "monthly") {
     const cycleStart = startDate;
-    const cycleEnd = renewalDate;
+    const cycleEnd = planData.renewalDate
+      ? new Date(planData.renewalDate)
+      : planData.endDate
+        ? new Date(planData.endDate)
+        : null;
     const remainingDays = Math.max(0, Math.ceil((cycleEnd - now) / (1000 * 60 * 60 * 24)));
     return { start: cycleStart, end: cycleEnd, remainingDays, label: "Monthly" };
   }
 
   // 🔵 Yearly plan → monthly sub-cycle reset
   if (planData.plan.billing_type === "yearly") {
-    let currentCycleStart = new Date(startDate);
-    let currentCycleEnd = new Date(startDate);
+    const yearlyStart = new Date(planData.startDate);
+
+    // ✅ Renewal date is the anchor (if available), otherwise use endDate or fallback to start
+    const anchorDate = planData.renewalDate
+      ? new Date(planData.renewalDate)
+      : planData.endDate
+        ? new Date(planData.endDate)
+        : new Date(yearlyStart);
+
+    let currentCycleStart = new Date(yearlyStart);
+    let currentCycleEnd = new Date(currentCycleStart);
     currentCycleEnd.setMonth(currentCycleEnd.getMonth() + 1);
 
-    const yearlyEnd = new Date(startDate);
-    yearlyEnd.setFullYear(startDate.getFullYear() + 1);
+    const yearlyEnd = new Date(yearlyStart);
+    yearlyEnd.setFullYear(yearlyStart.getFullYear() + 1);
 
+    // 🔁 Iterate monthly until we reach the current cycle
     while (now >= currentCycleEnd && currentCycleEnd < yearlyEnd) {
       currentCycleStart = new Date(currentCycleEnd);
       currentCycleEnd = new Date(currentCycleStart);
@@ -72,7 +78,7 @@ const planValidation = (type) => {
       const userId = req.user.id;
 
       const userPlan = await UserPlan.findOne({
-        where: { userId, status: "active" },
+        where: { userId },
         include: { model: Plan, as: "plan" },
       });
 
@@ -106,7 +112,7 @@ const planValidation = (type) => {
 
       const whereCondition = { userId };
 
-      // Apply cycle date filter (for Free, Monthly, Yearly)
+      // Apply cycle date filter (for Monthly, Yearly)
       if (cycle?.start && cycle?.end) {
         whereCondition.createdAt = { [Op.between]: [cycle.start, cycle.end] };
       }
