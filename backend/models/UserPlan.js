@@ -55,6 +55,13 @@ module.exports = (sequelize, DataTypes) => {
   UserPlan.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
   UserPlan.belongsTo(models.Plan, { foreignKey: 'planId', as: 'plan' });
 
+  UserPlan.belongsTo(models.Transaction, {
+      foreignKey: 'subscriptionId',
+      targetKey: 'subscriptionId',
+      as: 'transaction',
+      constraints: false, // ⛔ prevent Sequelize from creating FK
+    });
+
   };
   return UserPlan;
 };

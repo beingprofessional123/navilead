@@ -67,6 +67,15 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'smsPlanId',
       as: 'smsPlan',
     });
+
+    // ✅ reverse relation
+    Transaction.hasOne(models.UserPlan, {
+      foreignKey: 'subscriptionId',
+      sourceKey: 'subscriptionId',
+      as: 'userPlan',
+      constraints: false, // match same
+    });
+
   };
 
   return Transaction;

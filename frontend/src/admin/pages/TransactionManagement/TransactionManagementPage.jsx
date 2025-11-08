@@ -5,6 +5,7 @@ import api from '../../utils/api';
 import MobileHeader from '../../components/MobileHeader';
 import { useTranslation } from "react-i18next";
 import MUIDataTable from "mui-datatables";
+import { colors } from '@mui/material';
 
 const TransactionManagementPage = () => {
   const { authToken } = useContext(AdminAuthContext);
@@ -114,8 +115,8 @@ const TransactionManagementPage = () => {
         filter: true,
         sort: true,
         customBodyRender: (value) => (
-          <span className={`badge ${value === 'paid' || value === 'succeeded' ? 'badge4' : 'badge1'}`}>
-            {value.toUpperCase()}
+          <span className={`text-${value === 'paid' || value === 'succeeded' ? 'success' : 'danger'}`}>
+            <b>{value.toUpperCase()}</b>
           </span>
         ),
       },
@@ -133,8 +134,8 @@ const TransactionManagementPage = () => {
         sort: false,
         customBodyRender: (value) =>
           value ? (
-            <a href={value} target="_blank" rel="noopener noreferrer">
-              View
+            <a href={value} style={{ color: '#00d4f0' }} target="_blank" rel="noopener noreferrer">
+              <b>View</b>
             </a>
           ) : (
             "—"

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useTranslation } from "react-i18next";
 import { AuthContext } from '../../context/AuthContext';
+import { useLimit } from "../../context/LimitContext";
 import api from '../../utils/api';
 import MobileHeader from '../../components/common/MobileHeader';
 
@@ -22,7 +23,8 @@ const BillingPage = () => {
   const [error, setError] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { authToken, userPlan } = useContext(AuthContext);
+  const { authToken } = useContext(AuthContext);
+  const { userPlan, refreshPlan } = useLimit();
   const [plans, setPlans] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -73,6 +75,7 @@ const BillingPage = () => {
       fetchPlans();
       fetchTransaction();
       fetchPaymentMethods();
+      refreshPlan();
     }
   }, [authToken]);
 

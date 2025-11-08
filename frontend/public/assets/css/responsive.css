@@ -121,6 +121,9 @@
     width: auto;
     margin-right: 10px;
 }
+.leadsright-bar .emailmodaltab ul.nav.nav-tabs li.nav-item {
+    margin: 0px;
+}
 .planactive-details .col-md-4 {
     margin-bottom: 10px;
 }

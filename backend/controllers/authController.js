@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const db = require('../models');
-const { User, UserVariable, Settings, OfferTemplate, UserPlan, Plan } = db;
+const { User, UserVariable, Settings, OfferTemplate, UserPlan,Lead, Transaction, Plan } = db;
 const stripe = require('../utils/stripe'); // Your Stripe instance
 const status = require('../models/status');
 const OtpVerificationTemplate = require('../EmailTemplate/OtpVerificationTemplate');
@@ -368,23 +368,51 @@ exports.userCurrentPlan = async (req, res) => {
       });
     }
 
-    // 🧠 Find user's active plan
     const userPlan = await UserPlan.findOne({
+        where: { userId },
+        include: [
+          {
+            model: Plan,
+            as: 'plan',
+          },
+          {
+            model: Transaction,
+            as: 'transaction', // ✅ join via subscriptionId
+            attributes: ['invoiceUrl'],
+          },
+        ],
+        order: [['createdAt', 'DESC']],
+      });
+
+
+     // Count total leads for this user
+    const totalLeads = await Lead.count({
       where: { userId },
-      include: [
-        {
-          model: Plan,
-          as: "plan",
-        },
-      ],
-      order: [["createdAt", "DESC"]],
     });
 
-    // ✅ Return active plan details
+    // Extract allowed leads from plan
+    const allowedLeads = userPlan.plan?.Total_Leads_Allowed || 0;
+    const remainingLeads = Math.max(allowedLeads - totalLeads, 0);
+
+    // Attach usage data inside plan object
+    const planWithUsage = {
+      ...userPlan.toJSON(),
+      plan: {
+        ...userPlan.plan.toJSON(),
+        usage: {
+          totalLeads,
+          allowedLeads,
+          remainingLeads,
+        },
+      },
+    };
+
+    // ✅ Return active plan + usage data
     return res.status(200).json({
       success: true,
-      plan: userPlan,
+      plan: planWithUsage,
     });
+    
   } catch (error) {
     console.error("Error fetching current plan:", error);
     return res.status(500).json({
