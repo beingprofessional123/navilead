@@ -636,7 +636,7 @@ const EmailSMSPage = () => {
                                             </tr>
                                         ) : (
                                             emailTemplates.map((template) => (
-                                                <tr key={template.id}>
+                                               <tr key={template.id} className={emailTemplates.length === 1 ? "tablemaiikdata" : ""}>
                                                     <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
                                                     <td><strong>{template.templateName}</strong></td>
                                                     <td>{template.subject}</td>
@@ -690,7 +690,7 @@ const EmailSMSPage = () => {
                                             </tr>
                                         ) : (
                                             smsTemplates.map((template) => (
-                                                <tr key={template.id}>
+                                                <tr key={template.id}  className={smsTemplates.length === 1 ? "tablemaiikdata" : ""}>
                                                     <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
                                                     <td><strong>{template.templateName}</strong></td>
                                                     <td>{template.recipientPhone}</td>

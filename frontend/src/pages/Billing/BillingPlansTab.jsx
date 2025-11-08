@@ -169,14 +169,14 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
       </div>
 
       {/* SMS Prices - Static/Translated */}
-      <div className="carddesign smsprices">
+      {/* <div className="carddesign smsprices">
         <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg>{t('smsPrices.title')}</h2>
         <div className="row">
           <div className="col-md-4"><h4 className="smsprices-a">{t('smsPrices.starter')}</h4><p>{t('smsPrices.perSms', { plan: 'Starter' })}</p></div>
           <div className="col-md-4"><h4 className="smsprices-b">{t('smsPrices.professional')}</h4><p>{t('smsPrices.perSms', { plan: 'Professional & Enterprise' })}</p></div>
           <div className="col-md-4"><h4 className="smsprices-c">{t('smsPrices.payAsYouGoTitle')}</h4><p>{t('smsPrices.payAsYouGoDescription')}</p></div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

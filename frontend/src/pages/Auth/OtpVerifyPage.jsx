@@ -216,7 +216,6 @@ const OtpVerifyPage = () => {
                     width: '60px',
                     height: '60px',
                     maxWidth: '70px',
-                    border: '2px solid #ccc',
                     borderRadius: '10px',
                   }}
                   maxLength="1"

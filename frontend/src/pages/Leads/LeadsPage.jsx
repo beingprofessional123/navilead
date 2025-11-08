@@ -418,7 +418,7 @@ const LeadsPage = () => {
               <div className="carddesign leadstable">
                 <h2 className="card-title">{t('leadsPage.tableTitle')}</h2>
                 <div className="tabledesign">
-                  <div className="table-responsive" style={{ minHeight: "150px", maxHeight: "480px" }}>
+                  <div className="table-responsive" style={{ minHeight: "170px", maxHeight: "480px" }}>
                     <table className="table">
                       <thead style={{ position: "sticky", top: 0, background: "rgb(22 31 38)", zIndex: 10, }}>
                         <tr>
@@ -446,7 +446,7 @@ const LeadsPage = () => {
                           </tr>
                         ) : filteredAndSortedLeads.length > 0 ? (
                           filteredAndSortedLeads.map((lead) => (
-                            <tr key={lead.id}>
+                            <tr key={lead.id} className={filteredAndSortedLeads.length === 1 ? "tablemaiikdata" : ""}>
                               <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
                               <td><Link to={`/leads/${lead.id}`} className="leadlink">{lead.leadNumber}</Link></td>
                               <td><strong>{lead.fullName}</strong></td>

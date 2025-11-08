@@ -909,9 +909,11 @@ td.actionbtn .btn.btn-add:hover {
 }
 .actionbtn .leaddropdown ul.dropdown-menu a.dropdown-item {
   font-size: 12px;
-  margin: 5px;
   display: flex;
   align-items: center;
+}
+.actionbtn .leaddropdown ul.dropdown-menu li {
+  margin: 5px;
 }
 .actionbtn .leaddropdown ul.dropdown-menu a.dropdown-item:hover {
   background-color: var(--primary);
@@ -4434,4 +4436,10 @@ ul.newoffertop-system li.active a svg {
     font-size: 12px;
     margin: 4px 0px 0px 0px;
     font-weight: 400;
+}
+
+.tablemaiikdata ul.dropdown-menu {
+    transform: none !important;
+    top: -2px !important;
+    left: -161px !important;
 }

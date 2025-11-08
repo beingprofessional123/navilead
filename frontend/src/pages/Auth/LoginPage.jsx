@@ -117,7 +117,7 @@ const LoginPage = () => {
             </div>
 
             <div className="form-group forgotpassword">
-              <Link to="/">{t("login.forgotPassword")}</Link>
+              <Link to="/forgot-password">{t("login.forgotPassword")}</Link>
             </div>
             <div className="login-btn">
               <button type="submit" className="btn btn-send" disabled={loading}>
