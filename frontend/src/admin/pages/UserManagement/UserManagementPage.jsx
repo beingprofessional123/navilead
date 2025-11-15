@@ -26,7 +26,7 @@ const UserManagementPage = () => {
             setUsers(res.data.users);
         } catch (err) {
             console.error(err);
-            toast.error('Failed to fetch users');
+            toast.error(t('admin.userManagement.alerts.fetchFail'));
         } finally {
             setLoading(false);
         }
@@ -62,15 +62,15 @@ const UserManagementPage = () => {
     };
 
     const deleteUser = async (id) => {
-        if (!window.confirm('Are you sure to delete this user?')) return;
+        if (!window.confirm(t('admin.userManagement.alerts.deleteConfirm'))) return;
         try {
             await api.delete(`/admin/users/${id}`, {
                 headers: { Authorization: `Bearer ${authToken}` },
             });
-            toast.success('User deleted successfully');
+            toast.success(t('admin.userManagement.alerts.deleteSuccess'));
             fetchUsers();
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to delete user');
+            toast.error(err.response?.data?.message || t('admin.userManagement.alerts.deleteFail'));
         }
     };
 
@@ -82,24 +82,24 @@ const UserManagementPage = () => {
                 await api.put(`/admin/users/${modalUser.id}`, modalUser, {
                     headers: { Authorization: `Bearer ${authToken}` },
                 });
-                toast.success('User updated successfully');
+                toast.success(t('admin.userManagement.alerts.updateSuccess'));
             } else {
                 // Add new user
                 // Basic validation for new user password
                 if (!modalUser.password) {
-                    toast.error('Password is required for a new user.');
+                    toast.error(t('admin.userManagement.alerts.passwordRequired'));
                     return;
                 }
                 await api.post(`/admin/users`, modalUser, {
                     headers: { Authorization: `Bearer ${authToken}` },
                 });
-                toast.success('User created successfully');
+                toast.success(t('admin.userManagement.alerts.createSuccess'));
             }
             fetchUsers();
             window.bootstrap.Modal.getInstance(document.getElementById('myModal')).hide();
         } catch (err) {
             console.error(err);
-            toast.error(err.response?.data?.message || 'Failed to save user');
+            toast.error(err.response?.data?.message || t('admin.userManagement.alerts.saveFail'));
         }
     };
 
@@ -109,10 +109,10 @@ const UserManagementPage = () => {
             await api.put(`/admin/users/${id}/status`, { status }, {
                 headers: { Authorization: `Bearer ${authToken}` },
             });
-            toast.success('Status updated');
+            toast.success(t('admin.userManagement.alerts.statusUpdateSuccess'));
             fetchUsers();
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to update status');
+            toast.error(err.response?.data?.message || t('admin.userManagement.alerts.statusUpdateFail'));
         }
     };
 
@@ -124,16 +124,16 @@ const UserManagementPage = () => {
     const inactiveUsers = users.filter(u => u.status === 'inactive').length;
     const totalSmsBalance = users.reduce((acc, u) => acc + (u.smsBalance || 0), 0);
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <div>{t('admin.userManagement.loading')}</div>;
 
     // 👇 Define Columns for DataTable
     const columns = [
         {
             name: 'name',
-            label: 'Name',
+            label: t('admin.userManagement.table.name'),
             options: {
-                filter: true,
-                sort: true,
+                filter: false,
+                sort: false,
                 customBodyRender: (value, tableMeta) => {
                     const user = users[tableMeta.rowIndex];
                     return (
@@ -153,15 +153,15 @@ const UserManagementPage = () => {
         },
         {
             name: 'email',
-            label: 'Email',
+            label: t('admin.userManagement.table.email'),
             options: {
-                filter: true,
-                sort: true,
+                filter: false,
+                sort: false,
             },
         },
         {
             name: 'phone',
-            label: 'Phone',
+            label: t('admin.userManagement.table.phone'),
             options: {
                 filter: false,
                 sort: false,
@@ -169,12 +169,12 @@ const UserManagementPage = () => {
         },
         {
             name: 'status',
-            label: 'Status',
+            label: t('admin.userManagement.table.status'),
             options: {
                 filter: true,
                 sort: true,
                 filterOptions: {
-                    names: ['active', 'inactive'],
+                    names: [t('admin.userManagement.modal.input.active'), t('admin.userManagement.modal.input.inactive')],
                 },
                 customBodyRender: (value, tableMeta) => {
                     const user = users[tableMeta.rowIndex];
@@ -190,15 +190,15 @@ const UserManagementPage = () => {
                         <div className="dropdown leaddropdown">
                             <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
                                 <span className={`badge ${user.status === 'active' ? 'badge4' : 'badge1'}`}>
-                                    {user.status}
+                                    {t(`admin.userManagement.modal.input.${user.status}`)}
                                 </span>
                             </button>
                             <ul className="dropdown-menu">
                                 <li>
-                                    <a className="dropdown-item" href="#" onClick={() => handleStatusChange('active')}>Active</a>
+                                    <a className="dropdown-item" href="#" onClick={() => handleStatusChange('active')}>{t('admin.userManagement.modal.input.active')}</a>
                                 </li>
                                 <li>
-                                    <a className="dropdown-item" href="#" onClick={() => handleStatusChange('inactive')}>InActive</a>
+                                    <a className="dropdown-item" href="#" onClick={() => handleStatusChange('inactive')}>{t('admin.userManagement.modal.input.inactive')}</a>
                                 </li>
                             </ul>
                         </div>
@@ -208,25 +208,25 @@ const UserManagementPage = () => {
         },
         {
             name: 'plan',
-            label: 'Plan',
+            label: t('admin.userManagement.table.plan'),
             options: {
                 filter: true,
                 sort: true,
-                customBodyRender: (value) => value || 'N/A',
+                customBodyRender: (value) => value || t('admin.userManagement.table.notApplicable'),
             },
         },
         {
             name: 'smsBalance',
-            label: 'SMS Balance',
+            label: t('admin.userManagement.table.smsBalance'),
             options: {
                 filter: false,
-                sort: true,
-                customBodyRender: (value) => value || '0',
+                sort: false,
+                customBodyRender: (value) => value ?? '0',
             },
         },
         {
             name: 'id',
-            label: 'Actions',
+            label: t('admin.userManagement.table.actions'),
             options: {
                 filter: false,
                 sort: false,
@@ -239,9 +239,9 @@ const UserManagementPage = () => {
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
                                 </button>
                                 <ul className="dropdown-menu">
-                                    <li><a className="dropdown-item" href="#" onClick={() => viewUser(user)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>View</a></li>
-                                    <li><a className="dropdown-item" href="#" onClick={() => openEditModal(user)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>Edit</a></li>
-                                    <li className="sletborder"><a className="dropdown-item" href="#" onClick={() => deleteUser(user.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>Delete</a></li>
+                                    <li><a className="dropdown-item" href="#" onClick={() => viewUser(user)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{t('view')}</a></li>
+                                    <li><a className="dropdown-item" href="#" onClick={() => openEditModal(user)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{t('edit')}</a></li>
+                                    <li className="sletborder"><a className="dropdown-item" href="#" onClick={() => deleteUser(user.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>{t('delete')}</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -264,7 +264,7 @@ const UserManagementPage = () => {
         viewColumns: true,
         textLabels: {
             body: {
-                noMatch: "No users found",
+                noMatch: t('admin.userManagement.table.noMatch'),
             },
         },
     };
@@ -278,14 +278,14 @@ const UserManagementPage = () => {
                     <div className="row top-row">
                         <div className="col-md-6">
                             <div className="dash-heading">
-                                <h2>User Management</h2>
-                                <p>User Management</p>
+                                <h2>{t('admin.userManagement.title')}</h2>
+                                <p>{t('admin.userManagement.subtitle')}</p>
                             </div>
                         </div>
                         <div className="col-md-6">
                             <div className="dashright">
                                 {/* Updated to use openAddModal */}
-                                <Link to="#" onClick={openAddModal} className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>New User</Link>
+                                <Link to="#" onClick={openAddModal} className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{t('admin.userManagement.newUserButton')}</Link>
                             </div>
                         </div>
                     </div>
@@ -295,7 +295,7 @@ const UserManagementPage = () => {
                             <div className="carddesign">
                                 <div className="leads-card leads-card1">
                                     <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg></span>
-                                    <h5>Total Users</h5>
+                                    <h5>{t('admin.userManagement.stats.totalUsers')}</h5>
                                     <h4>{totalUsers}</h4>
                                 </div>
                             </div>
@@ -304,7 +304,7 @@ const UserManagementPage = () => {
                             <div className="carddesign">
                                 <div className="leads-card leads-card2">
                                     <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up" aria-hidden="true"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg></span>
-                                    <h5>New Users</h5>
+                                    <h5>{t('admin.userManagement.stats.newUsers')}</h5>
                                     <h4>{newUsers}</h4>
                                 </div>
                             </div>
@@ -313,7 +313,7 @@ const UserManagementPage = () => {
                             <div className="carddesign">
                                 <div className="leads-card leads-card3">
                                     <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-target" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
-                                    <h5>InActive Users</h5>
+                                    <h5>{t('admin.userManagement.stats.inactiveUsers')}</h5>
                                     <h4>{inactiveUsers}</h4>
                                 </div>
                             </div>
@@ -322,7 +322,7 @@ const UserManagementPage = () => {
                             <div className="carddesign">
                                 <div className="leads-card leads-card4">
                                     <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-target" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
-                                    <h5>Active Users</h5>
+                                    <h5>{t('admin.userManagement.stats.activeUsers')}</h5>
                                     <h4>{activeUsers}</h4>
                                 </div>
                             </div>
@@ -331,7 +331,7 @@ const UserManagementPage = () => {
                             <div className="carddesign">
                                 <div className="leads-card leads-card5">
                                     <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up" aria-hidden="true"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg></span>
-                                    <h5>Total SMS Balance</h5>
+                                    <h5>{t('admin.userManagement.stats.totalSmsBalance')}</h5>
                                     <h4>{totalSmsBalance}</h4>
                                 </div>
                             </div>
@@ -343,7 +343,7 @@ const UserManagementPage = () => {
                             <div className="carddesign leadstable">
                                 <div className="admin_tabledesign">
                                     <MUIDataTable
-                                        title={"User List"}
+                                        title={t('admin.userManagement.table.title')}
                                         data={users}
                                         columns={columns}
                                         options={options}
@@ -362,8 +362,8 @@ const UserManagementPage = () => {
                         <div className="modal-header">
                             {/* Dynamically set title based on state */}
                             <h4 className="modal-title">
-                                {viewingUser ? 'View User' : modalUser.id ? 'Edit User' : 'Add User'}
-                                <p>Fill in user information.</p>
+                                {viewingUser ? t('admin.userManagement.modal.viewTitle') : modalUser.id ? t('admin.userManagement.modal.editTitle') : t('admin.userManagement.modal.addTitle')}
+                                <p>{t('admin.userManagement.modal.subtitle')}</p>
                             </h4>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
                         </div>
@@ -373,56 +373,56 @@ const UserManagementPage = () => {
                                 {/* CONDITIONAL RENDERING: VIEW USER MODE */}
                                 {viewingUser ? (
                                     <div className="view-user-details">
-                                        <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>User Information</h2>
-                                        <p><strong>Full Name:</strong> {viewingUser.name}</p>
-                                        <p><strong>Email:</strong> {viewingUser.email}</p>
-                                        <p><strong>Phone:</strong> {viewingUser.phone}</p>
-                                        <p><strong>Company Name:</strong> {viewingUser.companyName || 'N/A'}</p>
-                                        <p><strong>Status:</strong> <span className={`badge ${viewingUser.status === 'active' ? 'badge4' : 'badge1'}`}>{viewingUser.status}</span></p>
-                                        <p><strong>Plan:</strong> {viewingUser.plan || 'N/A'}</p>
-                                        <p><strong>SMS Balance:</strong> {viewingUser.smsBalance ?? 0}</p>
+                                        <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>{t('admin.userManagement.modal.viewInfoTitle')}</h2>
+                                        <p><strong>{t('admin.userManagement.modal.input.fullNameLabel')}:</strong> {viewingUser.name}</p>
+                                        <p><strong>{t('admin.userManagement.modal.input.emailLabel')}:</strong> {viewingUser.email}</p>
+                                        <p><strong>{t('admin.userManagement.modal.input.phoneLabel')}:</strong> {viewingUser.phone}</p>
+                                        <p><strong>{t('admin.userManagement.modal.viewCompanyName')}:</strong> {viewingUser.companyName || t('admin.userManagement.table.notApplicable')}</p>
+                                        <p><strong>{t('admin.userManagement.modal.viewStatus')}:</strong> <span className={`badge ${viewingUser.status === 'active' ? 'badge4' : 'badge1'}`}>{t(`admin.userManagement.modal.input.${viewingUser.status}`)}</span></p>
+                                        <p><strong>{t('admin.userManagement.modal.viewPlan')}:</strong> {viewingUser.plan || t('admin.userManagement.table.notApplicable')}</p>
+                                        <p><strong>{t('admin.userManagement.modal.viewSmsBalance')}:</strong> {viewingUser.smsBalance ?? 0}</p>
                                         <div className="modalfooter btn-right">
-                                            <button type="button" className="btn btn-add" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" className="btn btn-add" data-bs-dismiss="modal">{t('admin.userManagement.modal.buttons.close')}</button>
                                         </div>
                                     </div>
 
                                 ) : (
                                     /* CONDITIONAL RENDERING: ADD/EDIT FORM MODE */
                                     <form onSubmit={handleModalSubmit}>
-                                        <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>User information</h2>
+                                        <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>{t('admin.userManagement.modal.formInfoTitle')}</h2>
                                         <div className="row">
                                             <div className="col-md-6">
                                                 <div className="form-group">
-                                                    <label>Full Name *</label>
+                                                    <label>{t('admin.userManagement.modal.input.fullNameLabel')}</label>
                                                     {/* Added name="name" */}
-                                                    <input type="text" className="form-control" name="name" value={modalUser.name} onChange={handleModalChange} required placeholder="Enter Full Name" />
+                                                    <input type="text" className="form-control" name="name" value={modalUser.name} onChange={handleModalChange} required placeholder={t('admin.userManagement.modal.input.placeholderName')} />
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
                                                 <div className="form-group">
-                                                    <label>Company Name</label>
+                                                    <label>{t('admin.userManagement.modal.input.companyNameLabel')}</label>
                                                     {/* Added name="companyName" */}
-                                                    <input type="text" className="form-control" name="companyName" value={modalUser.companyName} onChange={handleModalChange} placeholder="Enter Company Name" />
+                                                    <input type="text" className="form-control" name="companyName" value={modalUser.companyName} onChange={handleModalChange} placeholder={t('admin.userManagement.modal.input.placeholderCompany')} />
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="row">
                                             <div className="col-md-6">
                                                 <div className="form-group">
-                                                    <label>Phone number *</label>
+                                                    <label>{t('admin.userManagement.modal.input.phoneLabel')}</label>
                                                     <div className="inputicon">
                                                         {/* Added name="phone" */}
-                                                        <input type="text" className="form-control" name="phone" value={modalUser.phone} onChange={handleModalChange} required placeholder="Enter Phone number" />
+                                                        <input type="text" className="form-control" name="phone" value={modalUser.phone} onChange={handleModalChange} required placeholder={t('admin.userManagement.modal.input.placeholderPhone')} />
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
                                                 <div className="form-group">
-                                                    <label>Email address *</label>
+                                                    <label>{t('admin.userManagement.modal.input.emailLabel')}</label>
                                                     <div className="inputicon">
                                                         {/* Added name="email" */}
-                                                        <input type="email" className="form-control" name="email" value={modalUser.email} onChange={handleModalChange} required placeholder="Enter email address" />
+                                                        <input type="email" className="form-control" name="email" value={modalUser.email} onChange={handleModalChange} required placeholder={t('admin.userManagement.modal.input.placeholderEmail')} />
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg>
                                                     </div>
                                                 </div>
@@ -433,10 +433,18 @@ const UserManagementPage = () => {
                                             {(!modalUser.id || modalUser.password !== null) && (
                                                 <div className="col-md-12">
                                                     <div className="form-group">
-                                                        <label>Password {modalUser.id ? '(Leave blank to keep current)' : '*'}</label>
+                                                        <label>{modalUser.id ? t('admin.userManagement.modal.input.passwordLabelEdit') : t('admin.userManagement.modal.input.passwordLabelNew')}</label>
                                                         <div className="inputicon">
                                                             {/* Added name="password" */}
-                                                            <input type="password" className="form-control" name="password" value={modalUser.password} onChange={handleModalChange} placeholder={modalUser.id ? '**********' : 'Enter Password'} required={!modalUser.id} />
+                                                            <input
+                                                                type="password"
+                                                                className="form-control"
+                                                                name="password"
+                                                                value={modalUser.password}
+                                                                onChange={handleModalChange}
+                                                                placeholder={modalUser.id ? '**********' : t('admin.userManagement.modal.input.placeholderPassword')}
+                                                                required={!modalUser.id}
+                                                            />
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lock" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                                                         </div>
                                                     </div>
@@ -446,8 +454,8 @@ const UserManagementPage = () => {
 
                                         <div className="modalfooter btn-right">
                                             {/* Changed Link to button/anchor with data-bs-dismiss */}
-                                            <a href="#" className="btn btn-add" data-bs-dismiss="modal">Cancel</a>
-                                            <button type="submit" className="btn btn-send">{modalUser.id ? 'Update' : 'Save'}</button>
+                                            <button type="button" className="btn btn-add" data-bs-dismiss="modal">{t('admin.userManagement.modal.buttons.cancel')}</button>
+                                            <button type="submit" className="btn btn-send">{modalUser.id ? t('admin.userManagement.modal.buttons.update') : t('admin.userManagement.modal.buttons.save')}</button>
                                         </div>
                                     </form>
                                 )}

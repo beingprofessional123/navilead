@@ -332,6 +332,7 @@ exports.adminLogin = async (req, res) => {
       email: user.email,
       phone: user.phone,
       language: user.language,
+      companyLogo: user.companyLogo,
       createdAt: user.createdAt,
     };
 

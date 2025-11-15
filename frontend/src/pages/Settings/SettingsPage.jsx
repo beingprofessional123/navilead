@@ -17,6 +17,7 @@ const SettingsPage = () => {
         companyName: "",
         email: "",
         phone: "",
+        name: "",
         websiteUrl: "",
         timezone: "",
         currency: "",
@@ -56,6 +57,7 @@ const SettingsPage = () => {
                 companyName: data.user.companyName || "",
                 email: data.user.email || "",
                 phone: data.user.phone || "",
+                name: data.user.name || "",
                 websiteUrl: data.user.websiteUrl || "",
                 timezone: data.user.timezone || "",
                 currency: data.user.currency || "",
@@ -83,6 +85,22 @@ const SettingsPage = () => {
             } else {
             setCurrentLogo(null);
             }
+
+             // --- 🔄 Update localStorage (user) ---
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const updatedUser = {
+                ...storedUser,
+                apikey: data.user.apikey,
+                companyLogo: data.user.companyLogo,
+                companyName: data.user.companyName,
+                currency: data.user.currency,
+                email: data.user.email,
+                language: data.user.language,
+                name: data.user.name,
+                phone: data.user.phone,
+                stripeCustomerId: data.user.stripeCustomerId
+            };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
 
 
         } catch (error) {
@@ -157,7 +175,10 @@ const SettingsPage = () => {
                 localStorage.setItem("i18nextLng", newUser.language || "en");
             }
             toast.success("Settings updated successfully!");
-            window.location.reload();
+             fetchSettings();
+             setTimeout(() => {
+                window.location.reload();
+            }, 5000);
         } catch (error) {
             console.error(error);
             toast.error("Failed to update settings.");
@@ -187,7 +208,10 @@ const SettingsPage = () => {
             });
             toast.success(translate('api.settings.logoUploadSuccess'));
             // Refetch settings to get the actual path from the backend
-            fetchSettings(); 
+             fetchSettings();
+             setTimeout(() => {
+                window.location.reload();
+            }, 5000);
         } catch (error) {
             toast.error(translate('api.settings.logoUploadError'));
         }
@@ -213,6 +237,10 @@ const SettingsPage = () => {
                 try {
                     await api.delete('/settings/remove-logo', { headers: { Authorization: `Bearer ${authToken}` } });
                     toast.success(translate('api.settings.logoRemoveSuccess'));
+                     fetchSettings();
+             setTimeout(() => {
+                window.location.reload();
+            }, 5000);
                 } catch (error) {
                     toast.error(translate('api.settings.logoRemoveError'));
                 }
@@ -327,6 +355,12 @@ const SettingsPage = () => {
                     <div className="formdesign">
                         <form>
                             <div className="row">
+                                <div className="col-md-12">
+                                    <div className="form-group">
+                                        <label>{translate('settingsPage.NameLabel')}</label>
+                                        <input type="text" className="form-control" name="name" value={formData.name} onChange={handleChange} placeholder={translate('settingsPage.namePlaceholder')} />
+                                    </div>
+                                </div>
                                 <div className="col-md-6">
                                     <div className="form-group">
                                         <label>{translate('settingsPage.companyNameLabel')}</label>

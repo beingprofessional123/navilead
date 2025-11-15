@@ -5,12 +5,13 @@ import api from '../../utils/api';
 import MobileHeader from '../../components/MobileHeader';
 import { useTranslation } from "react-i18next";
 import MUIDataTable from "mui-datatables";
-import { colors } from '@mui/material';
 
 const TransactionManagementPage = () => {
   const { authToken } = useContext(AdminAuthContext);
-  const [transactions, setTransactions] = useState([]);
+  const [allTransactions, setAllTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  // 'all', 'subscription', or 'sms' (API uses 'credit', but 'sms' is clearer for frontend filtering)
+  const [transactionType, setTransactionType] = useState('all'); 
   const { t } = useTranslation();
 
   const fetchTransactions = async () => {
@@ -19,25 +20,50 @@ const TransactionManagementPage = () => {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
-      // Transform data to add easy display fields
-      const formatted = res.data.transactions.map((txn) => ({
-        id: txn.id,
-        userName: txn.user?.name || "—",
-        userEmail: txn.user?.email || "—",
-        planName: txn.plan?.name || txn.smsPlan?.name || "—",
-        planType: txn.type === "subscription" ? "Subscription" : "SMS Credit",
-        price: txn.amount ? `DKK ${txn.amount}` : "—",
-        billing: txn.plan?.billing_type || "—",
-        status: txn.status,
-        date: new Date(txn.createdAt).toLocaleString(),
-        invoiceUrl: txn.invoiceUrl,
-        invoiceNo: txn.invoiceNo,
-      }));
+      const notApplicable = t('admin.transactionManagement.table.notApplicable');
 
-      setTransactions(formatted);
+      // Transform data to add easy display fields and handle API type differences
+      const formatted = res.data.transactions.map((txn) => {
+        
+        // 1. Determine the filtering type based on planId or smsPlanId presence
+        let type;
+        if (txn.planId || txn.type === 'subscription') {
+            type = 'subscription';
+        } else if (txn.smsPlanId || txn.type === 'credit') {
+            type = 'sms';
+        } else {
+            type = 'other'; // Fallback type
+        }
+        
+        return {
+            id: txn.id,
+            userName: txn.user?.name || notApplicable,
+            userEmail: txn.user?.email || notApplicable,
+            planName: txn.plan?.name || txn.smsPlan?.name || notApplicable,
+            
+            // Internal type used for filtering
+            type: type, 
+            
+            // Display name for the plan type
+            planTypeDisplay: type === "subscription" 
+                ? t('admin.transactionManagement.table.typeSubscription') 
+                : type === "sms" 
+                ? t('admin.transactionManagement.table.typeSMS')
+                : notApplicable,
+                
+            price: txn.amount ? `DKK ${txn.amount}` : notApplicable,
+            billing: txn.plan?.billing_type || notApplicable,
+            status: txn.status,
+            date: new Date(txn.createdAt).toLocaleString(),
+            invoiceUrl: txn.invoiceUrl,
+            invoiceNo: txn.invoiceNo,
+        };
+      });
+
+      setAllTransactions(formatted);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to fetch transactions');
+      toast.error(t('admin.transactionManagement.alerts.fetchFail'));
     } finally {
       setLoading(false);
     }
@@ -47,28 +73,35 @@ const TransactionManagementPage = () => {
     if (authToken) fetchTransactions();
   }, [authToken]);
 
-  if (loading) return <div>Loading...</div>;
+  // Filter transactions based on the active tab
+  const transactionsToDisplay = allTransactions.filter(txn => {
+    if (transactionType === 'all') return true;
+    return txn.type === transactionType;
+  });
+
+  if (loading) return <div>{t('admin.transactionManagement.loading')}</div>;
 
   // Define columns
   const columns = [
     {
       name: 'invoiceNo',
-      label: 'Invoice No.',
+      label: t('admin.transactionManagement.table.invoiceNo'),
       options: { filter: false, sort: true },
     },
     {
       name: 'planName',
-      label: 'Plan Name',
+      label: t('admin.transactionManagement.table.planName'),
       options: {
         filter: true,
         sort: true,
         customBodyRender: (value, tableMeta) => {
-          const txn = transactions[tableMeta.rowIndex];
+          // Use transactionsToDisplay for current row data
+          const txn = transactionsToDisplay[tableMeta.rowIndex]; 
           return (
             <span className="leadlink">
               {value}
               <small className="d-block text-muted">
-                {txn.planType}
+                {txn.planTypeDisplay}
               </small>
             </span>
           );
@@ -77,12 +110,13 @@ const TransactionManagementPage = () => {
     },
     {
       name: 'userName',
-      label: 'User',
+      label: t('admin.transactionManagement.table.user'),
       options: {
-        filter: true,
-        sort: true,
+        filter: false,
+        sort: false,
         customBodyRender: (value, tableMeta) => {
-          const txn = transactions[tableMeta.rowIndex];
+          // Use transactionsToDisplay for current row data
+          const txn = transactionsToDisplay[tableMeta.rowIndex];
           return (
             <div>
               <strong>{value}</strong>
@@ -96,25 +130,37 @@ const TransactionManagementPage = () => {
     },
     {
       name: 'price',
-      label: 'Amount',
+      label: t('admin.transactionManagement.table.amount'),
       options: { filter: false, sort: true },
     },
     {
       name: 'billing',
-      label: 'Billing Type',
+      label: t('admin.transactionManagement.table.billingType'),
       options: {
         filter: true,
         sort: true,
-        customBodyRender: (value) => value !== "—" ? value : "—",
+        customBodyRender: (value, tableMeta) => {
+            const notApplicable = t('admin.transactionManagement.table.notApplicable');
+            // Check the internal type instead of just checking for '-'
+            const txn = transactionsToDisplay[tableMeta.rowIndex];
+            
+            if (txn.type === 'sms' && value === notApplicable) {
+                return 'Credit'; // Display 'Credit' for SMS transactions without a billing type
+            }
+            
+            // Otherwise, return the original value (e.g., 'monthly', 'yearly', or the dash)
+            return value;
+        },
       },
     },
     {
       name: 'status',
-      label: 'Status',
+      label: t('admin.transactionManagement.table.status'),
       options: {
         filter: true,
         sort: true,
         customBodyRender: (value) => (
+          // Use status name for color coding
           <span className={`text-${value === 'paid' || value === 'succeeded' ? 'success' : 'danger'}`}>
             <b>{value.toUpperCase()}</b>
           </span>
@@ -123,36 +169,58 @@ const TransactionManagementPage = () => {
     },
     {
       name: 'date',
-      label: 'Date',
+      label: t('admin.transactionManagement.table.date'),
       options: { filter: false, sort: true },
     },
     {
       name: 'invoiceUrl',
-      label: 'Invoice',
+      label: t('admin.transactionManagement.table.invoice'),
       options: {
         filter: false,
         sort: false,
         customBodyRender: (value) =>
-          value ? (
+          value && value !== t('admin.transactionManagement.table.notApplicable') ? (
             <a href={value} style={{ color: '#00d4f0' }} target="_blank" rel="noopener noreferrer">
-              <b>View</b>
+              <b>{t('admin.transactionManagement.table.viewLink')}</b>
             </a>
           ) : (
-            "—"
+            t('admin.transactionManagement.table.notApplicable')
           ),
       },
     },
   ];
-
+  
   return (
+   <>
+    <style>{`
+      .nav-tabs .nav-item.show .nav-link, 
+      .nav-tabs .nav-link.active {
+        color: #0f1418 !important;
+        background-color: #02d4f0 !important;
+        border-color: #02d4f0 !important;
+      }
+      .nav-tabs .nav-link:focus, 
+      .nav-tabs .nav-link:hover {
+        isolation: isolate;
+        border-color: #02d4f0 !important;
+        color: #0f1418 !important;
+        background-color: #02d4f0 !important;
+      }
+      .nav-tabs {
+        border-bottom: var(--bs-nav-tabs-border-width) solid #02d4f0 !important;
+      }
+      .nav-link {
+        color: #cff !important;
+      }
+    `}</style>
     <div className="mainbody">
       <div className="container-fluid">
         <MobileHeader />
         <div className="row top-row">
-          <div className="col-md-6">
+          <div className="col-md-12">
             <div className="dash-heading">
-              <h2>Transaction Management</h2>
-              <p>List and view of all transactions.</p>
+              <h2>{t('admin.transactionManagement.title')}</h2>
+              <p>{t('admin.transactionManagement.subtitle')}</p>
             </div>
           </div>
         </div>
@@ -160,10 +228,42 @@ const TransactionManagementPage = () => {
         <div className="row">
           <div className="col-md-12">
             <div className="carddesign leadstable">
+              {/* Tab Navigation */}
+              <ul className="nav nav-tabs">
+                <li className="nav-item">
+                  <a
+                    className={`nav-link ${transactionType === 'all' ? 'active' : ''}`}
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setTransactionType('all'); }}
+                  >
+                    {t('admin.transactionManagement.tabs.all')}
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a
+                    className={`nav-link ${transactionType === 'subscription' ? 'active' : ''}`}
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setTransactionType('subscription'); }}
+                  >
+                    {t('admin.transactionManagement.tabs.subscriptions')}
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a
+                    className={`nav-link ${transactionType === 'sms' ? 'active' : ''}`}
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setTransactionType('sms'); }}
+                  >
+                    {t('admin.transactionManagement.tabs.sms')}
+                  </a>
+                </li>
+              </ul>
+              
               <div className="admin_tabledesign">
                 <MUIDataTable
-                  title={`All Transactions (${transactions.length})`}
-                  data={transactions}
+                  // Use transactionsToDisplay.length for accurate count based on the active tab
+                  title={t('admin.transactionManagement.table.title', { count: transactionsToDisplay.length })} 
+                  data={transactionsToDisplay}
                   columns={columns}
                   options={{
                     selectableRows: 'none',
@@ -177,7 +277,7 @@ const TransactionManagementPage = () => {
                     rowsPerPage: 10,
                     rowsPerPageOptions: [10, 25, 50],
                     textLabels: {
-                      body: { noMatch: "No transactions found" },
+                      body: { noMatch: t('admin.transactionManagement.table.noMatch') },
                     },
                   }}
                 />
@@ -187,6 +287,7 @@ const TransactionManagementPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

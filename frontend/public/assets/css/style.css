@@ -264,6 +264,20 @@ ul.sidebar-menu li.adminpanel {
   line-height: 30px;
   text-transform: uppercase;
 }
+.username img {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 30px;
+  height: 30px;
+  background-color: var(--muted);
+  border-radius: 100px;
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+  line-height: 30px;
+  text-transform: uppercase;
+}
 .username h6 {
   font-size: 11px;
   margin: 0px;
@@ -4442,4 +4456,12 @@ ul.newoffertop-system li.active a svg {
     transform: none !important;
     top: -2px !important;
     left: -161px !important;
+}
+
+.MuiChip-labelMedium {
+   color: #cff;
+}
+
+.css-38raov-MuiButtonBase-root-MuiChip-root .MuiChip-deleteIcon {
+    color: rgb(2 212 240) !important;
 }

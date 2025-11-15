@@ -10,7 +10,9 @@ const authRoutes = require('./routes/authRoutes');
 
 const UserRoutes = require('./routes/admin/UserRoutes');
 const PlanManagementRoutes = require('./routes/admin/PlanManagementRoutes');
+const SmsCreditPlanRoutes = require('./routes/admin/SmsCreditPlanRoutes');
 const TransactionManagementRoutes = require('./routes/admin/TransactionManagementRoutes');
+const AdminSettingsRoutes = require('./routes/admin/AdminSettingsRoutes');
 
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const leadRoutes = require('./routes/leadRoutes');
@@ -64,7 +66,9 @@ app.use('/api/auth', authRoutes);
 //Admin
 app.use('/api/admin/users', UserRoutes);
 app.use('/api/admin/plan-management', PlanManagementRoutes);
+app.use('/api/admin/sms-credit-plans', SmsCreditPlanRoutes);
 app.use('/api/admin/transaction-management', TransactionManagementRoutes);
+app.use('/api/admin/settings', AdminSettingsRoutes);
 
 //User
 app.use('/api/dashboard', dashboardRoutes);

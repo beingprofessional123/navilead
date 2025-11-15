@@ -1,6 +1,6 @@
 const multer = require('multer');
 const path = require('path');
-const { User,Settings, sequelize } = require('../models');
+const { User, Settings, sequelize } = require('../../models');
 const BACKEND_URL = process.env.BACKEND_URL;
 
 // -------------------------
@@ -30,19 +30,11 @@ exports.getSettings = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
       attributes: [
-        'companyName',
         'name',
         'email',
         'phone',
-        'websiteUrl',
-        'timezone',
-        'currency',
         'language',
-        'emailSignature',
-        'apikey',
-        'companyLogo',
-        'stripeCustomerId',
-        'createdAt',
+        'companyLogo'
       ]
     });
 
@@ -50,9 +42,17 @@ exports.getSettings = async (req, res) => {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    const settings = await Settings.findAll({ where: { userId: req.user.id } });
+    const userData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      language: user.language,
+      companyLogo: user.companyLogo,
+      createdAt: user.createdAt,
+    };
 
-    res.status(200).json({ user, settings });
+    res.status(200).json({ user: userData });
   } catch (error) {
     res.status(500).json({
       message: 'Error fetching settings.',
@@ -67,29 +67,13 @@ exports.getSettings = async (req, res) => {
 exports.updateGeneralSettings = async (req, res) => {
   const t = await sequelize.transaction();
   try {
-    const {
-      name,
-      companyName,
-      email,
-      phone,
-      websiteUrl,
-      timezone,
-      currency,
-      language,
-      emailSignature
-    } = req.body;
+    const { email, phone, language, name } = req.body;
 
-    // Build update object dynamically (only include provided fields)
     const updateData = {};
-    if (email !== undefined) updateData.email = email;
-    if (companyName !== undefined) updateData.companyName = companyName;
     if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
     if (phone !== undefined) updateData.phone = phone;
-    if (websiteUrl !== undefined) updateData.websiteUrl = websiteUrl;
-    if (timezone !== undefined) updateData.timezone = timezone;
-    if (currency !== undefined) updateData.currency = currency;
     if (language !== undefined) updateData.language = language;
-    if (emailSignature !== undefined) updateData.emailSignature = emailSignature;
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ message: "No valid fields provided to update." });
@@ -100,7 +84,7 @@ exports.updateGeneralSettings = async (req, res) => {
       transaction: t
     });
 
-     const updatedUser = await User.findByPk(req.user.id, { transaction: t });
+    const updatedUser = await User.findByPk(req.user.id, { transaction: t });
 
     await t.commit();
     res.status(200).json({ message: "Settings updated successfully.", user: updatedUser });
@@ -112,6 +96,7 @@ exports.updateGeneralSettings = async (req, res) => {
     });
   }
 };
+
 
 
 // -------------------------
@@ -164,25 +149,6 @@ exports.removeLogo = async (req, res) => {
   }
 };
 
-// -------------------------
-// Invite user (mock)
-// -------------------------
-exports.inviteUser = async (req, res) => {
-  try {
-    const { email } = req.body;
-    console.log(`User invitation sent to: ${email}`);
-    res
-      .status(200)
-      .json({ message: `Invitation sent to ${email} successfully.` });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error inviting user.',
-      error: error.message
-    });
-  }
-};
-
-
 exports.updateLanguage = async (req, res) => {
   try {
     const { language } = req.body;
@@ -201,28 +167,49 @@ exports.updateLanguage = async (req, res) => {
   }
 };
 
-exports.updateNotifications = async (req, res) => {
-    const { emailNotifications, smsNotifications } = req.body;
-    const userId = req.user.id; // Assuming your auth middleware sets req.user
+// -------------------------
+// Change Password
+// -------------------------
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    try {
-        // Update or create emailNotifications
-        await Settings.upsert({
-            userId,
-            key: 'emailNotifications',
-            value: emailNotifications.toString(),
-        });
-
-        // Update or create smsNotifications
-        await Settings.upsert({
-            userId,
-            key: 'smsNotifications',
-            value: smsNotifications.toString(),
-        });
-
-        res.json({ success: true, message: 'Notifications updated successfully!' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to update notifications' });
+    // Basic validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ message: "All password fields are required." });
     }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ message: "New password and confirmation do not match." });
+    }
+
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Check current password (assuming bcrypt)
+    const bcrypt = require('bcryptjs');
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Current password is incorrect." });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update in DB
+    await User.update(
+      { password: hashedPassword },
+      { where: { id: req.user.id } }
+    );
+
+    res.status(200).json({ message: "Password changed successfully." });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error changing password.",
+      error: error.message
+    });
+  }
 };
+

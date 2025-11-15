@@ -164,11 +164,26 @@ const SideBar = () => {
 
             </ul>
             {/* User Information Section */}
-            <div className="userinfo">
+              <div className="userinfo">
                 <div className="username">
-                    <span>{userInitials}</span>
-                    <h5>{user?.name}</h5>
-                    <h6>{user?.email}</h6>
+                    <div>
+                             {user?.companyLogo ? (
+                        // ✅ Show logo image
+                        <img
+                            src={user.companyLogo}
+                            alt={user?.name || "User Logo"}
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/user/images/no-image.webp";
+                            }}
+                        />
+                    ) : (
+                        <span>{userInitials}</span>
+                    )}
+                    {/* <span>{userInitials}</span> */}
+                        <h5>{user?.name || "No Name"}</h5>
+                        <h6>{user?.email || "No Email"}</h6>
+                    </div>
                 </div>
             </div>
         </div>

@@ -15,16 +15,18 @@ const SideBar = () => {
 
     const userInitials = user?.name
         ? user.name.split(' ').map(n => n[0]).join('')
-        : 'JD';
+        : 'JD'; // Default initials
 
     return (
         <div className="sidebar">
             <div className="sidebar-logo">
-                <Link to="/dashboard">
+                {/* Assuming /admin/dashboard is the correct path */}
+                <Link to="/admin/dashboard"> 
                     <img src="/assets/images/logo.svg" className="img-fluid" alt="Logo" />
                 </Link>
             </div>
             <ul className="sidebar-menu">
+                {/* Dashboard (Home Icon) */}
                 <li className={isActive('/admin/dashboard') ? 'active' : ''}>
                     <Link to="/admin/dashboard">
                         <span>
@@ -36,6 +38,7 @@ const SideBar = () => {
                         {t('sidebar.dashboard')}
                     </Link>
                 </li>
+                {/* Users Management (Users Icon) */}
                 <li className={isActive('/admin/users-management') ? 'active' : ''}>
                     <Link to="/admin/users-management">
                         <span>
@@ -49,6 +52,7 @@ const SideBar = () => {
                         {t('sidebar.users-management')}
                     </Link>
                 </li>
+                {/* Subscription Plan Management (Money Icon) */}
                 <li className={isActive('/admin/plan-management') ? 'active' : ''}>
                     <Link to="/admin/plan-management">
                         <span>
@@ -60,17 +64,46 @@ const SideBar = () => {
                         {t('sidebar.plan-management')}
                     </Link>
                 </li>
+                {/* Credit Plan Management (Money Icon) */}
+                <li className={isActive('/admin/credit-plan-management') ? 'active' : ''}>
+                    <Link to="/admin/credit-plan-management">
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-dollar-sign w-4 h-4" aria-hidden="true">
+                                <line x1="12" x2="12" y1="2" y2="22"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                        </span>
+                        {t('sidebar.credit-plan-management')}
+                    </Link>
+                </li>
+                {/* Transaction Management (Receipt Icon - UPDATED) */}
                 <li className={isActive('/admin/transaction-management') ? 'active' : ''}>
                     <Link to="/admin/transaction-management">
                         <span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings w-4 h-4" aria-hidden="true">
-                                <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
+                            {/* Icon changed from lucide-settings to lucide-receipt for better semantic fit */}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-receipt w-4 h-4" aria-hidden="true">
+                                <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2h-2m-14 0h16"></path>
+                                <path d="M8 11h8"></path>
+                                <path d="M8 15h8"></path>
                             </svg>
                         </span>
                         {t('sidebar.transaction-management')}
                     </Link>
                 </li>
+                {/* Settings (Settings Icon - NEW) */}
+                <li className={isActive('/admin/settings') ? 'active' : ''}>
+                    <Link to="/admin/settings">
+                        <span>
+                            {/* Using lucide-settings for the new Settings tab */}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings w-4 h-4" aria-hidden="true">
+                                <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </span>
+                        {t('sidebar.settings')} {/* Assuming this translation key exists */}
+                    </Link>
+                </li>
+                {/* Logout */}
                 <li className="adminpanel">
                     <Link to="#" onClick={logout} >
                         <span>
@@ -90,11 +123,26 @@ const SideBar = () => {
 
             </ul>
             {/* User Information Section */}
-            <div className="userinfo">
+             <div className="userinfo">
                 <div className="username">
-                    <span>{userInitials}</span>
-                    <h5>{user?.name}</h5>
-                    <h6>{user?.email}</h6>
+                    <div>
+                             {user?.companyLogo ? (
+                        // ✅ Show logo image
+                        <img
+                            src={user.companyLogo}
+                            alt={user?.name || "User Logo"}
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/user/images/no-image.webp";
+                            }}
+                        />
+                    ) : (
+                        <span>{userInitials}</span>
+                    )}
+                    {/* <span>{userInitials}</span> */}
+                        <h5>{user?.name || "No Name"}</h5>
+                        <h6>{user?.email || "No Email"}</h6>
+                    </div>
                 </div>
             </div>
         </div>
