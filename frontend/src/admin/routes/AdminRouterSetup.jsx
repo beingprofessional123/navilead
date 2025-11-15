@@ -7,7 +7,9 @@ import ErrorPage from '../pages/Auth/ErrorPage';
 import Dashboard from '../pages/Dashboard';
 import UserManagementPage from '../pages/UserManagement/UserManagementPage';
 import PlanManagementPage from '../pages/PlanManagement/PlanManagementPage';
+import CreditPlanManagementPage from '../pages/CreditPlanManagement/CreditPlanManagementPage';
 import TransactionManagementPage from '../pages/TransactionManagement/TransactionManagementPage';
+import SettingsPage from '../pages/Settings/SettingsPage';
 
 const AdminRouterSetup = () => {
   return (
@@ -50,11 +52,31 @@ const AdminRouterSetup = () => {
         }
       />
       <Route
+        path="/admin/credit-plan-management"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <CreditPlanManagementPage />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/transaction-management"
         element={
           <ProtectedRoute>
             <AdminLayout>
               <TransactionManagementPage />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <SettingsPage />
             </AdminLayout>
           </ProtectedRoute>
         }

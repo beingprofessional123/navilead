@@ -125,6 +125,7 @@
     "smsCredits": "SMS kreditter",
     "users-management": "Brugerstyring",
     "plan-management": "Planstyring",
+    "credit-plan-management": "Kreditplansstyring",
     "transaction-management": "Transaktion"
   },
   "leadsPage": {
@@ -548,6 +549,8 @@
     "description": "Administrer dit Navilead setup og præferencer",
     "saveChangesButton": "Gem ændringer",
     "accountProfileTitle": "Konto & Profil",
+    "NameLabel": "Navn",
+    "namePlaceholder": "Indtast dit fulde navn",
     "companyNameLabel": "Virksomhedsnavn",
     "companyNamePlaceholder": "Digital Marketing Pro",
     "contactEmailLabel": "Kontakt email",
@@ -1145,5 +1148,289 @@
     "screenSizeDesktop": "Desktop",
     "screenSizeTablet": "Tablet",
     "screenSizeMobile": "Mobil"
+  },
+  "admin": {
+    "smsPlan": {
+      "title": "SMS Kreditplan Administration",
+      "subtitle": "Opret, se og administrer SMS kreditplaner.",
+      "newPlanButton": "Ny SMS Plan",
+      "allPlansTitle": "Alle SMS Kreditplaner ({{count}})",
+      "table": {
+        "name": "Plannavn",
+        "price": "Pris",
+        "smsCount": "SMS Antal",
+        "status": "Status",
+        "actions": "Handling"
+      },
+      "modal": {
+        "addTitle": "Tilføj Ny SMS Plan",
+        "editTitle": "Rediger SMS Plan",
+        "viewTitle": "Se SMS Plan",
+        "subtitle": "Udfyld detaljer for SMS kreditplanen.",
+        "generalInfo": "Generel Information",
+        "featuresDesc": "Funktioner/Beskrivelse",
+        "addFeature": "Tilføj Funktion",
+        "noFeatures": "Klik på \"Tilføj Funktion\" for at angive planens funktioner.",
+        "input": {
+          "nameLabel": "Plannavn *",
+          "priceLabel": "Pris (DKK) *",
+          "smsCountLabel": "SMS Antal *",
+          "statusLabel": "Status *",
+          "active": "Aktiv",
+          "inactive": "Inaktiv"
+        },
+        "buttons": {
+          "close": "Luk",
+          "cancel": "Annuller",
+          "save": "Gem Plan",
+          "update": "Opdater Plan"
+        }
+      },
+      "alerts": {
+        "fetchFail": "Kunne ikke hente SMS planer",
+        "deleteConfirm": "Er du sikker på, at du vil slette denne SMS kreditplan?",
+        "deleteSuccess": "SMS plan slettet succesfuldt",
+        "deleteFail": "Kunne ikke slette planen",
+        "createSuccess": "SMS plan oprettet succesfuldt",
+        "updateSuccess": "SMS plan opdateret succesfuldt",
+        "saveFail": "Kunne ikke gemme SMS plan",
+        "statusUpdateSuccess": "Status opdateret",
+        "statusUpdateFail": "Kunne ikke opdatere status"
+      }
+    },
+    "planManagement": {
+      "title": "Plan Administration",
+      "subtitle": "Opret, se og administrer abonnementsplaner.",
+      "newPlanButton": "Ny Plan",
+      "allPlansTitle": "Alle Planer ({{count}})",
+      "table": {
+        "name": "Navn",
+        "priceBilling": "Pris / Fakturering",
+        "leads": "Leads",
+        "emailsSMS": "E-mails / SMS",
+        "status": "Status",
+        "actions": "Handling",
+        "billingType": {
+          "monthly": "Månedlig",
+          "yearly": "Årlig"
+        }
+      },
+      "modal": {
+        "addTitle": "Tilføj Ny Plan",
+        "editTitle": "Rediger Plan",
+        "viewTitle": "Se Plan",
+        "subtitle": "Udfyld planoplysninger.",
+        "generalInfo": "Generel Information",
+        "description": "Beskrivelse",
+        "pricingBilling": "Priser & Fakturering",
+        "featureLimits": "Funktionsgrænser",
+        "accessIntegration": "Adgang & Integration",
+        "addFeature": "Tilføj Funktion",
+        "noFeatures": "Klik på \"Tilføj Funktion\" for at angive planfunktioner.",
+        "input": {
+          "nameLabel": "Plannavn *",
+          "shortDescLabel": "Kort Beskrivelse",
+          "priceLabel": "Pris (DKK) *",
+          "discountLabel": "Rabat (%)",
+          "billingTypeLabel": "Faktureringstype *",
+          "leadsAllowed": "Tilladte Leads",
+          "emailsAllowed": "Tilladte E-mails",
+          "smsAllowed": "Tilladte SMS",
+          "offersAllowed": "Tilladte Tilbud",
+          "workflowsAllowed": "Tilladte Workflows",
+          "apiAccess": "API Adgang Tilladt",
+          "offerCustomization": "Tilbudsside Tilpasning Tilladt",
+          "statusLabel": "Status *",
+          "active": "Aktiv",
+          "inactive": "Inaktiv"
+        },
+        "view": {
+          "shortDescNA": "Ikke Tilgængelig",
+          "leadsAllowed": "Tilladte Leads:",
+          "emailsAllowed": "Tilladte E-mails:",
+          "smsAllowed": "Tilladte SMS:",
+          "offersAllowed": "Tilladte Tilbud:",
+          "workflowsAllowed": "Tilladte Workflows:",
+          "apiAccess": "API Adgang:",
+          "offerCustomization": "Tilbudsside Tilpasning:",
+          "allowed": "Tilladt",
+          "notAllowed": "Ikke Tilladt"
+        },
+        "buttons": {
+          "close": "Luk",
+          "cancel": "Annuller",
+          "save": "Gem Plan",
+          "update": "Opdater Plan"
+        }
+      },
+      "alerts": {
+        "fetchFail": "Kunne ikke hente planer",
+        "deleteConfirm": "Er du sikker på, at du vil slette denne plan?",
+        "deleteSuccess": "Plan slettet succesfuldt",
+        "deleteFail": "Kunne ikke slette planen",
+        "createSuccess": "Plan oprettet succesfuldt",
+        "updateSuccess": "Plan opdateret succesfuldt",
+        "saveFail": "Kunne ikke gemme planen",
+        "statusUpdateSuccess": "Status opdateret",
+        "statusUpdateFail": "Kunne ikke opdatere status"
+      }
+    },
+    "userManagement": {
+      "title": "Brugeradministration",
+      "subtitle": "Brugeradministration",
+      "newUserButton": "Ny Bruger",
+      "loading": "Indlæser...",
+      "stats": {
+        "totalUsers": "Totale Brugere",
+        "newUsers": "Nye Brugere",
+        "inactiveUsers": "Inaktive Brugere",
+        "activeUsers": "Aktive Brugere",
+        "totalSmsBalance": "Total SMS Saldo"
+      },
+      "table": {
+        "title": "Brugerliste",
+        "name": "Navn",
+        "email": "E-mail",
+        "phone": "Telefon",
+        "status": "Status",
+        "plan": "Plan",
+        "smsBalance": "SMS Saldo",
+        "actions": "Handlinger",
+        "notApplicable": "Ikke relevant",
+        "noMatch": "Ingen brugere fundet"
+      },
+      "modal": {
+        "viewTitle": "Se Bruger",
+        "editTitle": "Rediger Bruger",
+        "addTitle": "Tilføj Bruger",
+        "subtitle": "Udfyld brugeroplysninger.",
+        "viewInfoTitle": "Brugerinformation",
+        "viewCompanyName": "Firmanavn:",
+        "viewPhone": "Telefon:",
+        "viewEmail": "E-mail:",
+        "viewStatus": "Status:",
+        "viewPlan": "Plan:",
+        "viewSmsBalance": "SMS Saldo:",
+        "formInfoTitle": "Brugerinformation",
+        "input": {
+          "fullNameLabel": "Fulde Navn *",
+          "companyNameLabel": "Firmanavn",
+          "phoneLabel": "Telefonnummer *",
+          "emailLabel": "E-mailadresse *",
+          "passwordLabelNew": "Adgangskode *",
+          "passwordLabelEdit": "Adgangskode (Lad blank for at beholde nuværende)",
+          "placeholderName": "Indtast Fulde Navn",
+          "placeholderCompany": "Indtast Firmanavn",
+          "placeholderPhone": "Indtast Telefonnummer",
+          "placeholderEmail": "Indtast E-mailadresse",
+          "placeholderPassword": "Indtast Adgangskode",
+          "active": "Aktiv",
+          "inactive": "Inaktiv"
+        },
+        "buttons": {
+          "cancel": "Annuller",
+          "close": "Luk",
+          "save": "Gem",
+          "update": "Opdater"
+        }
+      },
+      "alerts": {
+        "fetchFail": "Kunne ikke hente brugere",
+        "deleteConfirm": "Er du sikker på, at du vil slette denne bruger?",
+        "deleteSuccess": "Bruger slettet succesfuldt",
+        "deleteFail": "Kunne ikke slette bruger",
+        "updateSuccess": "Bruger opdateret succesfuldt",
+        "createSuccess": "Bruger oprettet succesfuldt",
+        "saveFail": "Kunne ikke gemme bruger",
+        "passwordRequired": "Adgangskode er påkrævet for en ny bruger.",
+        "statusUpdateSuccess": "Status opdateret",
+        "statusUpdateFail": "Kunne ikke opdatere status"
+      }
+    },
+    "transactionManagement": {
+      "title": "Transaktionsadministration",
+      "subtitle": "Liste og visning af alle transaktioner.",
+      "loading": "Indlæser...",
+      "tabs": {
+        "all": "Alle Transaktioner",
+        "subscriptions": "Abonnementstransaktioner",
+        "sms": "SMS-transaktioner"
+      },
+      "table": {
+        "title": "Transaktionsliste ({{count}})",
+        "invoiceNo": "Fakturanr.",
+        "planName": "Plannavn",
+        "user": "Bruger",
+        "amount": "Beløb",
+        "billingType": "Faktureringstype",
+        "status": "Status",
+        "date": "Dato",
+        "invoice": "Faktura",
+        "typeSubscription": "Abonnement",
+        "typeSMS": "SMS-Kredit",
+        "viewLink": "Vis",
+        "notApplicable": "—",
+        "noMatch": "Ingen transaktioner fundet"
+      },
+      "alerts": {
+        "fetchFail": "Kunne ikke hente transaktioner"
+      }
+    },
+    "settingsPage": {
+      "title": "Indstillinger",
+      "description": "Administrer din profil, virksomhedsbranding og systempræferencer.",
+      "saveChangesButton": "Gem Ændringer",
+      "noChangesToUpdate": "Ingen ændringer at opdatere.",
+      "cannotUploadMessage": "Kan ikke uploade filen. Prøv venligst igen.",
+      "api": {
+        "settings": {
+          "fetchError": "Kunne ikke hente indstillinger.",
+          "updateSuccess": "Indstillinger opdateret succesfuldt!",
+          "updateError": "Kunne ikke opdatere indstillinger.",
+          "logoUploadSuccess": "Virksomhedslogo uploadet succesfuldt!",
+          "logoUploadError": "Kunne ikke uploade virksomhedslogo.",
+          "logoRemoveSuccess": "Virksomhedslogo fjernet succesfuldt!",
+          "logoRemoveError": "Kunne ikke fjerne virksomhedslogo."
+        }
+      },
+      "accountProfileTitle": "Konto & Profil",
+      "NameLabel": "Navn",
+      "namePlaceholder": "Indtast dit fulde navn",
+      "contactEmailLabel": "Kontakt E-mail",
+      "contactEmailPlaceholder": "Indtast din kontakt e-mail",
+      "phoneLabel": "Telefon",
+      "phonePlaceholder": "Indtast dit telefonnummer",
+      "languageLabel": "Sprog",
+      "languageDanish": "Dansk",
+      "languageEnglish": "Engelsk",
+      "changePasswordTitle": "Skift Adgangskode",
+      "currentPasswordLabel": "Nuværende Adgangskode",
+      "currentPasswordPlaceholder": "Indtast din nuværende adgangskode",
+      "newPasswordLabel": "Ny Adgangskode",
+      "newPasswordPlaceholder": "Indtast en ny adgangskode",
+      "confirmNewPasswordLabel": "Bekræft Ny Adgangskode",
+      "confirmNewPasswordPlaceholder": "Gentast din nye adgangskode",
+      "updatePasswordButton": "Opdater Adgangskode",
+      "passwordMismatch": "Ny adgangskode og bekræftelse stemmer ikke overens.",
+      "allPasswordFieldsRequired": "Alle adgangskodefelter skal udfyldes.",
+      "passwordUpdateSuccess": "Adgangskode opdateret succesfuldt!",
+      "passwordUpdateError": "Kunne ikke opdatere adgangskoden. Tjek venligst din nuværende adgangskode.",
+      "corporateBrandingTitle": "Virksomhedsbranding",
+      "profileLabel": "Virksomhedslogo",
+      "profileNote": "Upload dit logo her. Anbefalet størrelse: 400x400px.",
+      "uploadLogoText": "Træk og slip din fil her, eller",
+      "logoFileFormats": "Understøttede filer: JPG, PNG, SVG op til 5MB",
+      "chooseFileButton": "Vælg Fil",
+      "systemStatusTitle": "Systemstatus",
+      "systemStatusDescription": "Viser tjenestens aktuelle driftsstatus.",
+      "systemStatusOnline": "Online",
+      "systemLastUpdated": "Sidst opdateret: lige nu",
+      "emailSmsPage": {
+        "areYouSure": "Er du sikker?",
+        "revertWarning": "Du kan ikke fortryde dette!",
+        "yesDeleteIt": "Ja, fjern den!",
+        "cancel": "Annuller"
+      }
+    }
   }
 }

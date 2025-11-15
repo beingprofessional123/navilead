@@ -45,32 +45,32 @@
     "signIn": "Sign in here"
   },
   "otpVerify": {
-  "title": "Verify OTP",
-  "subtitle": "Enter the 4-digit code sent to your email",
-  "invalidOtp": "Please enter a valid 4-digit OTP.",
-  "success": "OTP verified successfully!",
-  "submit": "Verify OTP",
-  "loading": "Verifying...",
-  "notReceived": "Didn't receive the code?",
-  "resend": "Resend OTP"
-},
-"resetPassword": {
-  "title": "Reset Password",
-  "subtitle": "Set a new password for your account",
-  "passwordLabel": "New Password",
-  "passwordPlaceholder": "Enter new password",
-  "confirmPasswordLabel": "Confirm Password",
-  "confirmPasswordPlaceholder": "Re-enter new password",
-  "submit": "Reset Password",
-  "loading": "Resetting...",
-  "success": "Password reset successfully!",
-  "passwordMismatch": "Passwords do not match.",
-  "passwordLength": "Password must be at least 6 characters long.",
-  "fillAll": "Please fill all fields.",
-  "rememberPassword": "Remember your password?",
-  "signIn": "Sign In"
-},
-"dashboard": {
+    "title": "Verify OTP",
+    "subtitle": "Enter the 4-digit code sent to your email",
+    "invalidOtp": "Please enter a valid 4-digit OTP.",
+    "success": "OTP verified successfully!",
+    "submit": "Verify OTP",
+    "loading": "Verifying...",
+    "notReceived": "Didn't receive the code?",
+    "resend": "Resend OTP"
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "subtitle": "Set a new password for your account",
+    "passwordLabel": "New Password",
+    "passwordPlaceholder": "Enter new password",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "submit": "Reset Password",
+    "loading": "Resetting...",
+    "success": "Password reset successfully!",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordLength": "Password must be at least 6 characters long.",
+    "fillAll": "Please fill all fields.",
+    "rememberPassword": "Remember your password?",
+    "signIn": "Sign In"
+  },
+  "dashboard": {
     "heading": "Dashboard Overview",
     "welcomeMessage": "Welcome back! Here is a summary of your key metrics.",
     "fetchError": "Failed to load dashboard data. Please try again.",
@@ -125,6 +125,7 @@
     "smsCredits": "SMS Credits",
     "users-management": "Users Management",
     "plan-management": "Plan Management",
+    "credit-plan-management": "Credit Plan Management",
     "transaction-management": "Transaction"
   },
   "leadsPage": {
@@ -548,6 +549,8 @@
     "description": "Manage your Navilead setup and preferences",
     "saveChangesButton": "Save changes",
     "accountProfileTitle": "Account & Profile",
+    "NameLabel": "Name",
+    "namePlaceholder": "Enter your full name",
     "companyNameLabel": "Company Name",
     "companyNamePlaceholder": "Digital Marketing Pro",
     "contactEmailLabel": "Contact Email",
@@ -1144,5 +1147,289 @@
     "screenSizeDesktop": "Desktop",
     "screenSizeTablet": "Tablet",
     "screenSizeMobile": "Mobile"
-}
+  },
+  "admin": {
+    "smsPlan": {
+      "title": "SMS Credit Plan Management",
+      "subtitle": "Create, view, and manage SMS credit plans.",
+      "newPlanButton": "New SMS Plan",
+      "allPlansTitle": "All SMS Credit Plans ({{count}})",
+      "table": {
+        "name": "Plan Name",
+        "price": "Price",
+        "smsCount": "SMS Count",
+        "status": "Status",
+        "actions": "Action"
+      },
+      "modal": {
+        "addTitle": "Add New SMS Plan",
+        "editTitle": "Edit SMS Plan",
+        "viewTitle": "View SMS Plan",
+        "subtitle": "Fill in SMS credit plan details.",
+        "generalInfo": "General Information",
+        "featuresDesc": "Features/Description",
+        "addFeature": "Add Feature",
+        "noFeatures": "Click \"Add Feature\" to list plan features.",
+        "input": {
+          "nameLabel": "Plan Name *",
+          "priceLabel": "Price (DKK) *",
+          "smsCountLabel": "SMS Count *",
+          "statusLabel": "Status *",
+          "active": "Active",
+          "inactive": "Inactive"
+        },
+        "buttons": {
+          "close": "Close",
+          "cancel": "Cancel",
+          "save": "Save Plan",
+          "update": "Update Plan"
+        }
+      },
+      "alerts": {
+        "fetchFail": "Failed to fetch SMS plans",
+        "deleteConfirm": "Are you sure you want to delete this SMS credit plan?",
+        "deleteSuccess": "SMS plan deleted successfully",
+        "deleteFail": "Failed to delete plan",
+        "createSuccess": "SMS plan created successfully",
+        "updateSuccess": "SMS plan updated successfully",
+        "saveFail": "Failed to save SMS plan",
+        "statusUpdateSuccess": "Status updated",
+        "statusUpdateFail": "Failed to update status"
+      }
+    },
+    "planManagement": {
+      "title": "Plan Management",
+      "subtitle": "Create, view, and manage subscription plans.",
+      "newPlanButton": "New Plan",
+      "allPlansTitle": "All Plans ({{count}})",
+      "table": {
+        "name": "Name",
+        "priceBilling": "Price / Billing",
+        "leads": "Leads",
+        "emailsSMS": "Emails / SMS",
+        "status": "Status",
+        "actions": "Action",
+        "billingType": {
+          "monthly": "Monthly",
+          "yearly": "Yearly"
+        }
+      },
+      "modal": {
+        "addTitle": "Add New Plan",
+        "editTitle": "Edit Plan",
+        "viewTitle": "View Plan",
+        "subtitle": "Fill in plan details.",
+        "generalInfo": "General Information",
+        "description": "Description",
+        "pricingBilling": "Pricing & Billing",
+        "featureLimits": "Feature Limits",
+        "accessIntegration": "Access & Integration",
+        "addFeature": "Add Feature",
+        "noFeatures": "Click \"Add Feature\" to list plan features.",
+        "input": {
+          "nameLabel": "Plan Name *",
+          "shortDescLabel": "Short Description",
+          "priceLabel": "Price (DKK) *",
+          "discountLabel": "Discount (%)",
+          "billingTypeLabel": "Billing Type *",
+          "leadsAllowed": "Leads Allowed",
+          "emailsAllowed": "Emails Allowed",
+          "smsAllowed": "SMS Allowed",
+          "offersAllowed": "Offers Allowed",
+          "workflowsAllowed": "Workflows Allowed",
+          "apiAccess": "API Access Allowed",
+          "offerCustomization": "Offer Page Customization Allowed",
+          "statusLabel": "Status *",
+          "active": "Active",
+          "inactive": "Inactive"
+        },
+        "view": {
+          "shortDescNA": "N/A",
+          "leadsAllowed": "Leads Allowed:",
+          "emailsAllowed": "Emails Allowed:",
+          "smsAllowed": "SMS Allowed:",
+          "offersAllowed": "Offers Allowed:",
+          "workflowsAllowed": "Workflows Allowed:",
+          "apiAccess": "API Access:",
+          "offerCustomization": "Offer Page Customization:",
+          "allowed": "Allowed",
+          "notAllowed": "Not Allowed"
+        },
+        "buttons": {
+          "close": "Close",
+          "cancel": "Cancel",
+          "save": "Save Plan",
+          "update": "Update Plan"
+        }
+      },
+      "alerts": {
+        "fetchFail": "Failed to fetch plans",
+        "deleteConfirm": "Are you sure you want to delete this plan?",
+        "deleteSuccess": "Plan deleted successfully",
+        "deleteFail": "Failed to delete plan",
+        "createSuccess": "Plan created successfully",
+        "updateSuccess": "Plan updated successfully",
+        "saveFail": "Failed to save plan",
+        "statusUpdateSuccess": "Status updated",
+        "statusUpdateFail": "Failed to update status"
+      }
+    },
+    "userManagement": {
+      "title": "User Management",
+      "subtitle": "User Management",
+      "newUserButton": "New User",
+      "loading": "Loading...",
+      "stats": {
+        "totalUsers": "Total Users",
+        "newUsers": "New Users",
+        "inactiveUsers": "Inactive Users",
+        "activeUsers": "Active Users",
+        "totalSmsBalance": "Total SMS Balance"
+      },
+      "table": {
+        "title": "User List",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "status": "Status",
+        "plan": "Plan",
+        "smsBalance": "SMS Balance",
+        "actions": "Actions",
+        "notApplicable": "N/A",
+        "noMatch": "No users found"
+      },
+      "modal": {
+        "viewTitle": "View User",
+        "editTitle": "Edit User",
+        "addTitle": "Add User",
+        "subtitle": "Fill in user information.",
+        "viewInfoTitle": "User Information",
+        "viewCompanyName": "Company Name:",
+        "viewPhone": "Phone:",
+        "viewEmail": "Email:",
+        "viewStatus": "Status:",
+        "viewPlan": "Plan:",
+        "viewSmsBalance": "SMS Balance:",
+        "formInfoTitle": "User information",
+        "input": {
+          "fullNameLabel": "Full Name *",
+          "companyNameLabel": "Company Name",
+          "phoneLabel": "Phone number *",
+          "emailLabel": "Email address *",
+          "passwordLabelNew": "Password *",
+          "passwordLabelEdit": "Password (Leave blank to keep current)",
+          "placeholderName": "Enter Full Name",
+          "placeholderCompany": "Enter Company Name",
+          "placeholderPhone": "Enter Phone number",
+          "placeholderEmail": "Enter email address",
+          "placeholderPassword": "Enter Password",
+          "active": "Active",
+          "inactive": "InActive"
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "close": "Close",
+          "save": "Save",
+          "update": "Update"
+        }
+      },
+      "alerts": {
+        "fetchFail": "Failed to fetch users",
+        "deleteConfirm": "Are you sure to delete this user?",
+        "deleteSuccess": "User deleted successfully",
+        "deleteFail": "Failed to delete user",
+        "updateSuccess": "User updated successfully",
+        "createSuccess": "User created successfully",
+        "saveFail": "Failed to save user",
+        "passwordRequired": "Password is required for a new user.",
+        "statusUpdateSuccess": "Status updated",
+        "statusUpdateFail": "Failed to update status"
+      }
+    },
+    "transactionManagement": {
+      "title": "Transaction Management",
+      "subtitle": "List and view of all transactions.",
+      "loading": "Loading...",
+      "tabs": {
+        "all": "All Transactions",
+        "subscriptions": "Subscription Transactions",
+        "sms": "SMS Transactions"
+      },
+      "table": {
+        "title": "Transaction List ({{count}})",
+        "invoiceNo": "Invoice No.",
+        "planName": "Plan Name",
+        "user": "User",
+        "amount": "Amount",
+        "billingType": "Billing Type",
+        "status": "Status",
+        "date": "Date",
+        "invoice": "Invoice",
+        "typeSubscription": "Subscription",
+        "typeSMS": "SMS Credit",
+        "viewLink": "View",
+        "notApplicable": "—",
+        "noMatch": "No transactions found"
+      },
+      "alerts": {
+        "fetchFail": "Failed to fetch transactions"
+      }
+    },
+    "settingsPage": {
+      "title": "Settings",
+      "description": "Manage your profile, corporate branding, and system preferences.",
+      "saveChangesButton": "Save Changes",
+      "noChangesToUpdate": "No changes to update.",
+      "cannotUploadMessage": "Cannot upload file. Please try again.",
+      "api": {
+        "settings": {
+          "fetchError": "Failed to fetch settings.",
+          "updateSuccess": "Settings updated successfully!",
+          "updateError": "Failed to update settings.",
+          "logoUploadSuccess": "Company logo uploaded successfully!",
+          "logoUploadError": "Failed to upload company logo.",
+          "logoRemoveSuccess": "Company logo removed successfully!",
+          "logoRemoveError": "Failed to remove company logo."
+        }
+      },
+      "accountProfileTitle": "Account & Profile",
+      "NameLabel": "Name",
+      "namePlaceholder": "Enter your full name",
+      "contactEmailLabel": "Contact Email",
+      "contactEmailPlaceholder": "Enter your contact email",
+      "phoneLabel": "Phone",
+      "phonePlaceholder": "Enter your phone number",
+      "languageLabel": "Language",
+      "languageDanish": "Danish",
+      "languageEnglish": "English",
+      "changePasswordTitle": "Change Password",
+      "currentPasswordLabel": "Current Password",
+      "currentPasswordPlaceholder": "Enter your current password",
+      "newPasswordLabel": "New Password",
+      "newPasswordPlaceholder": "Enter a new password",
+      "confirmNewPasswordLabel": "Confirm New Password",
+      "confirmNewPasswordPlaceholder": "Re-enter your new password",
+      "updatePasswordButton": "Update Password",
+      "passwordMismatch": "New password and confirmation password do not match.",
+      "allPasswordFieldsRequired": "All password fields are required.",
+      "passwordUpdateSuccess": "Password updated successfully!",
+      "passwordUpdateError": "Failed to update password. Please check your current password.",
+      "corporateBrandingTitle": "Corporate Branding",
+      "profileLabel": "Profile",
+      "profileNote": "Upload your profile here. Recommended size: 400x400px.",
+      "uploadLogoText": "Drag and drop your file here, or",
+      "logoFileFormats": "Supported files: JPG, PNG, SVG up to 5MB",
+      "chooseFileButton": "Choose File",
+      "systemStatusTitle": "System Status",
+      "systemStatusDescription": "Shows the current operational status of the service.",
+      "systemStatusOnline": "Online",
+      "systemLastUpdated": "Last updated: just now",
+      "emailSmsPage": {
+        "areYouSure": "Are you sure?",
+        "revertWarning": "You won't be able to revert this!",
+        "yesDeleteIt": "Yes, remove it!",
+        "cancel": "Cancel"
+      }
+    }
+  }
 }
