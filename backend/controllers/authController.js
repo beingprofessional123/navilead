@@ -358,74 +358,74 @@ exports.logout = async (req, res) => {
   }
 };
 
+
 exports.userCurrentPlan = async (req, res) => {
-  try {
-    const userId = req.user?.id;
 
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized: User not found",
-      });
-    }
+  const userId = req.user?.id;
 
-    const userPlan = await UserPlan.findOne({
-      where: { userId },
-      include: [
-        { model: Plan, as: "plan" },
-        { model: Transaction, as: "transaction", attributes: ["invoiceUrl"] },
-      ],
-      order: [["createdAt", "DESC"]],
-    });
-
-    // 🛑 MUST BE CHECKED FIRST (before any reference to userPlan.plan)
-    if (!userPlan) {
-      return res.status(200).json({
-        success: false,
-        message: "No plan found for this user",
-        plan: null,
-      });
-    }
-
-    if (!userPlan.plan) {
-      return res.status(200).json({
-        success: false,
-        message: "Plan details missing",
-        plan: null,
-      });
-    }
-
-    // 🟢 Now it's safe to access userPlan.plan
-    const totalLeads = await Lead.count({ where: { userId } });
-
-    const allowedLeads = userPlan.plan.Total_Leads_Allowed || 0;
-    const remainingLeads = Math.max(allowedLeads - totalLeads, 0);
-
-    const planWithUsage = {
-      ...userPlan.toJSON(),
-      plan: {
-        ...userPlan.plan.toJSON(),
-        usage: {
-          totalLeads,
-          allowedLeads,
-          remainingLeads,
-        },
-      },
-    };
-
-    return res.status(200).json({
-      success: true,
-      plan: planWithUsage,
-    });
-  } catch (error) {
-    console.error("Error fetching current plan:", error);
-    return res.status(500).json({
+  // ❌ User not logged in
+  if (!userId) {
+    return res.status(401).json({
       success: false,
-      message: "Server error while fetching user plan",
-      error: error.message,
+      message: "Unauthorized: User not found",
+      plan: null,
     });
   }
+
+  // Fetch plan
+  const userPlan = await UserPlan.findOne({
+    where: { userId },
+    include: [
+      { model: Plan, as: "plan" },
+      { model: Transaction, as: "transaction", attributes: ["invoiceUrl"] },
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+
+  // ❌ No plan found
+  if (!userPlan) {
+    return res.status(200).json({
+      success: false,
+      message: "No plan found for this user",
+      plan: null,
+    });
+  }
+
+  // ❌ Plan exists but inside `plan` table record is missing
+  if (!userPlan.plan) {
+    return res.status(200).json({
+      success: false,
+      message: "Plan details missing",
+      plan: null,
+    });
+  }
+
+  // Count leads
+  const totalLeads = await Lead.count({ where: { userId } });
+
+  const allowedLeads = userPlan.plan.Total_Leads_Allowed || 0;
+  const remainingLeads = Math.max(allowedLeads - totalLeads, 0);
+
+  // Build response
+  const planWithUsage = {
+    ...userPlan.toJSON(),
+    plan: {
+      ...userPlan.plan.toJSON(),
+      usage: {
+        totalLeads,
+        allowedLeads,
+        remainingLeads,
+      },
+    },
+  };
+
+  // ✔ Always return success:true when plan exists
+  return res.status(200).json({
+    success: true,
+    plan: planWithUsage,
+  });
 };
+
 
 //////////////////////////////////////////////////////////////////
 // 🔹 SEND OTP (with type)
