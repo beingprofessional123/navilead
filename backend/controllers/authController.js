@@ -360,7 +360,7 @@ exports.logout = async (req, res) => {
 
 exports.userCurrentPlan = async (req, res) => {
   try {
-    const userId = req.user?.id; // added by authMiddleware
+    const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({
@@ -372,37 +372,35 @@ exports.userCurrentPlan = async (req, res) => {
     const userPlan = await UserPlan.findOne({
       where: { userId },
       include: [
-        {
-          model: Plan,
-          as: 'plan',
-        },
-        {
-          model: Transaction,
-          as: 'transaction', // ✅ join via subscriptionId
-          attributes: ['invoiceUrl'],
-        },
+        { model: Plan, as: "plan" },
+        { model: Transaction, as: "transaction", attributes: ["invoiceUrl"] },
       ],
-      order: [['createdAt', 'DESC']],
+      order: [["createdAt", "DESC"]],
     });
 
+    // 🛑 MUST BE CHECKED FIRST (before any reference to userPlan.plan)
     if (!userPlan) {
       return res.status(200).json({
         success: false,
-        message: "No active plan found",
+        message: "No plan found for this user",
         plan: null,
       });
     }
 
-    // Count total leads for this user
-    const totalLeads = await Lead.count({
-      where: { userId },
-    });
+    if (!userPlan.plan) {
+      return res.status(200).json({
+        success: false,
+        message: "Plan details missing",
+        plan: null,
+      });
+    }
 
-    // Extract allowed leads from plan
-    const allowedLeads = userPlan.plan?.Total_Leads_Allowed || 0;
+    // 🟢 Now it's safe to access userPlan.plan
+    const totalLeads = await Lead.count({ where: { userId } });
+
+    const allowedLeads = userPlan.plan.Total_Leads_Allowed || 0;
     const remainingLeads = Math.max(allowedLeads - totalLeads, 0);
 
-    // Attach usage data inside plan object
     const planWithUsage = {
       ...userPlan.toJSON(),
       plan: {
@@ -415,12 +413,10 @@ exports.userCurrentPlan = async (req, res) => {
       },
     };
 
-    // ✅ Return active plan + usage data
     return res.status(200).json({
       success: true,
       plan: planWithUsage,
     });
-
   } catch (error) {
     console.error("Error fetching current plan:", error);
     return res.status(500).json({
@@ -430,7 +426,6 @@ exports.userCurrentPlan = async (req, res) => {
     });
   }
 };
-
 
 //////////////////////////////////////////////////////////////////
 // 🔹 SEND OTP (with type)
