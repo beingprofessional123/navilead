@@ -31,7 +31,7 @@ export const LimitProvider = ({ children }) => {
       headers: { Authorization: `Bearer ${authToken}` },
     });
 
-    if (res.data.success && res.data.plan) {
+    if (res.data.success && res.data.plan !== null) {
       const userPlanData = res.data.plan;
       const now = new Date();
       const renewalDate = userPlanData.renewalDate ? new Date(userPlanData.renewalDate) : null;
@@ -149,7 +149,7 @@ export const LimitProvider = ({ children }) => {
 
   // ✅ Check limit usage
   const checkLimit = (usage, type) => {
-    if (!userPlan || !userPlan.plan) return true;
+    if (!userPlan || !userPlan.plan) return false;
 
     const totalAllowedKey = planKeysMap[type];
     const totalAllowed = userPlan.plan[totalAllowedKey] ?? 0;

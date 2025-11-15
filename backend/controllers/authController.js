@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const db = require('../models');
-const { User, UserVariable, Settings, OfferTemplate, UserPlan,Lead, Transaction, Plan } = db;
+const { User, UserVariable, Settings, OfferTemplate, UserPlan, Lead, Transaction, Plan } = db;
 const stripe = require('../utils/stripe'); // Your Stripe instance
 const status = require('../models/status');
 const OtpVerificationTemplate = require('../EmailTemplate/OtpVerificationTemplate');
@@ -108,8 +108,8 @@ exports.register = async (req, res) => {
     const { name, email, password, phone } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    
-     const user = await User.create({
+
+    const user = await User.create({
       name,
       email,
       phone,
@@ -153,7 +153,7 @@ exports.register = async (req, res) => {
     // -------------------- Create Stripe Customer --------------------
     await createStripeCustomer(user);
 
-    
+
     await ensureDefaultSettings(user.id);
 
     res.status(201).json({
@@ -241,7 +241,7 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '6h' }
     );
-    
+
 
     // ✅ Generate API key only if missing
     let apiKey = user.apikey;
@@ -370,23 +370,30 @@ exports.userCurrentPlan = async (req, res) => {
     }
 
     const userPlan = await UserPlan.findOne({
-        where: { userId },
-        include: [
-          {
-            model: Plan,
-            as: 'plan',
-          },
-          {
-            model: Transaction,
-            as: 'transaction', // ✅ join via subscriptionId
-            attributes: ['invoiceUrl'],
-          },
-        ],
-        order: [['createdAt', 'DESC']],
+      where: { userId },
+      include: [
+        {
+          model: Plan,
+          as: 'plan',
+        },
+        {
+          model: Transaction,
+          as: 'transaction', // ✅ join via subscriptionId
+          attributes: ['invoiceUrl'],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
+
+    if (!userPlan) {
+      return res.status(200).json({
+        success: false,
+        message: "No active plan found",
+        plan: null,
       });
+    }
 
-
-     // Count total leads for this user
+    // Count total leads for this user
     const totalLeads = await Lead.count({
       where: { userId },
     });
@@ -413,7 +420,7 @@ exports.userCurrentPlan = async (req, res) => {
       success: true,
       plan: planWithUsage,
     });
-    
+
   } catch (error) {
     console.error("Error fetching current plan:", error);
     return res.status(500).json({
@@ -507,7 +514,7 @@ exports.verifyOtp = async (req, res) => {
         await user.update({ status: 'active', emailVerified: true }); // you can add emailVerified column
       }
 
-       if (pagesprocess === 'login') {
+      if (pagesprocess === 'login') {
         return res.json({
           success: true,
           message: 'Your email has been verified successfully. You can now log in to your account.',
@@ -516,20 +523,20 @@ exports.verifyOtp = async (req, res) => {
         });
       }
 
-          // Prepare user data (exclude password)
-        const userData = {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          apikey: user.apikey,
-          language: user.language,
-          currency: user.currency,
-          companyName: user.companyName,
-          companyLogo: user.companyLogo,
-          createdAt: user.createdAt,
-          stripeCustomerId: user.stripeCustomerId,
-        };
+      // Prepare user data (exclude password)
+      const userData = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        apikey: user.apikey,
+        language: user.language,
+        currency: user.currency,
+        companyName: user.companyName,
+        companyLogo: user.companyLogo,
+        createdAt: user.createdAt,
+        stripeCustomerId: user.stripeCustomerId,
+      };
 
       const userPlanWithDetails = await UserPlan.findOne({ where: { userId: user.id }, include: [{ model: Plan, as: 'plan' }] });
       // Generate JWT token 
