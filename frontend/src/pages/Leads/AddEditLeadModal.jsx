@@ -167,7 +167,7 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
     setNewlyAddedFiles(newlyAddedFiles.filter((_, i) => i !== index));
   };
 
-    // ✅ International phone number validation
+  // ✅ International phone number validation
   const validatePhone = (phone) => {
     try {
       const parsed = parsePhoneNumberFromString(phone);
@@ -208,7 +208,7 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
       form.append('removedAttachments', JSON.stringify(removedAttachmentFilenames));
     }
 
-    
+
 
     try {
       const response = await api[method](apiEndpoint, form, {
@@ -278,7 +278,7 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
                             className="form-control"
                             name="phone"
                             value={formData.phone}
-                              onChange={(e) => {
+                            onChange={(e) => {
                               handleChange(e);
                               setPhoneError(''); // clear error while typing
                             }}
@@ -513,7 +513,15 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
                     <label>{t('addEditLeadModal.valueLabel')}</label>
                     <div className="inputicon">
                       <input type="number" className="form-control" name="value" value={formData.value} onChange={handleChange} placeholder={t('addEditLeadModal.valuePlaceholder')} />
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-dollar-sign" aria-hidden="true"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                        className="lucide lucide-money" aria-hidden="true">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                        <line x1="1" y1="10" x2="23" y2="10"></line>
+                        <circle cx="12" cy="14" r="4"></circle>
+                      </svg>
+
                     </div>
                   </div>
 

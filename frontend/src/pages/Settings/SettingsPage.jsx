@@ -11,7 +11,7 @@ const SettingsPage = () => {
     const { authToken } = useContext(AuthContext);
     const { t: translate } = useTranslation();
     const [currencies, setCurrencies] = useState([]);
-    
+
     // Consolidated formData state to include all fields
     const [formData, setFormData] = useState({
         companyName: "",
@@ -25,6 +25,14 @@ const SettingsPage = () => {
         emailSignature: "",
         primaryColor: "#00ffff", // Default values
         secondaryColor: "#1a1a2e", // Default values
+        smtpHost: "",
+        smtpPort: "",
+        smtpUser: "",
+        smtpPass: "",
+        smtpEncryption: "",
+        fromName: "",
+        fromEmail: "",
+        smtpActive: false
     });
 
     // State for Notifications
@@ -53,6 +61,7 @@ const SettingsPage = () => {
             });
 
             const data = response.data;
+            const smtp = data.smtpSettings?.[0] || {};
             setFormData({
                 companyName: data.user.companyName || "",
                 email: data.user.email || "",
@@ -65,28 +74,37 @@ const SettingsPage = () => {
                 emailSignature: data.user.emailSignature || "",
                 primaryColor: data.user.primaryColor || "#00ffff", // Assuming API returns this
                 secondaryColor: data.user.secondaryColor || "#1a1a2e", // Assuming API returns this
+                 smtpHost: smtp.smtpHost || "",
+                    smtpPort: smtp.smtpPort || "",
+                    smtpUser: smtp.smtpUser || "",
+                    smtpPass: smtp.smtpPass || "",
+                    smtpEncryption: smtp.smtpEncryption || "",
+                    fromName: smtp.fromName || "",
+                    fromEmail: smtp.fromEmail || "",
+                    smtpActive: smtp.smtpActive || false,
             });
 
             // Extract notification settings from array
             const emailSetting = data.settings.find(s => s.key === "emailNotifications");
             const smsSetting = data.settings.find(s => s.key === "smsNotifications");
 
-            setEmailNotifications(emailSetting?.value === "true");  
+            setEmailNotifications(emailSetting?.value === "true");
             setSmsNotifications(smsSetting?.value === "true");
 
+
             // Set logo state if it exists
-           if (data.user.companyLogo) {
-            const logoUrl = data.user.companyLogo; // Already full URL
-            setCurrentLogo({
-                url: logoUrl,
-                name: logoUrl.split("/").pop(), // extract filename like 1756718625055-26.jpeg
-                uploaded: translate("settingsPage.systemLastUpdated")
-            });
+            if (data.user.companyLogo) {
+                const logoUrl = data.user.companyLogo; // Already full URL
+                setCurrentLogo({
+                    url: logoUrl,
+                    name: logoUrl.split("/").pop(), // extract filename like 1756718625055-26.jpeg
+                    uploaded: translate("settingsPage.systemLastUpdated")
+                });
             } else {
-            setCurrentLogo(null);
+                setCurrentLogo(null);
             }
 
-             // --- 🔄 Update localStorage (user) ---
+            // --- 🔄 Update localStorage (user) ---
             const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
             const updatedUser = {
                 ...storedUser,
@@ -175,8 +193,8 @@ const SettingsPage = () => {
                 localStorage.setItem("i18nextLng", newUser.language || "en");
             }
             toast.success("Settings updated successfully!");
-             fetchSettings();
-             setTimeout(() => {
+            fetchSettings();
+            setTimeout(() => {
                 window.location.reload();
             }, 5000);
         } catch (error) {
@@ -208,8 +226,8 @@ const SettingsPage = () => {
             });
             toast.success(translate('api.settings.logoUploadSuccess'));
             // Refetch settings to get the actual path from the backend
-             fetchSettings();
-             setTimeout(() => {
+            fetchSettings();
+            setTimeout(() => {
                 window.location.reload();
             }, 5000);
         } catch (error) {
@@ -237,10 +255,10 @@ const SettingsPage = () => {
                 try {
                     await api.delete('/settings/remove-logo', { headers: { Authorization: `Bearer ${authToken}` } });
                     toast.success(translate('api.settings.logoRemoveSuccess'));
-                     fetchSettings();
-             setTimeout(() => {
-                window.location.reload();
-            }, 5000);
+                    fetchSettings();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
                 } catch (error) {
                     toast.error(translate('api.settings.logoRemoveError'));
                 }
@@ -268,11 +286,11 @@ const SettingsPage = () => {
 
         try {
             // Send update to backend
-            await api.put('/settings/notifications', 
-                { 
+            await api.put('/settings/notifications',
+                {
                     emailNotifications: type === 'email' ? value : emailNotifications,
                     smsNotifications: type === 'sms' ? value : smsNotifications
-                }, 
+                },
                 { headers: { Authorization: `Bearer ${authToken}` } }
             );
 
@@ -285,45 +303,57 @@ const SettingsPage = () => {
         }
     };
 
+  const handleSaveSmttpChanges = async () => {
+    const requiredFields = {
+        smtpHost: formData.smtpHost,
+        smtpPort: formData.smtpPort,
+        smtpUser: formData.smtpUser,
+        smtpPass: formData.smtpPass,
+        smtpEncryption: formData.smtpEncryption,
+        fromName: formData.fromName,
+        fromEmail: formData.fromEmail,
+    };
+
+    // SAFE VALIDATION (no trim error)
+    const emptyFields = Object.entries(requiredFields)
+        .filter(([key, value]) => !value || String(value).trim() === "")
+        .map(([key]) => key);
+
+    if (emptyFields.length > 0) {
+        toast.error(translate("settingsPage.allFieldsRequired"));
+        return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.fromEmail)) {
+        return toast.error(translate("settingsPage.validation.fromEmail"));
+    }
+
+    try {
+        await api.put("/settings/smtp", {
+            smtpHost: formData.smtpHost,
+            smtpPort: formData.smtpPort,
+            smtpUser: formData.smtpUser,
+            smtpPass: formData.smtpPass,
+            smtpEncryption: formData.smtpEncryption,
+            fromName: formData.fromName,
+            fromEmail: formData.fromEmail,
+            smtpActive: formData.smtpActive
+        }, {
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+
+        toast.success(translate("settingsPage.smtpSavedSuccess"));
+        fetchSettings();
+    } catch (error) {
+        console.error(error);
+        toast.error(translate("settingsPage.smtpSavedError"));
+    }
+};
 
 
-    // const handleInviteUser = async () => {
-    //     const { value: email } = await Swal.fire({
-    //         title: translate('settingsPage.inviteUserButton'),
-    //         input: 'email',
-    //         inputLabel: translate('settingsPage.contactEmailLabel'),
-    //         inputPlaceholder: translate('settingsPage.contactEmailPlaceholder'),
-    //         showCancelButton: true,
-    //         confirmButtonText: translate('emailSmsPage.send'),
-    //         cancelButtonText: translate('emailSmsPage.cancel'),
-    //         inputValidator: (value) => {
-    //             if (!value) {
-    //                 return translate('offerPage.askQuestionInputValidator');
-    //             }
-    //             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-    //                 return 'Please enter a valid email address.';
-    //             }
-    //             return null;
-    //         },
-    //         customClass: {
-    //             popup: 'swal2-dark'
-    //         }
-    //     });
 
-    //     if (email) {
-    //         try {
-    //             await api.post('/settings/invite-user', { email }, { headers: { Authorization: `Bearer ${authToken}` } });
-    //             toast.success(translate('api.settings.userInviteSuccess', { email }));
-    //         } catch (error) {
-    //             toast.error(translate('api.settings.userInviteError'));
-    //         }
-    //     }
-    // };
-
-    // const handleEditUser = (userId) => {
-    //     console.log(`Editing user ${userId}`);
-    //     toast.info(`Feature to edit user ${userId} coming soon!`);
-    // };
 
     return (
         <div className="mainbody">
@@ -391,6 +421,173 @@ const SettingsPage = () => {
                         </form>
                     </div>
                 </div>
+                {/* smtp detials */}
+                <div className="carddesign">
+                    <h2 className="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                            strokeLinecap="round" strokeLinejoin="round"
+                            className="lucide lucide-mail text-primary">
+                            <path d="M4 4h16v16H4z" />
+                            <polyline points="22,6 12,13 2,6" />
+                        </svg>
+                        {translate("settingsPage.smtpSettings")}
+                    </h2>
+
+                    <div className="formdesign">
+                        <form>
+                            <div className="row">
+
+                                {/* SMTP HOST */}
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label>{translate("settingsPage.smtpHost")} *</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            name="smtpHost"
+                                            value={formData.smtpHost}
+                                            onChange={handleChange}
+                                            placeholder={translate("settingsPage.smtpHostPlaceholder")}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* SMTP PORT */}
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label>{translate("settingsPage.smtpPort")} *</label>
+                                        <input
+                                            type="number"
+                                            className="form-control"
+                                            name="smtpPort"
+                                            value={formData.smtpPort}
+                                            onChange={handleChange}
+                                            placeholder={translate("settingsPage.smtpPortPlaceholder")}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* USERNAME */}
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label>{translate("settingsPage.smtpUsername")} *</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            name="smtpUser"
+                                            value={formData.smtpUser}
+                                            onChange={handleChange}
+                                            placeholder={translate("settingsPage.smtpUsernamePlaceholder")}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* PASSWORD */}
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label>{translate("settingsPage.smtpPassword")} *</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            name="smtpPass"
+                                            value={formData.smtpPass}
+                                            onChange={handleChange}
+                                            placeholder={translate("settingsPage.smtpPasswordPlaceholder")}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* ENCRYPTION */}
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label>{translate("settingsPage.smtpEncryption")}</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            name="smtpEncryption"
+                                            value={formData.smtpEncryption}
+                                            onChange={handleChange}
+                                            placeholder={translate("settingsPage.smtpEncryptionPlaceholder")}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* FROM NAME */}
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label>{translate("settingsPage.fromName")}</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            name="fromName"
+                                            value={formData.fromName}
+                                            onChange={handleChange}
+                                            placeholder={translate("settingsPage.fromNamePlaceholder")}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* FROM EMAIL */}
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label>{translate("settingsPage.fromEmail")}</label>
+                                        <input
+                                            type="email"
+                                            className="form-control"
+                                            name="fromEmail"
+                                            value={formData.fromEmail}
+                                            onChange={handleChange}
+                                            placeholder={translate("settingsPage.fromEmailPlaceholder")}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* ACTIVE SWITCH */}
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label>{translate("settingsPage.status")}</label>
+                                        <div className="form-check form-switch">
+                                            <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                name="smtpActive"
+                                                checked={formData.smtpActive}
+                                                onChange={(e) =>
+                                                    setFormData({ ...formData, smtpActive: e.target.checked })
+                                                }
+                                            />
+                                            <span className="ms-2">
+                                                {formData.smtpActive
+                                                    ? translate("settingsPage.active")
+                                                    : translate("settingsPage.inactive")}
+                                            </span>
+
+                                        </div>
+                                    </div>
+
+                                    {/* Status message */}
+                                    {formData.smtpActive ? (
+                                        <p className="text-success mt-2">
+                                            {translate("settingsPage.activeMessage")}
+                                        </p>
+                                    ) : (
+                                        <p className="text-warning mt-2">
+                                            {translate("settingsPage.inactiveMessage")}
+                                        </p>
+                                    )}
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+
+                    <button className="btn btn-send" onClick={handleSaveSmttpChanges}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-save" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path><path d="M7 3v4a1 1 0 0 0 1 1h7"></path></svg>
+                        {translate('settingsPage.saveChangesButton')}
+                    </button>
+                </div>
+
 
                 {/* Notifications */}
                 <div className="carddesign">
@@ -434,21 +631,7 @@ const SettingsPage = () => {
                     </h2>
                     <div className="formdesign">
                         <div className="row">
-                            <div className="col-md-4">
-                                <div className="form-group mb-1">
-                                    <label>{translate('settingsPage.timezoneLabel')}</label>
-                                    <div className="inputselect">
-                                        <select className="form-select" name="timezone" value={formData.timezone} onChange={handleChange}>
-                                            <option>{translate('settingsPage.timezoneCopenhagen')}</option>
-                                            <option>{translate('settingsPage.timezoneStockholm')}</option>
-                                            <option>{translate('settingsPage.timezoneOslo')}</option>
-                                            <option>{translate('settingsPage.timezoneUTC')}</option>
-                                        </select>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-md-4">
+                            <div className="col-md-6">
                                 <div className="form-group mb-1">
                                     <label>{translate('settingsPage.currencyLabel')}</label>
                                     <div className="inputselect">
@@ -469,7 +652,7 @@ const SettingsPage = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="col-md-4">
+                            <div className="col-md-6">
                                 <div className="form-group mb-1">
                                     <label>{translate('settingsPage.languageLabel')}</label>
                                     <div className="inputselect">
@@ -510,43 +693,6 @@ const SettingsPage = () => {
                     </div>
                 </div>
 
-                {/* Users */}
-                {/* <div className="carddesign cserscard">
-                    <div className="workflowsadd">
-                        <h2 className="card-title">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users text-primary" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
-                            {translate('settingsPage.usersTitle')}
-                        </h2>
-                        <button className="btn btn-send" onClick={handleInviteUser}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-                            {translate('settingsPage.inviteUserButton')}
-                        </button>
-                    </div>
-                    <ul className="usersul">
-                        {mockUsers.map(user => (
-                            <li key={user.id}>
-                                <div className="usersul-card">
-                                    <div className="usersul-left">
-                                        <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user text-primary" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
-                                        <div className="usersul-name">
-                                            <h4>{user.name}</h4>
-                                            <h6>{user.email}</h6>
-                                        </div>
-                                    </div>
-                                    <div className="usersul-right">
-                                        <div className="status"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield mr-1" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg>{user.role}</div>
-                                        <div className={`status ${user.status === translate('settingsPage.userStatusInactive') ? 'status4' : 'status3'}`}>{user.status}</div>
-                                        <button className="btn btn-add" onClick={() => handleEditUser(user.id)}>{translate('settingsPage.editButton')}</button>
-                                    </div>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                    <div className="modalfooter">
-                        <span className="inputnote">{translate('settingsPage.activeUsersNote', { active: activeUsers, total: totalAllowedUsers })}</span>
-                    </div>
-                </div> */}
-
                 {/* Corporate Branding */}
                 <div className="carddesign corporate-branding">
                     <h2 className="card-title">
@@ -582,9 +728,9 @@ const SettingsPage = () => {
                                     <div className="uploadview-left">
                                         <span className="uploadview-icon">
                                             <img
-                                            src={currentLogo.url}
-                                            alt="Company Logo"
-                                            style={{ width: "42px", height: "42px", borderRadius: "8px" }}
+                                                src={currentLogo.url}
+                                                alt="Company Logo"
+                                                style={{ width: "42px", height: "42px", borderRadius: "8px" }}
                                             />
 
                                             {!currentLogo && (
@@ -602,38 +748,6 @@ const SettingsPage = () => {
                                 </div>
                             )}
                         </div>
-
-                        {/* <div className="standardcolors">
-                            <div className="formdesign">
-                                <div className="form-group">
-                                    <label>{translate('settingsPage.standardColorsLabel')}
-                                        <p className="form-labelnot">{translate('settingsPage.standardColorsNote')}</p>
-                                    </label>
-                                </div>
-                                <div className="row">
-                                    <div className="col-md-6">
-                                        <div className="form-group">
-                                            <label>{translate('settingsPage.primaryColorLabel')}</label>
-                                            <div className="standardcolors-main">
-                                                <div className="standardcolorbox" style={{ backgroundColor: formData.primaryColor }}></div>
-                                                <input type="color" className="form-control" name="primaryColor" value={formData.primaryColor} onChange={handleChange} style={{ maxWidth: '94px', height: '36px' }} />
-                                                <input type="text" className="form-control" name="primaryColor" value={formData.primaryColor} onChange={handleChange} placeholder="#00FFFF" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div className="form-group">
-                                            <label>{translate('settingsPage.secondaryColorLabel')}</label>
-                                            <div className="standardcolors-main">
-                                                <div className="standardcolorbox" style={{ backgroundColor: formData.secondaryColor }}></div>
-                                                <input type="color" className="form-control" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} style={{ maxWidth: '94px', height: '36px' }} />
-                                                <input type="text" className="form-control" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} placeholder="#1A1A2E" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> */}
                     </div>
                 </div>
 

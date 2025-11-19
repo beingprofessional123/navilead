@@ -32,6 +32,7 @@ body {
 .container {
     max-width: 1140px;
     margin: 0px auto;
+    background-color: #101418;
 }
 .sectiontop1 {
     padding: 0px !important;
@@ -105,7 +106,7 @@ body {
 <body style="font-family: 'Poppins', sans-serif; background-color: #101418; color: #cff; font-weight: 400; font-style: normal;">
 
 
-<div class="container">
+<div class="container" style="background-color: #101418;">
 
 <section class="sectiontop" style="padding: 50px 0px;">
   <div class="sectiontop1" style="width: 100%; padding-right: 15px; padding-left: 15px; margin-right: auto; margin-left: auto;">

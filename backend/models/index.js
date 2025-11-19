@@ -30,6 +30,7 @@ const UserPlan = require('./UserPlan');
 const Transaction = require('./Transaction');
 const PaymentMethod = require('./PaymentMethod');
 const SMSCreditPlan = require('./smsCreditPlan');
+const SmtpSetting = require('./SmtpSetting');
 
 const db = {};
 
@@ -64,6 +65,7 @@ db.UserPlan = UserPlan(sequelize, DataTypes);
 db.Transaction = Transaction(sequelize, DataTypes);
 db.PaymentMethod = PaymentMethod(sequelize, DataTypes);
 db.SMSCreditPlan = SMSCreditPlan(sequelize, DataTypes);
+db.SmtpSetting = SmtpSetting(sequelize, DataTypes); 
 
 // Setup associations
 Object.keys(db).forEach(modelName => {

@@ -319,7 +319,9 @@ exports.askedQuestion = async (req, res) => {
       });
 
       if (emailSetting.value === 'true') {
-        await sendMail({
+        await sendMail(
+        lead.user.id,
+        {
           to: lead.user.email,
           subject: `Customer Question About Offer #${quote.id}`,
           html: emailHtml,

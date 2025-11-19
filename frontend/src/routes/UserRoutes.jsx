@@ -19,6 +19,7 @@ import OffersTemplatesEditPage from '../pages/offersTempate/OffersTemplatesEditP
 import OffersTemplatesViewPage from '../pages/offersTempate/OffersTemplatesViewPage';
 import LeadsPage from '../pages/Leads/LeadsPage';
 import LeadViewPage from '../pages/Leads/LeadViewPage'; 
+import QuotePreviewPage from '../pages/Leads/QuotePreviewPage'; 
 import IntegrationsPage from '../pages/Integrations/IntegrationsPage'; 
 import SettingsPage from '../pages/Settings/SettingsPage'; 
 import WorkflowsPage from '../pages/Workflows/WorkflowsPage'; 
@@ -68,6 +69,16 @@ const UserRouterSetup = () => {
           <ProtectedRoute>
             <PublicLayout>
               <LeadsPage /> {/* Placeholder, replace with actual LeadsPage if available */}
+            </PublicLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leads/quote-preview"
+        element={
+          <ProtectedRoute>
+            <PublicLayout>
+              <QuotePreviewPage /> {/* Placeholder, replace with actual QuotePreviewPage if available */}
             </PublicLayout>
           </ProtectedRoute>
         }

@@ -23,4 +23,7 @@ router.delete('/remove-logo', settingsController.removeLogo);
 // User management routes
 router.post('/invite-user', settingsController.inviteUser);
 router.put("/language", settingsController.updateLanguage);
+
+router.put("/smtp", settingsController.updateSmtpSettings);
+
 module.exports = router;

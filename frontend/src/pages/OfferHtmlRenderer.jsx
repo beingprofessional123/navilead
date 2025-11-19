@@ -109,7 +109,7 @@ const OfferHtmlRenderer = ({
               <div class="service-title" style="${titleStyle}">${service.name || ""}</div>
               <div class="service-description" style="${descriptionStyle}">${service.description || ""}</div>
             </div>
-            <div class="service-price" style="${priceStyle}">${service.price.toFixed(2)} ${offer.pricingTemplate?.currency?.symbol || ""}</div>
+            <div class="service-price" style="${priceStyle}">${(service.price ?? 0).toFixed(2)} ${offer.pricingTemplate?.currency?.symbol || ""}</div>
           </div>
         `;
         servicesContainer.innerHTML += serviceHtml;

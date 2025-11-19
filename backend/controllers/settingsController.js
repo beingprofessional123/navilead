@@ -1,6 +1,6 @@
 const multer = require('multer');
 const path = require('path');
-const { User,Settings, sequelize } = require('../models');
+const { User,Settings,SmtpSetting, sequelize } = require('../models');
 const BACKEND_URL = process.env.BACKEND_URL;
 
 // -------------------------
@@ -51,8 +51,9 @@ exports.getSettings = async (req, res) => {
     }
 
     const settings = await Settings.findAll({ where: { userId: req.user.id } });
+    const smtpSettings = await SmtpSetting.findAll({ where: { userId: req.user.id } });
 
-    res.status(200).json({ user, settings });
+    res.status(200).json({ user, settings, smtpSettings });
   } catch (error) {
     res.status(500).json({
       message: 'Error fetching settings.',
@@ -224,5 +225,99 @@ exports.updateNotifications = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to update notifications' });
+    }
+};
+
+
+exports.updateSmtpSettings = async (req, res) => {
+    try {
+        const userId = req.user.id; // Logged-in user ID from middleware
+        const {
+            smtpHost,
+            smtpPort,
+            smtpUser,
+            smtpPass,
+            smtpEncryption,
+            fromName,
+            fromEmail,
+            smtpActive
+        } = req.body;
+
+        // -----------------------
+        // VALIDATION
+        // -----------------------
+        if (
+            !smtpHost ||
+            !smtpPort ||
+            !smtpUser ||
+            !smtpPass ||
+            !smtpEncryption ||
+            !fromName ||
+            !fromEmail
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "All SMTP fields are required."
+            });
+        }
+
+        // -----------------------
+        // CHECK IF USER EXISTS
+        // -----------------------
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
+
+        // -----------------------
+        // CHECK IF SMTP SETTINGS ALREADY EXIST
+        // -----------------------
+        let smtpSettings = await SmtpSetting.findOne({
+            where: { userId }
+        });
+
+        if (smtpSettings) {
+            // UPDATE EXISTING
+            await smtpSettings.update({
+                smtpHost,
+                smtpPort,
+                smtpUser,
+                smtpPass,
+                smtpEncryption,
+                fromName,
+                fromEmail,
+                smtpActive: smtpActive === true
+            });
+        } else {
+            // CREATE NEW SETTINGS
+            smtpSettings = await SmtpSetting.create({
+                userId,
+                smtpHost,
+                smtpPort,
+                smtpUser,
+                smtpPass,
+                smtpEncryption,
+                fromName,
+                fromEmail,
+                smtpActive: smtpActive === true
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "SMTP settings updated successfully.",
+            data: smtpSettings
+        });
+
+    } catch (error) {
+        console.error("SMTP Update Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to update SMTP settings.",
+            error: error.message
+        });
     }
 };
