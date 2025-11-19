@@ -12,7 +12,7 @@ import { useLimit } from "../../context/LimitContext";
 const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, totalSmsSend, totalEmailsSend, fetchAllQuotesHistory }) => {
   const { authToken, user } = useContext(AuthContext);
   const { t: translate } = useTranslation(); // Initialize translation hook
-  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal,refreshPlan,userPlan } = useLimit();
+  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, refreshPlan, userPlan } = useLimit();
   const [currentStatusId, setCurrentStatusId] = useState(quoteData?.statusId || '');
   const [sendSmsChecked, setSendSmsChecked] = useState(false);
   const [smsFromName, setSmsFromName] = useState(user.name); // Default from name
@@ -20,7 +20,6 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
   const [loadingSMS, setLoadingSMS] = useState(false);
   const [smsTemplates, setSmsTemplates] = useState([]);
   const [selectedSmsTemplateId, setSelectedSmsTemplateId] = useState('');
-
   const [sendEmailChecked, setSendEmailChecked] = useState(false); // Email checked by default
   const [emailFromName, setEmailFromName] = useState(user.name); // Default from name
   const [emailFromEmail, setEmailFromEmail] = useState(user.email); // Default from email
@@ -28,8 +27,8 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
   const [emailContent, setEmailContent] = useState(""); // Default content
   const [loadingEmails, setLoadingEmails] = useState(false);
   const [emailTemplates, setEmailTemplates] = useState([]);
+  const [selectedAttachment, setselectedAttachment] = useState('');
   const [selectedEmailTemplateId, setSelectedEmailTemplateId] = useState('');
-  const [selectedAttachment, setSelectedAttachment] = useState('None'); // For email attachments
   const [variables, setVariables] = useState([]);
   const [loadingVariables, setLoadingVariables] = useState(false);
   const [sending, setSending] = useState(false);
@@ -37,12 +36,11 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
 
   // Character count for SMS
   const smsCharCount = smsMessage.length;
-  const smsType = smsCharCount <= 99 ? translate('sendQuoteModal.singleSms') : translate('sendQuoteModal.multiPartSms', { parts: Math.ceil(smsCharCount / 99) }); // Translated
+  const smsType = smsCharCount <= 80 ? translate('sendQuoteModal.singleSms') : translate('sendQuoteModal.multiPartSms', { parts: Math.ceil(smsCharCount / 80) }); // Translated
 
 
   // Update state when quoteData or lead changes (e.g., when a new quote is created)
   useEffect(() => {
-
     if (quoteData) {
       setCurrentStatusId(quoteData.statusId || quoteStatuses.find(s => s.name === 'Not sent')?.id || '');
     }
@@ -112,6 +110,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
         cc: template.ccEmails || '',
         createdAt: template.createdAt,
         updatedAt: template.updatedAt,
+        attachments: template.attachments || [],
       })));
     } catch (error) {
       console.error("Error fetching email templates:", error);
@@ -149,22 +148,14 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
     }
   };
 
+
   const handleEmailTemplateChange = (e) => {
-    const templateId = e.target.value;
+    const templateId = Number(e.target.value);
     setSelectedEmailTemplateId(templateId);
-    const selectedTemplate = emailTemplates.find(t => t.id === Number(templateId));
-    if (selectedTemplate) {
-      setEmailSubject(selectedTemplate.subject);
-      setEmailContent(selectedTemplate.body);
-      setEmailFromName(user.name);
-      setEmailFromEmail(user.email);
-    } else {
-      // If "Select a template" is chosen, reset to default content/subject
-      setEmailSubject("");
-      setEmailContent("");
-      setEmailFromName(user.name);
-      setEmailFromEmail(user.email);
-    }
+
+    const selectedTemplate = emailTemplates.find(t => t.id === templateId);
+    setEmailSubject(selectedTemplate?.subject || "");
+    setEmailContent(selectedTemplate?.body || "");
   };
 
   const handleSmsTemplateChange = (e) => {
@@ -186,13 +177,11 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
       const canProceedSms = checkLimit(totalSmsSend, "SMS");
       if (!canProceedSms) return;
     }
-
     // Check Email limit
     if (sendEmailChecked) {
       const canProceedEmail = checkLimit(totalEmailsSend, "Emails");
       if (!canProceedEmail) return;
     }
-
     setSending(true);
     try {
       const actions = {
@@ -214,16 +203,14 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
             subject: emailSubject,
             content: emailContent,
             toEmail: lead?.email,
-            attachments:
-              selectedAttachment !== "None" ? [selectedAttachment] : [],
+            attachments: selectedAttachment,
             emailTemplateId: selectedEmailTemplateId || null,
           }
           : null,
       };
-
       const result = await onSend(actions);
 
-      // ✅ Only close modal if sending succeeded
+      // // ✅ Only close modal if sending succeeded
       if (result?.success) {
         onHide(); // Close modal
         refreshPlan();
@@ -289,7 +276,14 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
     }
     return true; // All validations passed
   };
-  
+
+  const handleAttachmentDropdownSelect = (event) => {
+    const selectedOption = event.target.selectedOptions[0];
+    if (!selectedOption) return;
+    const url = selectedOption.getAttribute('data-url');
+    const originalName = selectedOption.getAttribute('data-originalname');
+    setselectedAttachment(url && originalName ? [{ filename: originalName, path: url }] : []);
+  };
 
   return (
     <>
@@ -418,7 +412,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
                       </div>
                       <div className="form-group">
                         <label>{translate('sendQuoteModal.smsMessage')}</label> {/* Translated */}
-                        <textarea className="form-control" rows="5" placeholder={translate('sendQuoteModal.yourSmsMessagePlaceholder')} maxLength={99} value={smsMessage} onChange={(e) => setSmsMessage(e.target.value)}></textarea> {/* Translated */}
+                        <textarea className="form-control" rows="5" placeholder={translate('sendQuoteModal.yourSmsMessagePlaceholder')} maxLength={80} value={smsMessage} onChange={(e) => setSmsMessage(e.target.value)}></textarea> {/* Translated */}
                         <div className="texttypelimit">
                           <span className="inputnote">{translate('sendQuoteModal.characterCount')} {smsCharCount}</span> {/* Translated */}
                           <span className="texttype-besked">{smsType}</span>
@@ -433,10 +427,10 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
                           </div>
                           <div className="texttypelimit">
                             <span
-                              className={`inputnote ${replaceVariables(smsMessage, variables).length > 99 ? "text-danger" : ""
+                              className={`inputnote ${replaceVariables(smsMessage, variables).length > 80 ? "text-danger" : ""
                                 }`}
                             >
-                              {translate('sendQuoteModal.characterCount')} {replaceVariables(smsMessage, variables, { quoteId: quoteData.id }).length}/99 {/* Translated */}
+                              {translate('sendQuoteModal.characterCount')} {replaceVariables(smsMessage, variables, { quoteId: quoteData.id }).length}/80 {/* Translated */}
                             </span>
                           </div>
                         </div>
@@ -512,23 +506,43 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
                           }}
                         />
                       </div>
+                      {/* ATTACHMENTS */}
                       <div className="form-group">
-                        <label>{translate('sendQuoteModal.attachments')}</label> {/* Translated */}
+                        <label>{translate('sendQuoteModal.attachments')}</label>
+
                         <div className="inputselect">
-                          <select className="form-select" value={selectedAttachment} onChange={(e) => setSelectedAttachment(e.target.value)}>
-                            <option value="None">{translate('sendQuoteModal.none')}</option> {/* Translated */}
-                            {quoteData?.attachments?.map((attachment, index) => (
-                              <option
-                                key={index}
-                                value={attachment.url ?? `http://localhost:4000/${attachment.filePath}`}
-                              >
-                                {attachment.originalName}
-                              </option>
-                            ))}
+                          <select
+                            className="form-select"
+                            onChange={handleAttachmentDropdownSelect}
+                            disabled={!selectedEmailTemplateId}
+                          >
+                            <option value="">Select Attachment</option>
+                            {selectedEmailTemplateId &&
+                              emailTemplates
+                                .find(t => t.id === selectedEmailTemplateId)
+                                ?.attachments?.map((att) => (
+                                 <option
+                                    data-url={att.url}
+                                    data-originalname={att.originalName} // lowercase
+                                  >
+                                    {att.originalName}
+                                  </option>
+                                ))
+                            }
                           </select>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+
+
+
+
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true">
+                            <path d="m6 9 6 6 6-6"></path>
+                          </svg>
                         </div>
+
+
+
                       </div>
+
                       <div className="form-group">
                         <label>{translate('sendQuoteModal.preview')}</label> {/* Translated */}
                         <div className="carddesign emailpreview">

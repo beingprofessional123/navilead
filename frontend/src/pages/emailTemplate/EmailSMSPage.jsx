@@ -33,7 +33,7 @@ const EmailSMSPage = () => {
     const [loadingVariables, setLoadingVariables] = useState(true);
     const [focusedRef, setFocusedRef] = useState(null);
     const [phoneError, setPhoneError] = useState('');
-
+    const [removedAttachments, setRemovedAttachments] = useState([]);
 
     const [viewContent, setViewContent] = useState('');
     const [isEditing, setIsEditing] = useState(false);
@@ -75,7 +75,7 @@ const EmailSMSPage = () => {
     // State for SMS character and message count
     const [smsCharCount, setSmsCharCount] = useState(0);
     const [smsMessageCount, setSmsMessageCount] = useState(1);
-    const SMS_MAX_CHARS = 99; // Max characters per single SMS message
+    const SMS_MAX_CHARS = 80; // Max characters per single SMS message
 
     // Helper function to reset the form state to initial empty values
     const resetForm = () => {
@@ -325,20 +325,22 @@ const EmailSMSPage = () => {
         setSelectedFiles(prevFiles => [...prevFiles, ...Array.from(e.target.files)]);
     };
 
-    const handleRemoveSelectedFile = (indexToRemove) => {
-        setSelectedFiles(prevFiles => prevFiles.filter((_, index) => index !== indexToRemove));
-        // Optionally clear the file input if all files are removed
-        if (fileInputRef.current && selectedFiles.length === 1 && indexToRemove === 0) {
-            fileInputRef.current.value = null;
-        }
-    };
+    const handleRemoveNewFile = (index) => {
+    const updatedFiles = [...selectedFiles];
+    updatedFiles.splice(index, 1);
+    setSelectedFiles(updatedFiles);
+};
+
 
     const handleRemoveExistingAttachment = (filenameToRemove) => {
+        setRemovedAttachments(prev => [...prev, filenameToRemove]);
+
         setCurrentTemplate(prev => ({
             ...prev,
             attachments: prev.attachments.filter(att => att.fileName !== filenameToRemove)
         }));
     };
+
 
 
     // --- Generic Variable Insertion Logic ---
@@ -392,50 +394,55 @@ const EmailSMSPage = () => {
             return;
         }
 
-        const formData = new FormData(); // Use FormData for multipart/form-data
+        const formData = new FormData();
         formData.append('templateName', currentTemplate.templateName);
         formData.append('subject', currentTemplate.subject);
         formData.append('recipientEmail', currentTemplate.recipientEmail);
         formData.append('emailContent', currentTemplate.body);
         formData.append('ccEmails', currentTemplate.cc);
 
-        // Append new files
-        selectedFiles.forEach(file => {
+        // NEW FILES ADD KARO
+        selectedFiles.forEach((file) => {
             formData.append('attachments', file);
         });
 
-        // Append existing attachments metadata (if any are kept)
-        if (currentTemplate.attachments && currentTemplate.attachments.length > 0) {
-            formData.append('existingAttachments', JSON.stringify(currentTemplate.attachments));
-        }
+        // EXISTING FILES JO BACHA DIYE WO SEND KARO
+        formData.append(
+            'existingAttachments',
+            JSON.stringify(currentTemplate.attachments)
+        );
+
+        // DELETED FILES KO BHI BACKEND KO BHEJO
+        formData.append(
+            'removedAttachments',
+            JSON.stringify(removedAttachments)
+        );
 
         try {
             if (isEditing) {
                 await api.put(`/email-templates/${currentTemplate.id}`, formData, {
-                    headers: {
-                        Authorization: `Bearer ${authToken}`,
-                        // 'Content-Type': 'multipart/form-data', // Axios handles this automatically with FormData
-                    },
+                    headers: { Authorization: `Bearer ${authToken}` }
                 });
                 toast.success(translate('api.emailTemplates.updateSuccess'));
             } else {
                 await api.post(`/email-templates`, formData, {
-                    headers: {
-                        Authorization: `Bearer ${authToken}`,
-                        // 'Content-Type': 'multipart/form-data', // Axios handles this automatically with FormData
-                    },
+                    headers: { Authorization: `Bearer ${authToken}` }
                 });
                 toast.success(translate('api.emailTemplates.createSuccess'));
             }
+
+            // RESET EVERYTHING
+            setRemovedAttachments([]);
             closeEmailModal();
             fetchEmailTemplates();
             refreshPlan();
+
         } catch (error) {
             console.error("Error saving email template:", error);
-            const actionKey = isEditing ? 'update' : 'create';
-            toast.error(translate('api.emailTemplates.saveError', { action: translate(`emailSmsPage.${actionKey}Template`) }));
+            toast.error("Something went wrong while saving template");
         }
     };
+
 
     const handleAddUpdateSmsTemplate = async (e) => {
         e.preventDefault();
@@ -636,7 +643,7 @@ const EmailSMSPage = () => {
                                             </tr>
                                         ) : (
                                             emailTemplates.map((template) => (
-                                               <tr key={template.id} className={emailTemplates.length === 1 ? "tablemaiikdata" : ""}>
+                                                <tr key={template.id} className={emailTemplates.length === 1 ? "tablemaiikdata" : ""}>
                                                     <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
                                                     <td><strong>{template.templateName}</strong></td>
                                                     <td>{template.subject}</td>
@@ -690,7 +697,7 @@ const EmailSMSPage = () => {
                                             </tr>
                                         ) : (
                                             smsTemplates.map((template) => (
-                                                <tr key={template.id}  className={smsTemplates.length === 1 ? "tablemaiikdata" : ""}>
+                                                <tr key={template.id} className={smsTemplates.length === 1 ? "tablemaiikdata" : ""}>
                                                     <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
                                                     <td><strong>{template.templateName}</strong></td>
                                                     <td>{template.recipientPhone}</td>
@@ -766,7 +773,7 @@ const EmailSMSPage = () => {
                                                             <label>{translate('emailSmsPage.subjectLabel')}</label>
                                                             <input type="text" className="form-control" name="subject" onFocus={() => setFocusedRef(subjectRef)} ref={subjectRef} value={currentTemplate.subject} onChange={handleInputChange} placeholder={translate('emailSmsPage.subjectPlaceholder')} required />
                                                             <div className="addoption">
-                                                                <button type="button" className="btn btn-add" onClick={() => insertVariable('{{contact_name}}')}>
+                                                                <button type="button" className="btn btn-add" onClick={() => insertVariable('{{full_name}}')}>
                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{translate('emailSmsPage.contactName')}
                                                                 </button>
                                                                 <button type="button" className="btn btn-add" onClick={() => insertVariable('{{company_name}}')}>
@@ -842,7 +849,8 @@ const EmailSMSPage = () => {
                                                         <div className="mt-2">
                                                             <label className="d-block mb-1">{translate('emailSmsPage.existingAttachmentsTitle')}</label>
                                                             <ul className="list-group">
-                                                                {currentTemplate.attachments.map((file, index) => (
+                                                                 {currentTemplate.attachments.map((file, index) => (
+                                                                      <a href={file.url} target="_blank" rel="noopener noreferrer">
                                                                     <li key={`existing-${file.fileName || index}`} className="list-group-item d-flex justify-content-between align-items-center" style={{ background: 'rgb(27 38 50)', border: "1px solid #8cd9d9" }}>
                                                                         <div className="file-info">
                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file w-4 h-4 mr-1" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>
@@ -853,6 +861,7 @@ const EmailSMSPage = () => {
                                                                             {/* {translate('emailSmsPage.removeAttachment')} */}
                                                                         </button>
                                                                     </li>
+                                                                         </a>
                                                                 ))}
                                                             </ul>
                                                         </div>
@@ -868,7 +877,7 @@ const EmailSMSPage = () => {
                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file w-4 h-4 mr-1" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>
                                                                             <span className="file-name">{file.name}</span> | <span className="file-size">{(file.size / 1024).toFixed(2)} KB</span>
                                                                         </div>
-                                                                        <button type="button" className="btn btn-add" onClick={() => handleRemoveExistingAttachment(file.fileName)}>
+                                                                        <button type="button" className="btn btn-add" onClick={() => handleRemoveNewFile(index)}>
                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 w-3 h-3 m-0" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                                                             {/* {translate('emailSmsPage.removeAttachment')} */}
                                                                         </button>

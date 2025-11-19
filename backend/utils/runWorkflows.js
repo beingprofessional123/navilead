@@ -110,7 +110,7 @@ async function executeSingleStep(logRow, stepRow, configObj, variablesMap, baseT
 
 
     if (emailSetting.value === 'true') {
-      await sendMail({ to: lead.email, subject, text, html, cc, attachments });
+      await sendMail(lead.userId,{ to: lead.email, subject, text, html, cc, attachments });
       console.log(`📩 Step ${logRow.orderNo} sendEmail executed for lead ${logRow.leadId}`);
       await logRow.update({ status: "done", executedAt: now });
       return { executed: true, ready: true };
@@ -455,7 +455,7 @@ async function executeWorkflowCron(req, res) {
 
 
             if (emailSetting.value === 'true') {
-              await sendMail({ to: lead.email, subject, text, html, cc, attachments });
+              await sendMail(lead.userId,{ to: lead.email, subject, text, html, cc, attachments });
               console.log(`📩 Step ${log.orderNo} sendEmail executed for lead ${lead.leadId}`);
             } else {
               console.log(`📵 Email notifications are disabled for user ${lead.userId}. Skipping email.`);

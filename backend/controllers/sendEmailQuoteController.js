@@ -19,7 +19,8 @@ function convertUrlsToLinks(text) {
 exports.storeSendEmailQuote = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { quoteId, recipientEmail, emailSubject, emailBody, emailTemplateId } = req.body;
+    const user = req.user;
+    const { quoteId, recipientEmail, emailSubject, emailBody, emailTemplateId, attachments } = req.body;
 
     // ✅ Basic validation
     if (!quoteId || !recipientEmail || !emailSubject || !emailBody) {
@@ -50,6 +51,16 @@ exports.storeSendEmailQuote = async (req, res) => {
       variablesMap[varName] !== undefined ? variablesMap[varName] : match
     );
 
+    let formattedAttachments = [];
+
+    if (Array.isArray(attachments) && attachments.length > 0) {
+      formattedAttachments = attachments.map(att => ({
+        filename: att.originalName || att.filename,
+        path: att.url || att.path
+      }));
+    }
+
+
     // ✅ Store the record in DB
     const sendEmailRecord = await SendEmail.create({
       userId,
@@ -58,10 +69,16 @@ exports.storeSendEmailQuote = async (req, res) => {
       emailSubject: replacedEmailSubject,
       emailBody: replacedEmailBody,
       emailTemplateId,
+      attachments:formattedAttachments
     });
 
     // ✅ Prepare HTML safely (no extra </p> issues)
-    const htmlBody = replacedEmailBody.replace(/\n/g, '<br>');
+    let htmlBody = replacedEmailBody.replace(/\n/g, '<br>');
+    let textBody = replacedEmailBody;
+    // Append user signature
+    const userSignature = user.emailSignature || '';
+    htmlBody += `<br><br>${userSignature}`;
+    textBody += `\n\n${userSignature}`;
 
     // ✅ Check if email sending is enabled
     const emailSetting = await Settings.findOne({
@@ -69,16 +86,42 @@ exports.storeSendEmailQuote = async (req, res) => {
     });
 
     if (emailSetting && emailSetting.value === 'true') {
-      await sendMail({
+      // Prepare HTML body with download buttons
+      if (attachments?.length) {
+        htmlBody += '<br><br>'; // spacing before buttons
+        attachments.forEach(att => {
+          htmlBody += `
+        <a href="${att.url || att.path}" 
+           style="
+              display: inline-block;
+              padding: 10px 20px;
+              font-size: 16px;
+              color: white;
+              background-color: #007bff;
+              text-decoration: none;
+              border-radius: 5px;
+              margin-bottom: 5px;
+           ">
+          Download ${att.filename}
+        </a><br>`;
+        });
+      }
+
+      await sendMail(
+      userId,
+      {
         to: recipientEmail,
         subject: replacedEmailSubject,
-        text: replacedEmailBody,
+        text: textBody,
         html: htmlBody,
+        attachments:formattedAttachments
       });
+
       console.log(`📧 Email sent to user ${recipientEmail}.`);
     } else {
       console.log(`📵 Email notifications are disabled for user ${userId}. Skipping email.`);
     }
+
 
     // ✅ Update Lead status to "Offer Sent"
     const quote = await Quote.findByPk(quoteId);

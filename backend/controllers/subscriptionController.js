@@ -461,7 +461,9 @@ exports.subscriptionRenewWebhook = async (req, res) => {
 
           if (emailSetting.value === 'true') {
             if (PaymentMethods.emailNotifications === true) {
-              await sendMail({
+              await sendMail(
+              user.id,
+              {
                 to: user.email,
                 subject: 'Upcoming Invoice Reminder',
                 text: `Dear ${user.name}, your subscription will renew soon. Invoice: ${invoice.hosted_invoice_url}`,

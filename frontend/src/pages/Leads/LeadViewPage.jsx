@@ -235,21 +235,32 @@ const LeadViewPage = () => {
       const response = await api.get('/pricing-templates', {
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      const processedTemplates = response.data.map(template => ({
-        ...template,
-        services: (template.services || []).map(service => ({
-          ...service,
-          pricePerUnit: Number(service.price) || 0,
-          quantity: Number(service.quantity) || 1,
-          discountPercent: 0, // Ensure default discount for template services
-        }))
-      }));
+
+      const processedTemplates = response.data.map(template => {
+        const currency = template.currency;
+
+        return {
+          ...template,
+          services: (template.services || []).map(service => ({
+            ...service,
+            pricePerUnit: Number(service.price) || 0,
+            quantity: Number(service.quantity) || 1,
+            discountPercent: 0,          // default discount
+            currency,                     // attach template currency to each service
+            total: ((Number(service.price) || 0) * (Number(service.quantity) || 1)), // optional total
+          }))
+        };
+      });
+
+      console.log(processedTemplates);
+
       setPricingTemplates(processedTemplates);
     } catch (err) {
       console.error('Error fetching pricing templates:', err);
       toast.error(translate('api.pricingTemplates.fetchError')); // Translated error message
     }
   };
+
 
   const fetchQuotesHistory = async () => {
     try {
@@ -620,6 +631,7 @@ const LeadViewPage = () => {
           emailSubject: actions.emailDetails.subject,
           emailBody: actions.emailDetails.content,
           emailTemplateId: actions.emailDetails.emailTemplateId,
+          attachments: actions.emailDetails.attachments,
         };
         const response = await api.post('/send-email-quotes', emailPayload, {
           headers: { Authorization: `Bearer ${authToken}` },
@@ -963,9 +975,9 @@ const LeadViewPage = () => {
                         );
                         color = "#ecaf11";
                         details = `Question asked: ${event.question} -> ${event.quoteTitle}`;
-                        break;        
+                        break;
                       case "OfferAccepted":
-                         icon = (
+                        icon = (
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -979,7 +991,7 @@ const LeadViewPage = () => {
                         );
                         color = "#00a63e";
                         details = `Offer accepted By ${lead.fullName} -> ${event.quoteTitle}`;
-                        break;        
+                        break;
 
                       case "QuoteCreated":
                         icon = (
@@ -1230,7 +1242,8 @@ const LeadViewPage = () => {
                                         pricePerUnit: Number(s.pricePerUnit) || 0,
                                         quantity: Number(s.quantity) || 1,
                                         discountPercent: Number(s.discountPercent) || 0,
-                                        total: (Number(s.pricePerUnit) || 0) * (Number(s.quantity) || 1) * (1 - (Number(s.discountPercent) || 0) / 100)
+                                        total: (Number(s.pricePerUnit) || 0) * (Number(s.quantity) || 1) * (1 - (Number(s.discountPercent) || 0) / 100),
+                                        currency: selectedTemplate.currency
                                       }));
                                       setNewQuoteFormData(prev => {
                                         const newTotal = calculateQuoteTotal(servicesToLoad, prev.overallDiscount);
@@ -1242,11 +1255,17 @@ const LeadViewPage = () => {
                                           terms: selectedTemplate.terms,
                                           services: servicesToLoad,
                                           total: newTotal,
+                                            currency: selectedTemplate.currency
                                         };
                                       });
                                     }
                                   }}>
-                                    {template.name} <span>{formatCurrency(calculateServicesSubtotal(template.services))}</span>
+                                    {template.name} <span>
+                                      {formatCurrency(
+                                        calculateServicesSubtotal(template.services), // numeric value
+                                        template.currency?.code || 'DKK'             // currency code dynamically
+                                      )}
+                                    </span>
                                   </Link>
                                 </li>
                               ))}
@@ -1359,7 +1378,7 @@ const LeadViewPage = () => {
                                   {service.discountPercent > 0 && <span>{translate('leadViewPage.discountText', { discount: service.discountPercent })}</span>}
                                 </div>
                                 <div className="displayadbox-resultright">
-                                  {formatCurrency(service.total)}
+                                  {formatCurrency(service.total, newQuoteFormData.currency?.code || 'DKK')}
                                 </div>
                               </div>
                             </div>
@@ -1398,7 +1417,7 @@ const LeadViewPage = () => {
                                 {currentQuoteService.discountPercent > 0 && <span>{translate('leadViewPage.discountText', { discount: currentQuoteService.discountPercent })}</span>}
                               </div>
                               <div className="displayadbox-resultright">
-                                {formatCurrency(currentQuoteService.total)}
+                                 {formatCurrency(currentQuoteService.total, newQuoteFormData.currency?.code || 'DKK')}
                               </div>
                             </div>
                           </div>
@@ -1414,16 +1433,16 @@ const LeadViewPage = () => {
                           </div>
                           <div className="result-calculat">
                             <div className="result-calculattop">
-                              <h5><span className="result-calculatlabel">{translate('leadViewPage.subtotalLabel')}</span><span className="result-calculatresult">{formatCurrency(liveSubtotal)}</span></h5>
+                              <h5><span className="result-calculatlabel">{translate('leadViewPage.subtotalLabel')}</span><span className="result-calculatresult">{formatCurrency(liveSubtotal,newQuoteFormData.currency?.code )}</span></h5>
                               {newQuoteFormData.overallDiscount > 0 && (
                                 <h5 className="resultrabat">
                                   <span className="result-calculatlabel">{translate('leadViewPage.discountAmountLabel', { discount: newQuoteFormData.overallDiscount })}</span>
-                                  <span className="result-calculatresult">- {formatCurrency(liveSubtotal * (newQuoteFormData.overallDiscount / 100))}</span>
+                                  <span className="result-calculatresult">- {formatCurrency(liveSubtotal * (newQuoteFormData.overallDiscount / 100 ))}</span>
                                 </h5>
                               )}
                             </div>
                             <div className="result-calculatbottom">
-                              <h5><span className="result-calculat-total">{translate('leadViewPage.totalLabel')}</span><span className="result-calculatfinal">{formatCurrency(liveTotal)}</span></h5>
+                              <h5><span className="result-calculat-total">{translate('leadViewPage.totalLabel')}</span><span className="result-calculatfinal">{formatCurrency(liveTotal,newQuoteFormData.currency?.code )}</span></h5>
                             </div>
                           </div>
                         </div>
@@ -1448,7 +1467,7 @@ const LeadViewPage = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
                         {loading ? translate('leadViewPage.savingButton') : translate('leadViewPage.saveAndSendQuoteButton')}
                       </button>
-                      <Link to="#" className="btn btn-add w-100">
+                      <Link to={"#"} state={{ quoteData: { ...newQuoteFormData, services: [...newQuoteFormData.services, currentQuoteService] } }} className="btn btn-add w-100">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         {translate('leadViewPage.previewButton')}
                       </Link>

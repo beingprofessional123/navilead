@@ -9,7 +9,74 @@ const status = require('../models/status');
 const OtpVerificationTemplate = require('../EmailTemplate/OtpVerificationTemplate');
 const { sendMail } = require('../utils/mail');
 const otpStore = new Map(); // Temporary in-memory store, can replace with Redis
+const REQUIRED_VARIABLES = [
+  "first_name",
+  "last_name",
+  "full_name",
+  "email",
+  "company_name",
+  "contact_phone",
+  "offer_link"
+];
 
+async function ensureUserVariables(user) {
+
+  const existingVars = await UserVariable.findAll({
+    where: { userId: user.id },
+  });
+
+  const existingNames = existingVars.map(v => v.variableName);
+
+  const missing = REQUIRED_VARIABLES.filter(v => !existingNames.includes(v));
+
+  if (missing.length === 0) return;
+
+  const firstName = user.name?.split(" ")[0] || null;
+  const lastName  = user.name?.split(" ").slice(1).join(" ") || null;
+  const offerLink = `${process.env.FRONTEND_URL}/offer/:quoteId`;
+
+  const variablesToInsert = missing.map(key => {
+    let value = null; // 👈 default NULL
+
+    switch (key) {
+      case "first_name":
+        value = firstName;
+        break;
+
+      case "last_name":
+        value = lastName;
+        break;
+
+      case "full_name":
+        value = user.name || null;
+        break;
+
+      case "email":
+        value = user.email || null;
+        break;
+
+      case "company_name":
+        value = user.companyName || null;
+        break;
+
+      case "contact_phone":
+        value = user.phone || null;
+        break;
+
+      case "offer_link":
+        value = offerLink || null;
+        break;
+    }
+
+    return {
+      userId: user.id,
+      variableName: key,
+      variableValue: value,
+    };
+  });
+
+  await UserVariable.bulkCreate(variablesToInsert);
+}
 
 
 
@@ -138,17 +205,9 @@ exports.register = async (req, res) => {
     const firstName = name.split(' ')[0] || name;
     const lastName = name.split(' ').slice(1).join(' ') || '';
 
-    const variablesToInsert = [
-      { variableName: 'first_name', variableValue: firstName },
-      { variableName: 'last_name', variableValue: lastName },
-      { variableName: 'full_name', variableValue: name },
-      { variableName: 'email', variableValue: email },
-      { variableName: "offer_link", variableValue: `${process.env.FRONTEND_URL}/offer/:quoteId` }
-    ];
-
-    await UserVariable.bulkCreate(
-      variablesToInsert.map(v => ({ ...v, userId: user.id }))
-    );
+   
+    // CREATE MISSING VARIABLES
+    await ensureUserVariables(user);
 
     // -------------------- Create Stripe Customer --------------------
     await createStripeCustomer(user);
@@ -217,7 +276,9 @@ exports.login = async (req, res) => {
         otpCode: otp,
       });
 
-      await sendMail({
+      await sendMail(
+      user.id,  
+      {
         to: email,
         subject: 'Verify Your Email - NaviLead',
         text: `Your OTP code is ${otp}. It is valid for 10 minutes.`,
@@ -235,6 +296,8 @@ exports.login = async (req, res) => {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: 'api.login.invalidCredentials' });
+
+    await ensureUserVariables(user);
 
     const token = jwt.sign(
       { id: user.id },
@@ -460,7 +523,9 @@ exports.sendOtp = async (req, res) => {
           ? 'Reset Password OTP - NaviLead'
           : 'Your OTP Code - NaviLead';
 
-    await sendMail({
+    await sendMail(
+    user.id,  
+    {
       to: email,
       subject,
       text: `Your OTP code is ${otp}. It is valid for 10 minutes.`,

@@ -1,43 +1,79 @@
 const nodemailer = require('nodemailer');
+const { SmtpSetting } = require('../models');
 require('dotenv').config();
 
-// Use TLS (STARTTLS) on port 587 for cloud compatibility
-const secure = process.env.MAIL_ENCRYPTION.toLowerCase() === 'ssl'; // true only if using 465
-const port = Number(process.env.MAIL_PORT);
+/**
+ * Create transporter dynamically
+ * - If user's SMTP (smtpActive = true) → use user's SMTP
+ * - Else → use default .env SMTP
+ */
+async function createTransporter(userId) {
+  let smtp = await SmtpSetting.findOne({ where: { userId } });
 
-const transporter = nodemailer.createTransport({
-  host: process.env.MAIL_HOST,
-  port: port,          // 587 for TLS
-  secure: secure,      // false for STARTTLS
-  auth: {
-    user: process.env.MAIL_USERNAME,
-    pass: process.env.MAIL_PASSWORD,
-  },
-  tls: {
-    rejectUnauthorized: false, // allows self-signed certs
-  },
-});
+  if (smtp && smtp.smtpActive) {
+    // USER SMTP ACTIVE
+    const secure = smtp.smtpEncryption.toLowerCase() === 'ssl'; // SSL = port 465
+
+    return nodemailer.createTransport({
+      host: smtp.smtpHost,
+      port: smtp.smtpPort,
+      secure,
+      auth: {
+        user: smtp.smtpUser,
+        pass: smtp.smtpPass,
+      },
+      tls: { rejectUnauthorized: false },
+      fromName: smtp.fromName,
+      fromEmail: smtp.fromEmail,
+      isUserSMTP: true
+    });
+  }
+
+  // DEFAULT SMTP FALLBACK
+  const secure = process.env.MAIL_ENCRYPTION.toLowerCase() === 'ssl';
+
+  const transporter = nodemailer.createTransport({
+    host: process.env.MAIL_HOST,
+    port: Number(process.env.MAIL_PORT),
+    secure,
+    auth: {
+      user: process.env.MAIL_USERNAME,
+      pass: process.env.MAIL_PASSWORD,
+    },
+    tls: { rejectUnauthorized: false },
+  });
+
+  transporter.fromName = process.env.MAIL_FROM_NAME;
+  transporter.fromEmail = process.env.MAIL_FROM_ADDRESS;
+  transporter.isUserSMTP = false;
+
+  return transporter;
+}
 
 /**
- * Send an email
+ * Send an email dynamically
+ * @param {number} userId - User ID who triggers sending mail
  * @param {Object} options
- * @param {string} options.to - Recipient email address
- * @param {string} options.subject - Email subject
- * @param {string} options.text - Plain text email body
- * @param {string} [options.html] - HTML email body (optional)
  */
-async function sendMail({ to, subject, text, html }) {
+async function sendMail(userId, { to, subject, text, html }) {
   try {
+    const transporter = await createTransporter(userId);
+
     const info = await transporter.sendMail({
-      from: `"${process.env.MAIL_FROM_NAME}" <${process.env.MAIL_FROM_ADDRESS}>`,
+      from: `"${transporter.fromName}" <${transporter.fromEmail}>`,
       to,
       subject,
       text,
       html,
     });
 
-    console.log('Email sent: %s', info.messageId);
+    console.log(
+      `Email sent (${transporter.isUserSMTP ? "User SMTP" : "Default SMTP"}):`,
+      info.messageId
+    );
+
     return info;
+
   } catch (error) {
     console.error('Error sending email:', error);
     throw error;
