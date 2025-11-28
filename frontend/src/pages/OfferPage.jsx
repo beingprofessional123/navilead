@@ -19,6 +19,7 @@ const OfferPage = () => {
   const [customerNotes, setCustomerNotes] = useState('');
   const [offerTemplate, setOfferTemplate] = useState('');
   const [AcceptedOffer, setAcceptedOffer] = useState('');
+  const [currencySave, setCurrencySave] = useState('');
 
 
   const fetchOffer = async () => {
@@ -27,6 +28,7 @@ const OfferPage = () => {
       const response = await api.get(`/offers/${id}`);
       const fetchedOffer = response.data;
       setOfferTemplate(fetchedOffer.offerTemplate);
+      setCurrencySave(fetchedOffer.currency);
 
       const createdAtDate = new Date(fetchedOffer.createdAt);
       const validUntilDate = new Date(createdAtDate);
@@ -237,23 +239,24 @@ const OfferPage = () => {
   return (
     <>
       {offerTemplate?.status === 'active' && offerTemplate?.type === 'Custom' && (
-       <OfferHtmlRenderer
-        offer={offer}
-        htmlCode={offerTemplate.htmlCode}
-        handleAcceptQuote={handleAcceptQuote}
-        handleAskQuestion={handleAskQuestion}
-        interactionDisabled={interactionDisabled}
-        acceptTerms={acceptTerms}
-        setAcceptTerms={setAcceptTerms}
-        selectedServiceIds={selectedServiceIds}
-        setSelectedServiceIds={setSelectedServiceIds}
-        customerNotes={customerNotes}
-        setCustomerNotes={setCustomerNotes}
-        AcceptedOffer={AcceptedOffer}
-      />
+        <OfferHtmlRenderer
+          offer={offer}
+          currencySave={currencySave}
+          htmlCode={offerTemplate.htmlCode}
+          handleAcceptQuote={handleAcceptQuote}
+          handleAskQuestion={handleAskQuestion}
+          interactionDisabled={interactionDisabled}
+          acceptTerms={acceptTerms}
+          setAcceptTerms={setAcceptTerms}
+          selectedServiceIds={selectedServiceIds}
+          setSelectedServiceIds={setSelectedServiceIds}
+          customerNotes={customerNotes}
+          setCustomerNotes={setCustomerNotes}
+          AcceptedOffer={AcceptedOffer}
+        />
       )}
 
-     {offerTemplate?.status === 'active' && offerTemplate?.type === 'Default' && (
+      {offerTemplate?.status === 'active' && offerTemplate?.type === 'Default' && (
         <>
           <section className="navpublic" style={{ backgroundColor: offerTemplate.mainBgColor }}>
             <div className="container">
@@ -306,28 +309,46 @@ const OfferPage = () => {
                             <div className="title" style={{ color: offerTemplate.textColor }}>{service.name}</div>
                             <div className="desc" style={{ color: offerTemplate.subTextColor }}>{service.description}</div>
                           </div>
-                          <div className="price" style={{ color: offerTemplate.textColor }}>{service.price} {offer.pricingTemplate?.currency?.symbol}</div>
+                          <div className="price" style={{ color: offerTemplate.textColor }}>
+                            {/* Original price */}
+                            <div>
+                              {(offer.pricingTemplate?.currency?.symbol || currencySave?.symbol || '$')} {service.price.toFixed(2)}
+                            </div>
+
+                            {/* Discount label */}
+                            {service.discount > 0 && (
+                              <div style={{ fontSize: "12px", color: offerTemplate.subTextColor }}>
+                                Discount: {service.discount}%
+                              </div>
+                            )}
+
+                            {/* Final price after service discount */}
+                            <strong style={{ display: "block", fontSize: "12px", color: offerTemplate.textColor }}>
+                              Final: {(offer.pricingTemplate?.currency?.symbol || currencySave?.symbol || '$')} {(service.price * (1 - service.discount / 100)).toFixed(2)}
+                            </strong>
+                          </div>
+
                         </div>
                       ))}
                     </div>
                     <div className="totals">
                       <div className="totalsrow">
                         <span style={{ color: offerTemplate.textColor }}>{translate('offerPage.subtotal')}</span>
-                        <strong style={{ color: offerTemplate.textColor }}>{currentSubtotal} {offer.pricingTemplate?.currency?.symbol}</strong>
+                        <strong style={{ color: offerTemplate.textColor }}>  {(offer.pricingTemplate?.currency?.symbol || currencySave?.symbol || '$')} {currentSubtotal.toFixed(2)} </strong>
                       </div>
                       <div className="totalsrow">
                         <span style={{ color: offerTemplate.textColor }}>{translate('offerPage.vat', { vatRate: vatRate * 100 })}</span> {/* Translated */}
-                        <strong style={{ color: offerTemplate.textColor }}>{vat} {offer.pricingTemplate?.currency?.symbol}</strong>
+                        <strong style={{ color: offerTemplate.textColor }}>{(offer.pricingTemplate?.currency?.symbol || currencySave?.symbol || '$')} {vat.toFixed(2)} </strong>
                       </div>
                       {offer.overallDiscount > 0 && (
                         <div className="totalsrow">
                           <span style={{ color: offerTemplate.textColor }}>{translate('offerPage.discount', { overallDiscount: offer.overallDiscount })}</span> {/* Translated */}
-                          <strong style={{ color: offerTemplate.textColor }}>-{currentSubtotal * offer.overallDiscount / 100} {offer.pricingTemplate?.currency?.symbol}</strong>
+                          <strong style={{ color: offerTemplate.textColor }}>{(offer.pricingTemplate?.currency?.symbol || currencySave?.symbol || '$')} -${(currentSubtotal * offer.overallDiscount / 100).toFixed(2)} </strong>
                         </div>
                       )}
                       <div className="totalsrow">
                         <span style={{ color: offerTemplate.textColor, fontWeight: 700 }}>{translate('offerPage.total')}</span> {/* Translated */}
-                        <strong style={{ fontSize: '16px', color: offerTemplate.textColor }}>{totalWithVat} {offer.pricingTemplate?.currency?.symbol}</strong>
+                        <strong style={{ fontSize: '16px', color: offerTemplate.textColor }}>{(offer.pricingTemplate?.currency?.symbol || currencySave?.symbol || '$')} {totalWithVat.toFixed(2)}</strong>
                       </div>
                     </div>
                     <div className="publicbottom">

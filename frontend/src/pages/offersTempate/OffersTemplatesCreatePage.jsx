@@ -132,16 +132,24 @@ body {
             <div class="service-item" id="mulipleserverdivrepated" style="display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; padding: 12px 10px; border-radius: 10px; border: 1px solid #202e3c; margin-bottom: 10px;">
               <input type="checkbox" style="background-color: #1b2632; border: 1px solid #202e3c;" class="service-checkbox" id="mulipleservercheckbox">
               <div id="mulipleservercheckboxinnerdiv">
-                <div style="font-size: 14px; font-weight: 400; margin-bottom: 1px;" class="service-title" id="mulipleserverdivtitle">{servicetitle}</div>
-                <div style="font-size: 13px; color: #8cd9d9; margin-bottom: 0px; font-weight: 400;" class="service-description" id="mulipleserverdivdiscription">{servicedescription}</div>
+              <div style="font-size: 14px; font-weight: 400; margin-bottom: 1px;" class="service-title" id="mulipleserverdivtitle">{servicetitle}</div>
+              <div style="font-size: 13px; color: #8cd9d9; margin-bottom: 0px; font-weight: 400;" class="service-description" id="mulipleserverdivdiscription">{servicedescription}</div>
               </div>
+              <div id="mulipleservercheckboxinnerdiv">
               <div style="color: #00d4f0; font-weight: 500; font-size: 15px;" class="service-price" id="mulipleserverdivPrice">{serviceprice}</div>
+              <div class="service-discount" style="font-size: 12px; color: #ff6b6b; margin-top: 2px;display:none;" id="mulipleserverdivDiscount">Discount: {servicediscount}%</div>
+                <div class="service-finalprice" style="color: #00d4f0; font-weight: 500; font-size: 15px; display:none;" id="mulipleserverdivFinalPrice">Final: {servicefinalprice}</div>
+              </div>
             </div>
           </div>
           <div style="border-top: 1px dashed #202e3c; margin-top: 15px; padding: 15px 0px; display: grid; gap: 6px; margin-bottom: 15px; border-bottom: 1px dashed #202e3c;">
             <div style="display: flex; align-items: baseline; justify-content: space-between;">
                 <span style="font-size: 14px; font-weight: 500;" id="Subtotaltext">{Subtotaltext}</span>
                 <strong style="font-size: 14px; font-weight: 700; color: #00d4f0;" id="Subtotalprice">{Subtotalprice}</strong>
+            </div>
+             <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                <span style="font-size: 14px; font-weight: 500;" id="overalldiscounttext">{overalldiscounttext}</span>
+                <strong style="font-size: 14px; font-weight: 700; color: #00d4f0;" id="overalldiscountprice">{overalldiscountprice}</strong>
             </div>
             <div style="display: flex; align-items: baseline; justify-content: space-between;">
                 <span style="font-size: 14px; font-weight: 500;" id="vattext">{vattext}</span>
@@ -238,8 +246,11 @@ body {
             { type: 'class', name: 'service-title', variable: 'servicetitle' },
             { type: 'class', name: 'service-description', variable: 'servicedescription' },
             { type: 'class', name: 'service-price', variable: 'serviceprice' },
+            { type: 'class', name: 'service-discount', variable: 'servicediscount' },
+            { type: 'class', name: 'service-finalprice', variable: 'servicefinalprice' },
             { type: 'id', name: 'Subtotaltext', variable: 'Subtotaltext' },
             { type: 'id', name: 'Subtotalprice', variable: 'Subtotalprice' },
+            { type: 'id', name: 'overalldiscountprice', variable: 'overalldiscountprice' },
             { type: 'id', name: 'vattext', variable: 'vattext' },
             { type: 'id', name: 'vatprice', variable: 'vatprice' },
             { type: 'id', name: 'totaltext', variable: 'totaltext' },
@@ -328,7 +339,7 @@ body {
                 toast.error('Failed to copy template.');
             });
     };
-   
+
     const handlePreviewFull = () => {
         setIsFullPreview(true);       // full preview
         setIframeWidth('100%');       // iframe full width
@@ -363,7 +374,7 @@ body {
                                         <li className={iframeWidth === '768px' ? 'active' : ''}><Link to="#" onClick={() => setIframeWidth('768px')}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-tablet" aria-hidden="true"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"></rect><line x1="12" x2="12.01" y1="18" y2="18"></line></svg></Link></li>
                                         <li className={iframeWidth === '375px' ? 'active' : ''}><Link to="#" onClick={() => setIframeWidth('375px')}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-smartphone" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg></Link></li>
                                     </ul>
-                                    <Link to="#"  onClick={() => isFullPreview ? handlePreviewNormal() : handlePreviewFull()}   className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{t('OffersTemplatesCreatePage.previewBtn')}</Link>
+                                    <Link to="#" onClick={() => isFullPreview ? handlePreviewNormal() : handlePreviewFull()} className="btn btn-add"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{t('OffersTemplatesCreatePage.previewBtn')}</Link>
                                     <Link to="#" onClick={handleApplyNow} className="btn btn-send"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-save" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path><path d="M7 3v4a1 1 0 0 0 1 1h7"></path></svg> {t('OffersTemplatesCreatePage.saveBtn')}</Link>
                                 </div>
                             </div>
@@ -392,30 +403,30 @@ body {
                                     </ul>
                                 </div> */}
                                 <div className='formdesign'>
-                                     <div className="form-group mb-3">
-                                                <label htmlFor="templateTitle" className="form-label">{t('OffersTemplatesCreatePage.templateTitleLabel')}</label>
-                                                <input
-                                                    type="text"
-                                                    id="templateTitle"
-                                                    className="form-control"
-                                                    value={title}
-                                                    onChange={(e) => setTitle(e.target.value)}
-                                                    placeholder={t('OffersTemplatesCreatePage.templateTitlePlaceholder')}
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="form-group mb-3">
-                                                <label htmlFor="templateDescription" className="form-label">{t('OffersTemplatesCreatePage.templateDescriptionLabel')}</label>
-                                                <input
-                                                    id="templateDescription"
-                                                    className="form-control"
-                                                    rows={3}
-                                                    value={description}
-                                                    onChange={(e) => setDescription(e.target.value)}
-                                                    placeholder={t('OffersTemplatesCreatePage.templateDescriptionPlaceholder')}
-                                                    required
-                                                />
-                                            </div>
+                                    <div className="form-group mb-3">
+                                        <label htmlFor="templateTitle" className="form-label">{t('OffersTemplatesCreatePage.templateTitleLabel')}</label>
+                                        <input
+                                            type="text"
+                                            id="templateTitle"
+                                            className="form-control"
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                            placeholder={t('OffersTemplatesCreatePage.templateTitlePlaceholder')}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group mb-3">
+                                        <label htmlFor="templateDescription" className="form-label">{t('OffersTemplatesCreatePage.templateDescriptionLabel')}</label>
+                                        <input
+                                            id="templateDescription"
+                                            className="form-control"
+                                            rows={3}
+                                            value={description}
+                                            onChange={(e) => setDescription(e.target.value)}
+                                            placeholder={t('OffersTemplatesCreatePage.templateDescriptionPlaceholder')}
+                                            required
+                                        />
+                                    </div>
                                 </div>
                             </div>
                             <div className="tab-content">
@@ -489,7 +500,7 @@ body {
                                 <h4>{t('OffersTemplatesCreatePage.livePreviewTitle')}</h4><span>{iframeWidth}</span>
                             </div>
                             <div className="newoffertemplate-previewmain">
-                                <div className="newoffertemplate-preview" style={{ display: 'flex', justifyContent: 'center',overflow: 'scroll' }}>
+                                <div className="newoffertemplate-preview" style={{ display: 'flex', justifyContent: 'center', overflow: 'scroll' }}>
                                     <iframe
                                         ref={iframeRef}
                                         title="live-preview"

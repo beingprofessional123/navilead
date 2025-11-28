@@ -20,7 +20,7 @@ const SettingsPage = () => {
         name: "",
         websiteUrl: "",
         timezone: "",
-        currency: "",
+        currencyId: "",
         language: "en", // Default to English as per the original code
         emailSignature: "",
         primaryColor: "#00ffff", // Default values
@@ -69,7 +69,7 @@ const SettingsPage = () => {
                 name: data.user.name || "",
                 websiteUrl: data.user.websiteUrl || "",
                 timezone: data.user.timezone || "",
-                currency: data.user.currency || "",
+                currencyId: data.user.currencyId || "",
                 language: data.user.language || "en",
                 emailSignature: data.user.emailSignature || "",
                 primaryColor: data.user.primaryColor || "#00ffff", // Assuming API returns this
@@ -111,7 +111,7 @@ const SettingsPage = () => {
                 apikey: data.user.apikey,
                 companyLogo: data.user.companyLogo,
                 companyName: data.user.companyName,
-                currency: data.user.currency,
+                currencyId: data.user.currencyId,
                 email: data.user.email,
                 language: data.user.language,
                 name: data.user.name,
@@ -182,7 +182,7 @@ const SettingsPage = () => {
                     ...existingUser,
                     name: updatedUser.name,
                     phone: updatedUser.phone,
-                    currency: updatedUser.currency,
+                    currencyId: updatedUser.currencyId,
                     language: updatedUser.language,
                     companyName: updatedUser.companyName,
                     companyLogo: updatedUser.companyLogo,
@@ -638,8 +638,8 @@ const SettingsPage = () => {
                                         <select
                                             className="form-select"
                                             id="currencySelect"
-                                            name="currency"
-                                            value={formData.currency}
+                                            name="currencyId"
+                                            value={formData.currencyId}
                                             onChange={handleChange}
                                         >
                                             {currencies.map(c => (

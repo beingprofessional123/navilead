@@ -26,6 +26,11 @@ module.exports = (sequelize, DataTypes) => {
         references: { model: "pricing_templates", key: "id" },
         onDelete: "SET NULL",
       },
+      currencyId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: "currencies", key: "id" }
+      },
       title: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -69,9 +74,11 @@ module.exports = (sequelize, DataTypes) => {
     Quote.belongsTo(models.Lead, { foreignKey: 'leadId', as: 'lead' });
     Quote.belongsTo(models.Status, { foreignKey: "statusId", as: "status" });
     Quote.belongsTo(models.PricingTemplate, { foreignKey: 'pricingTemplateId', as: 'pricingTemplate' });
+    Quote.belongsTo(models.Currency, { foreignKey: 'currencyId', as: 'currency' });
     Quote.hasMany(models.QuoteService, { foreignKey: 'quoteId', as: 'services' });
     Quote.hasMany(models.AcceptedOffer, { foreignKey: 'quoteId', as: 'acceptedOffers',onDelete: "CASCADE", });
     Quote.hasMany(models.AskQuestion, { foreignKey: 'quoteId', as: 'questions' });
+    
 
      // 👇 Add missing cascade
   Quote.hasMany(models.SendEmail, { foreignKey: 'quoteId', as: 'emails', onDelete: "CASCADE" });

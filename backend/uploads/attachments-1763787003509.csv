@@ -1,0 +1,6 @@
+ID,Check-in,Check-out,Room Type,Rate,Source
+1,2025-06-01,2025-06-05,Deluxe King,$150,Website
+2,2025-06-02,2025-06-04,Standard,$100,Travel Agent
+3,2025-06-03,2025-06-06,Suite,$250,Corporate Booking
+4,2025-06-05,2025-06-08,Deluxe Twin,$140,OTA (Expedia)
+5,2025-06-06,2025-06-07,Standard,$95,Walk-in

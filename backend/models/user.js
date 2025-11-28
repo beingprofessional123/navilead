@@ -41,9 +41,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    currency: {
-      type: DataTypes.STRING,
+   currencyId: {
+      type: DataTypes.INTEGER,
       allowNull: true,
+      references: { model: "currencies", key: "id" }
     },
     language: {
       type: DataTypes.STRING,
@@ -103,9 +104,13 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.Settings, { foreignKey: 'userId', as: 'settings' });
     User.hasMany(models.AcceptedOffer, { foreignKey: 'userId', as: 'acceptedOffers' });
     User.hasMany(models.AskQuestion, { foreignKey: 'userId', as: 'askQuestions' });
-      User.hasOne(models.SmtpSetting, {
+    User.hasOne(models.SmtpSetting, {
         foreignKey: 'userId',
         as: 'smtpSetting'
+    });
+    User.belongsTo(models.Currency, {
+      foreignKey: "currencyId",
+      as: "currency",
     });
   };
 
