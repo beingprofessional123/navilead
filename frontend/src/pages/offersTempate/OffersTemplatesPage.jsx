@@ -117,6 +117,8 @@ const OffersTemplatesPage = () => {
                 // Remove the deleted template from state
                 setTemplate(prev => prev.filter(tmpl => tmpl.id !== id));
 
+                fetchUserTemplate();
+
                 Swal.fire(
                     'Deleted!',
                     'Template has been deleted.',

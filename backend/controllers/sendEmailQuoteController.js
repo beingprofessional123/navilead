@@ -5,16 +5,9 @@ const Quote = db.Quote;
 const Lead = db.Lead;
 const Status = db.Status;
 const Settings = db.Settings;
-const { sendMail } = require('../utils/mail');
-
-function convertUrlsToLinks(text) {
-  const urlRegex = /(?<!href=")(https?:\/\/[^\s<]+)/g;
-  return text.replace(urlRegex, (url) => {
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-  });
-}
-
-
+const { sendMail } = require('../utils/mail'); 
+// ✅ Import the template
+const QuoteSendTemplate = require('../EmailTemplate/QuoteSendTemplate'); 
 
 exports.storeSendEmailQuote = async (req, res) => {
   try {
@@ -29,17 +22,14 @@ exports.storeSendEmailQuote = async (req, res) => {
 
     // ✅ Fetch user-defined variables
     const userVariables = await UserVariable.findAll({ where: { userId } });
-
     const variablesMap = {};
     userVariables.forEach(({ variableName, variableValue }) => {
       variablesMap[variableName] = variableValue;
     });
 
-    // ✅ Define the offer link cleanly
+    // ✅ Define the offer link
     const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
     const offerUrl = `${frontendUrl}/offer/${quoteId}`;
-
-    // ✅ Make the offer link a proper HTML link
     variablesMap.offer_link = `<a href="${offerUrl}" target="_blank" rel="noopener noreferrer">${offerUrl}</a>`;
 
     // ✅ Replace variables in body and subject
@@ -51,15 +41,14 @@ exports.storeSendEmailQuote = async (req, res) => {
       variablesMap[varName] !== undefined ? variablesMap[varName] : match
     );
 
+    // ✅ Format Attachments
     let formattedAttachments = [];
-
     if (Array.isArray(attachments) && attachments.length > 0) {
       formattedAttachments = attachments.map(att => ({
         filename: att.originalName || att.filename,
         path: att.url || att.path
       }));
     }
-
 
     // ✅ Store the record in DB
     const sendEmailRecord = await SendEmail.create({
@@ -69,16 +58,24 @@ exports.storeSendEmailQuote = async (req, res) => {
       emailSubject: replacedEmailSubject,
       emailBody: replacedEmailBody,
       emailTemplateId,
-      attachments:formattedAttachments
+      attachments: formattedAttachments
     });
 
-    // ✅ Prepare HTML safely (no extra </p> issues)
-    let htmlBody = replacedEmailBody.replace(/\n/g, '<br>');
-    let textBody = replacedEmailBody;
-    // Append user signature
+    // ======================================================
+    // ✅ NEW LOGIC: USE THE TEMPLATE
+    // ======================================================
+    
+    // Prepare Text Body (just the raw text + signature)
     const userSignature = user.emailSignature || '';
-    htmlBody += `<br><br>${userSignature}`;
-    textBody += `\n\n${userSignature}`;
+    const textBody = `${replacedEmailBody}\n\n${userSignature}`;
+
+    // Prepare HTML Body (Using the imported Template)
+    const htmlBody = QuoteSendTemplate({
+      emailSubject: replacedEmailSubject,
+      emailBody: replacedEmailBody,
+      signature: userSignature,
+      attachments: formattedAttachments
+    });
 
     // ✅ Check if email sending is enabled
     const emailSetting = await Settings.findOne({
@@ -86,42 +83,20 @@ exports.storeSendEmailQuote = async (req, res) => {
     });
 
     if (emailSetting && emailSetting.value === 'true') {
-      // Prepare HTML body with download buttons
-      if (attachments?.length) {
-        htmlBody += '<br><br>'; // spacing before buttons
-        attachments.forEach(att => {
-          htmlBody += `
-        <a href="${att.url || att.path}" 
-           style="
-              display: inline-block;
-              padding: 10px 20px;
-              font-size: 16px;
-              color: white;
-              background-color: #007bff;
-              text-decoration: none;
-              border-radius: 5px;
-              margin-bottom: 5px;
-           ">
-          Download ${att.filename}
-        </a><br>`;
-        });
-      }
-
       await sendMail(
-      userId,
-      {
-        to: recipientEmail,
-        subject: replacedEmailSubject,
-        text: textBody,
-        html: htmlBody,
-        attachments:formattedAttachments
-      });
-
+        userId,
+        {
+          to: recipientEmail,
+          subject: replacedEmailSubject,
+          text: textBody, // Fallback for non-HTML clients
+          html: htmlBody, // The beautiful HTML from the template
+          attachments: formattedAttachments // Actual file attachments
+        }
+      );
       console.log(`📧 Email sent to user ${recipientEmail}.`);
     } else {
       console.log(`📵 Email notifications are disabled for user ${userId}. Skipping email.`);
     }
-
 
     // ✅ Update Lead status to "Offer Sent"
     const quote = await Quote.findByPk(quoteId);
@@ -148,4 +123,3 @@ exports.storeSendEmailQuote = async (req, res) => {
     res.status(500).json({ message: 'api.emailQuotes.serverError', error: error.message });
   }
 };
-

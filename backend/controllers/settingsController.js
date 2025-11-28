@@ -1,6 +1,6 @@
 const multer = require('multer');
 const path = require('path');
-const { User,Settings,SmtpSetting, sequelize } = require('../models');
+const { User,Settings,SmtpSetting,UserVariable, sequelize } = require('../models');
 const BACKEND_URL = process.env.BACKEND_URL;
 
 // -------------------------
@@ -36,7 +36,7 @@ exports.getSettings = async (req, res) => {
         'phone',
         'websiteUrl',
         'timezone',
-        'currency',
+        'currencyId',
         'language',
         'emailSignature',
         'apikey',
@@ -62,6 +62,56 @@ exports.getSettings = async (req, res) => {
   }
 };
 
+
+async function updateUserVariables(userId, updateData) {
+  const user = await User.findByPk(userId);
+
+  const updates = [];
+
+  if (updateData.name !== undefined) {
+    const fullName = user.name || "";
+    const firstName = fullName.split(" ")[0] || null;
+    const lastName = fullName.split(" ").slice(1).join(" ") || null;
+
+    updates.push(
+      { variableName: "first_name", variableValue: firstName },
+      { variableName: "last_name", variableValue: lastName },
+      { variableName: "full_name", variableValue: fullName }
+    );
+  }
+
+  if (updateData.email !== undefined) {
+    updates.push({
+      variableName: "email",
+      variableValue: user.email
+    });
+  }
+
+  if (updateData.companyName !== undefined) {
+    updates.push({
+      variableName: "company_name",
+      variableValue: user.companyName
+    });
+  }
+
+  if (updateData.phone !== undefined) {
+    updates.push({
+      variableName: "contact_phone",
+      variableValue: user.phone
+    });
+  }
+
+  // Apply updates one-by-one
+  for (const u of updates) {
+    await UserVariable.upsert({
+      userId,
+      variableName: u.variableName,
+      variableValue: u.variableValue
+    });
+  }
+}
+
+
 // -------------------------
 // Update general settings
 // -------------------------
@@ -75,7 +125,7 @@ exports.updateGeneralSettings = async (req, res) => {
       phone,
       websiteUrl,
       timezone,
-      currency,
+      currencyId,
       language,
       emailSignature
     } = req.body;
@@ -88,7 +138,7 @@ exports.updateGeneralSettings = async (req, res) => {
     if (phone !== undefined) updateData.phone = phone;
     if (websiteUrl !== undefined) updateData.websiteUrl = websiteUrl;
     if (timezone !== undefined) updateData.timezone = timezone;
-    if (currency !== undefined) updateData.currency = currency;
+    if (currencyId !== undefined) updateData.currencyId = currencyId;
     if (language !== undefined) updateData.language = language;
     if (emailSignature !== undefined) updateData.emailSignature = emailSignature;
 
@@ -102,6 +152,9 @@ exports.updateGeneralSettings = async (req, res) => {
     });
 
      const updatedUser = await User.findByPk(req.user.id, { transaction: t });
+
+     // 🔥 Sync UserVariable table
+    await updateUserVariables(req.user.id, updateData);
 
     await t.commit();
     res.status(200).json({ message: "Settings updated successfully.", user: updatedUser });

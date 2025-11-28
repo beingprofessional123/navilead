@@ -12,6 +12,7 @@ export const useLimit = () => useContext(LimitContext);
 export const LimitProvider = ({ children }) => {
   const { authToken } = useContext(AuthContext);
   const [userPlan, setUserPlan] = useState(null);
+  const [CurrencySave, setCurrency] = useState(null);
   const [isLimitModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const [currentLimit, setCurrentLimit] = useState({
@@ -30,6 +31,10 @@ export const LimitProvider = ({ children }) => {
     const res = await api.get("/auth/user-current-plan", {
       headers: { Authorization: `Bearer ${authToken}` },
     });
+
+    if (res.data.success && res.data.currency) {
+      setCurrency(res.data.currency);
+    }
 
     if (res.data.success && res.data.plan !== null) {
       const userPlanData = res.data.plan;
@@ -206,6 +211,7 @@ export const LimitProvider = ({ children }) => {
         isLimitModalOpen,
         currentLimit,
         checkLimit,
+        CurrencySave,
         closeLimitModal,
         refreshPlan: fetchUserPlan,
         isOfferPageCustomizationAllowed,

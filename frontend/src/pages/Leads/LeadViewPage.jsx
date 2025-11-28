@@ -17,7 +17,7 @@ const LeadViewPage = () => {
   const navigate = useNavigate();
   const { authToken } = useContext(AuthContext);
   const { t: translate } = useTranslation(); // Initialize the translation hook
-  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, refreshPlan, userPlan } = useLimit();
+  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, refreshPlan, userPlan, CurrencySave } = useLimit();
   const [activeTab, setActiveTab] = useState("create");
   const [lead, setLead] = useState(null);
   const [totalSmsSend, setTotalSmsSend] = useState(0);
@@ -62,6 +62,7 @@ const LeadViewPage = () => {
     services: [],
     pricingTemplateId: '',
     total: 0,
+    currency: null
   });
   const [currentQuoteService, setCurrentQuoteService] = useState({
     name: '',
@@ -70,7 +71,7 @@ const LeadViewPage = () => {
     unit: '',
     pricePerUnit: 0,
     discountPercent: 0,
-    total: 0
+    total: 0,
   });
 
   // State for quote history
@@ -348,15 +349,35 @@ const LeadViewPage = () => {
     }
   };
 
-  const formatCurrency = (value, currencyCode = 'DKK') => {
-    if (value === null || value === undefined || isNaN(value) || value === '') return translate('leadViewPage.na'); // Translated
-    return new Intl.NumberFormat('en-DK', {
-      style: 'currency',
-      currency: currencyCode,
-      minimumFractionDigits: 0, // Optional: remove decimals if you want
-      maximumFractionDigits: 2,
-    }).format(value);
-  };
+  const formatCurrency = (value, currencyCodeParam) => {
+  if (
+    value === null || 
+    value === undefined || 
+    isNaN(value) || 
+    value === ''
+  ) {
+    return translate('leadViewPage.na');
+  }
+
+  // Currency select priority:
+  // 1️⃣ template.currency.code (passed argument)
+  // 2️⃣ CurrencySave.code
+  // 3️⃣ DKK fallback
+  const currencyCode = currencyCodeParam || CurrencySave?.code || "DKK";
+
+  // USD should always use "$"
+  if (currencyCode === "USD") {
+    return `$${Number(value).toLocaleString('en-DK')}`;
+  }
+
+  return new Intl.NumberFormat('en-DK', {
+    style: 'currency',
+    currency: currencyCode,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
 
 
   const calculateServicesSubtotal = (services) => {
@@ -481,6 +502,7 @@ const LeadViewPage = () => {
         title: `(Copy) ${quote.title}`,
         description: quote.description,
         validDays: quote.validDays,
+        currencyId: quote.currencyId,
         overallDiscount: quote.overallDiscount ?? 0,
         terms: quote.terms,
         total: calculateQuoteTotal(copiedServices, quote.overallDiscount),
@@ -505,88 +527,104 @@ const LeadViewPage = () => {
 
 
   const handleSaveQuote = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    // 🗓️ Ensure plan start date exists
-    if (!userPlan?.startDate) {
-      toast.error("Plan start date not found");
+  // 🗓️ Ensure plan start date exists
+  if (!userPlan?.startDate) {
+    toast.error("Plan start date not found");
+    return;
+  }
+
+  const planStartDate = new Date(userPlan.startDate);
+
+  // ✅ Count only quotes created on or after plan start date
+  const filteredQuotes = allquotesHistory.filter((quote) => {
+    const createdAt = new Date(quote.createdAt);
+    return createdAt >= planStartDate;
+  });
+
+  const currentOfferCount = filteredQuotes.length;
+
+  // ✅ Enforce offer (quote) plan limit
+  const canProceed = checkLimit(currentOfferCount, "Offers");
+  if (!canProceed) return;
+
+  const action = e.nativeEvent.submitter?.value;
+  setLoading(true);
+
+  try {
+    const notSentStatus = quoteStatuses.find(s => s.name === 'Not sent');
+    if (!notSentStatus) {
+      toast.error(translate('api.quotes.statusLoadError'));
+      setLoading(false);
       return;
     }
 
-    const planStartDate = new Date(userPlan.startDate);
-
-    // ✅ Count only quotes created on or after plan start date
-    const filteredQuotes = allquotesHistory.filter((quote) => {
-      const createdAt = new Date(quote.createdAt);
-      return createdAt >= planStartDate;
-    });
-
-    const currentOfferCount = filteredQuotes.length;
-
-    // ✅ Enforce offer (quote) plan limit
-    const canProceed = checkLimit(currentOfferCount, "Offers");
-    if (!canProceed) return;
-
-    const action = e.nativeEvent.submitter?.value;
-    setLoading(true);
-    try {
-      // Find "Not sent" status for new quote
-      const notSentStatus = quoteStatuses.find(s => s.name === 'Not sent');
-      if (!notSentStatus) {
-        toast.error(translate('api.quotes.statusLoadError')); // Translated error message
-        setLoading(false);
-        return;
-      }
-
-      const payload = {
-        userId: lead.userId,
-        leadId: lead.id,
-        pricingTemplateId: newQuoteFormData.pricingTemplateId || null,
-        title: newQuoteFormData.title,
-        description: newQuoteFormData.description,
-        validDays: newQuoteFormData.validDays,
-        overallDiscount: newQuoteFormData.overallDiscount,
-        terms: newQuoteFormData.terms,
-        total: newQuoteFormData.total,
-        services: newQuoteFormData.services.map(({ total, ...service }) => service),
-        statusId: notSentStatus.id, // Set initial status to "Not sent"
-      };
-
-      const response = await api.post('/quotes', payload, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      toast.success(translate(response.data.message || 'leadViewPage.quoteSaveSuccess')); // Translated success message
-      fetchAllQuotesHistory();
-      fetchQuotesHistory();
-      refreshPlan();
-      setQuoteToActOn(response.data.quotes); // Store the newly created quote (response.data.quote)
-      if (action === "saveAndSend") {
-        // Open send modal immediately
-        setShowSendQuoteModal(true);
-      }
-
-
-      // Reset form after successful save
-      setNewQuoteFormData({
-        title: '',
-        description: '',
-        validDays: 7,
-        overallDiscount: 0,
-        terms: '',
-        services: [],
-        pricingTemplateId: '',
-        total: 0,
-      });
-      setCurrentQuoteService({ name: '', description: '', quantity: 1, unit: '', pricePerUnit: 0, discountPercent: 0, total: 0 });
-
-    } catch (err) {
-      console.error('Error saving quote:', err);
-      const errorMessage = err.response?.data?.message || 'leadViewPage.quoteSaveError';
-      toast.error(translate(errorMessage)); // Translated error message
-    } finally {
-      setLoading(false);
+    // ✅ Include currentQuoteService if user has typed something
+    const servicesToSave = [...newQuoteFormData.services];
+    if (currentQuoteService.name && currentQuoteService.pricePerUnit >= 0) {
+      servicesToSave.push({ ...currentQuoteService });
     }
-  };
+
+    // Recalculate total including current service
+    const total = calculateQuoteTotal(servicesToSave, newQuoteFormData.overallDiscount);
+
+    // ✅ Use servicesToSave in payload, not newQuoteFormData.services
+    const payload = {
+      userId: lead.userId,
+      leadId: lead.id,
+      pricingTemplateId: newQuoteFormData.pricingTemplateId || null,
+      title: newQuoteFormData.title,
+      description: newQuoteFormData.description,
+      validDays: newQuoteFormData.validDays,
+      overallDiscount: newQuoteFormData.overallDiscount,
+      terms: newQuoteFormData.terms,
+      total, // use recalculated total
+      currencyId: newQuoteFormData.currency?.id || CurrencySave?.id || null,
+      services: servicesToSave.map(service => ({
+        name: service.name,
+        description: service.description,
+        quantity: service.quantity,
+        unit: service.unit,
+        discount: service.discountPercent,
+        price: service.pricePerUnit, // <- fix here
+      })),
+      statusId: notSentStatus.id,
+    };
+
+    const response = await api.post('/quotes', payload, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    toast.success(translate(response.data.message || 'leadViewPage.quoteSaveSuccess'));
+    fetchAllQuotesHistory();
+    fetchQuotesHistory();
+    refreshPlan();
+    setQuoteToActOn(response.data.quotes);
+    if (action === "saveAndSend") setShowSendQuoteModal(true);
+
+    // Reset form
+    setNewQuoteFormData({
+      title: '',
+      description: '',
+      validDays: 7,
+      overallDiscount: 0,
+      terms: '',
+      services: [],
+      pricingTemplateId: '',
+      total: 0,
+      currency: { id: '', code: '', name: '', symbol: '' }
+    });
+    setCurrentQuoteService({ name: '', description: '', quantity: 1, unit: '', pricePerUnit: 0, discountPercent: 0, total: 0 });
+
+  } catch (err) {
+    console.error('Error saving quote:', err);
+    const errorMessage = err.response?.data?.message || 'leadViewPage.quoteSaveError';
+    toast.error(translate(errorMessage));
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleSendQuoteActions = async (actions) => {
     if (!quoteToActOn) {
@@ -1255,7 +1293,7 @@ const LeadViewPage = () => {
                                           terms: selectedTemplate.terms,
                                           services: servicesToLoad,
                                           total: newTotal,
-                                            currency: selectedTemplate.currency
+                                          currency: selectedTemplate.currency
                                         };
                                       });
                                     }
@@ -1263,7 +1301,7 @@ const LeadViewPage = () => {
                                     {template.name} <span>
                                       {formatCurrency(
                                         calculateServicesSubtotal(template.services), // numeric value
-                                        template.currency?.code || 'DKK'             // currency code dynamically
+                                        template.currency?.code            // currency code dynamically
                                       )}
                                     </span>
                                   </Link>
@@ -1378,7 +1416,7 @@ const LeadViewPage = () => {
                                   {service.discountPercent > 0 && <span>{translate('leadViewPage.discountText', { discount: service.discountPercent })}</span>}
                                 </div>
                                 <div className="displayadbox-resultright">
-                                  {formatCurrency(service.total, newQuoteFormData.currency?.code || 'DKK')}
+                                  {formatCurrency(service.total, newQuoteFormData.currency?.code)}
                                 </div>
                               </div>
                             </div>
@@ -1417,7 +1455,7 @@ const LeadViewPage = () => {
                                 {currentQuoteService.discountPercent > 0 && <span>{translate('leadViewPage.discountText', { discount: currentQuoteService.discountPercent })}</span>}
                               </div>
                               <div className="displayadbox-resultright">
-                                 {formatCurrency(currentQuoteService.total, newQuoteFormData.currency?.code || 'DKK')}
+                                {formatCurrency(currentQuoteService.total, newQuoteFormData.currency?.code)}
                               </div>
                             </div>
                           </div>
@@ -1433,16 +1471,16 @@ const LeadViewPage = () => {
                           </div>
                           <div className="result-calculat">
                             <div className="result-calculattop">
-                              <h5><span className="result-calculatlabel">{translate('leadViewPage.subtotalLabel')}</span><span className="result-calculatresult">{formatCurrency(liveSubtotal,newQuoteFormData.currency?.code )}</span></h5>
+                              <h5><span className="result-calculatlabel">{translate('leadViewPage.subtotalLabel')}</span><span className="result-calculatresult">{formatCurrency(liveSubtotal, newQuoteFormData.currency?.code)}</span></h5>
                               {newQuoteFormData.overallDiscount > 0 && (
                                 <h5 className="resultrabat">
                                   <span className="result-calculatlabel">{translate('leadViewPage.discountAmountLabel', { discount: newQuoteFormData.overallDiscount })}</span>
-                                  <span className="result-calculatresult">- {formatCurrency(liveSubtotal * (newQuoteFormData.overallDiscount / 100 ))}</span>
+                                  <span className="result-calculatresult">- {formatCurrency(liveSubtotal * (newQuoteFormData.overallDiscount / 100))}</span>
                                 </h5>
                               )}
                             </div>
                             <div className="result-calculatbottom">
-                              <h5><span className="result-calculat-total">{translate('leadViewPage.totalLabel')}</span><span className="result-calculatfinal">{formatCurrency(liveTotal,newQuoteFormData.currency?.code )}</span></h5>
+                              <h5><span className="result-calculat-total">{translate('leadViewPage.totalLabel')}</span><span className="result-calculatfinal">{formatCurrency(liveTotal, newQuoteFormData.currency?.code)}</span></h5>
                             </div>
                           </div>
                         </div>
@@ -1467,7 +1505,7 @@ const LeadViewPage = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
                         {loading ? translate('leadViewPage.savingButton') : translate('leadViewPage.saveAndSendQuoteButton')}
                       </button>
-                      <Link to={"#"} state={{ quoteData: { ...newQuoteFormData, services: [...newQuoteFormData.services, currentQuoteService] } }} className="btn btn-add w-100">
+                      <Link to={`/leads/quote-preview?leadId=${id}`} state={{ quoteData: { ...newQuoteFormData, services: [...newQuoteFormData.services, { ...currentQuoteService, currency: newQuoteFormData.currency }], pricingTemplateId: newQuoteFormData.pricingTemplateId, allquotesHistory, quoteStatuses } }} className="btn btn-add w-100">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         {translate('leadViewPage.previewButton')}
                       </Link>
@@ -1542,7 +1580,7 @@ const LeadViewPage = () => {
                         <h3>
                           {formatCurrency(
                             quote.total,
-                            quote.pricingTemplate?.currency?.code || "DKK"
+                            quote?.currency?.code
                           )}
 
                           <div className="leads-previousoffers-btn">

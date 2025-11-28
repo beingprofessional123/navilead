@@ -1,6 +1,6 @@
 const db = require('../models');
 const { Op } = require("sequelize");
-const { Quote, QuoteService, Status,UserPlan,Plan ,SendEmail,SendSms } = db;
+const { Quote, QuoteService, Status,UserPlan,Plan ,SendEmail,SendSms, Currency } = db;
 
 // Get all quotes (optionally filter by leadId or userId via query params)
 exports.getQuotes = async (req, res) => {
@@ -14,6 +14,7 @@ exports.getQuotes = async (req, res) => {
     const userPlan = await UserPlan.findOne({
       where: { userId, status: "active" },
       include: { model: Plan, as: "plan" },
+      
     });
 
     let planStartDate = null;
@@ -27,6 +28,11 @@ exports.getQuotes = async (req, res) => {
       include: [
         { model: QuoteService, as: "services" },
         { model: Status, as: "status" },
+        {
+          model: Currency,     // ✅ Include the quote's own currency
+          as: 'currency',
+          attributes: ['id', 'name', 'code', 'symbol'],
+        }
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -67,7 +73,12 @@ exports.getQuoteById = async (req, res) => {
     const quote = await Quote.findByPk(req.params.id, {
       include: [
         { model: QuoteService, as: 'services' },
-             { model: Status, as: "status" }
+             { model: Status, as: "status" },
+              {
+          model: Currency,     // ✅ Include the quote's own currency
+          as: 'currency',
+          attributes: ['id', 'name', 'code', 'symbol'],
+        }
       ],
     });
 
@@ -96,6 +107,7 @@ exports.createQuote = async (req, res) => {
       total,
       sendSection,
       services,
+      currencyId
     } = req.body;
 
     if (!userId || !leadId || !title) {
@@ -119,20 +131,21 @@ exports.createQuote = async (req, res) => {
       terms,
       total,
       sendSection: cleanSendSection,
+      currencyId
     });
 
     if (Array.isArray(services) && services.length > 0) {
-      const servicesWithQuoteId = services.map(({ id, quoteId, ...service }) => ({
+      const servicesWithQuoteId = services.map(({ id, quoteId, discountPercent, ...service }) => ({
         ...service,
+        discount: discountPercent || 0, // map discountPercent to discount column
         quoteId: quote.id,
       }));
+
       await QuoteService.bulkCreate(servicesWithQuoteId);
     }
-
     const quotes = await Quote.findByPk(quote.id, {
       include: [
         { model: QuoteService, as: 'services' },
-        // Removed Status and EmailTemplate includes
       ],
     });
 

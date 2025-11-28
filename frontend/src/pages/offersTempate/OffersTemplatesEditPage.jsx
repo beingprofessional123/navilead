@@ -38,26 +38,110 @@ const OffersTemplatesEditPage = () => {
         htmlCode: '',
         ...defaultColors,
     });
-    const defaultHTML = `<!DOCTYPE html>
+     const defaultHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <title>Navilead</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
+<style type="text/css">
+*, ::after, ::before {
+  box-sizing: border-box;
+}
+body {
+    margin: 0px;
+}
+.container {
+    max-width: 1140px;
+    margin: 0px auto;
+    background-color: #101418;
+}
+.sectiontop1 {
+    padding: 0px !important;
+}
+@media all and (min-width:320px) and (max-width: 767px) {
+.sectiontop {
+  padding-top: 20px !important;
+}
+.coldiv {
+    flex-wrap: wrap;
+}
+.coldivleft {
+    max-width: 100% !important;
+    flex: 0 0 100%!important;
+}
+.coldivright {
+    max-width: 100% !important;
+    flex: 0 0 100%!important;
+}
+.service-item {
+    display: flex !important;
+    flex-wrap: wrap !important;
+}
+.service-item div {
+    font-size: 12px !important;
+}
+.coldivleft div {
+    font-size: 12px !important;
+}
+.coldivleft div span{
+    font-size: 12px !important;
+}
+.coldivleft div strong{
+    font-size: 12px !important;
+}
+.coldivleft div label{
+    font-size: 12px !important;
+}
+.sectiontop1 {
+    padding: 0px !important;
+}
+.offer-title h1 {
+    font-size: 15px !important;
+}
+
+}
+@media all and (min-width:768px) and (max-width: 1024px) {
+.sectiontop {
+  padding-top: 20px !important;
+}
+.coldiv {
+    flex-wrap: wrap;
+} 
+}
+@media all and (min-width:768px) and (max-width: 991px) {
+.container {
+    max-width: 720px;
+}
+}
+@media all and (min-width:992px) and (max-width: 1024px) {
+.container {
+    max-width: 960px;
+}
+}
+@media all and (min-width:1025px) and (max-width: 1199px) {
+.container {
+    max-width: 960px;
+}
+}
+</style>
 <body style="font-family: 'Poppins', sans-serif; background-color: #101418; color: #cff; font-weight: 400; font-style: normal;">
 
-<section style="padding: 50px 0px;">
-  <div style="width: 100%; padding-right: 15px; padding-left: 15px; margin-right: auto; margin-left: auto;">
-    <div style="display: flex; flex-wrap: wrap; margin-right: -15px; margin-left: -15px;">
+
+<div class="container" style="background-color: #101418;">
+
+<section class="sectiontop" style="padding: 50px 0px;">
+  <div class="sectiontop1" style="width: 100%; padding-right: 15px; padding-left: 15px; margin-right: auto; margin-left: auto;">
+    <div style="display: flex; flex-wrap: wrap;">
       <div style="position: relative; width: 100%; padding-right: 15px; padding-left: 15px;">
         <div style="width: 220px; margin: 0px auto 30px;">
           <a href="#"><img src="/assets/images/logo.svg" style="max-width: 100%; height: auto; display: block;" alt=""></a>
         </div>
       </div>
     </div>
-    <div style="display: flex;">
-      <div style="position: relative; width: 100%; padding-right: 15px; padding-left: 15px; flex: 0 0 58.333333%; max-width: 58.333333%;">
+    <div class="coldiv" style="display: flex;">
+      <div class="coldivleft" style="position: relative; width: 100%; padding-right: 15px; padding-left: 15px; flex: 0 0 58.333333%; max-width: 58.333333%;">
         <div style="background-color: #171f26; border: 1px solid #202e3c; border-radius: 8.7px; padding: 21px; margin-bottom: 23px; position: relative;">
            <div> 
           <div class="offer-title">
@@ -71,16 +155,24 @@ const OffersTemplatesEditPage = () => {
             <div class="service-item" id="mulipleserverdivrepated" style="display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; padding: 12px 10px; border-radius: 10px; border: 1px solid #202e3c; margin-bottom: 10px;">
               <input type="checkbox" style="background-color: #1b2632; border: 1px solid #202e3c;" class="service-checkbox" id="mulipleservercheckbox">
               <div id="mulipleservercheckboxinnerdiv">
-                <div style="font-size: 14px; font-weight: 400; margin-bottom: 1px;" class="service-title" id="mulipleserverdivtitle">{servicetitle}</div>
-                <div style="font-size: 13px; color: #8cd9d9; margin-bottom: 0px; font-weight: 400;" class="service-description" id="mulipleserverdivdiscription">{servicedescription}</div>
+              <div style="font-size: 14px; font-weight: 400; margin-bottom: 1px;" class="service-title" id="mulipleserverdivtitle">{servicetitle}</div>
+              <div style="font-size: 13px; color: #8cd9d9; margin-bottom: 0px; font-weight: 400;" class="service-description" id="mulipleserverdivdiscription">{servicedescription}</div>
               </div>
+              <div id="mulipleservercheckboxinnerdiv">
               <div style="color: #00d4f0; font-weight: 500; font-size: 15px;" class="service-price" id="mulipleserverdivPrice">{serviceprice}</div>
+              <div class="service-discount" style="font-size: 12px; color: #ff6b6b; margin-top: 2px;display:none;" id="mulipleserverdivDiscount">Discount: {servicediscount}%</div>
+                <div class="service-finalprice" style="color: #00d4f0; font-weight: 500; font-size: 15px; display:none;" id="mulipleserverdivFinalPrice">Final: {servicefinalprice}</div>
+              </div>
             </div>
           </div>
           <div style="border-top: 1px dashed #202e3c; margin-top: 15px; padding: 15px 0px; display: grid; gap: 6px; margin-bottom: 15px; border-bottom: 1px dashed #202e3c;">
             <div style="display: flex; align-items: baseline; justify-content: space-between;">
                 <span style="font-size: 14px; font-weight: 500;" id="Subtotaltext">{Subtotaltext}</span>
                 <strong style="font-size: 14px; font-weight: 700; color: #00d4f0;" id="Subtotalprice">{Subtotalprice}</strong>
+            </div>
+             <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                <span style="font-size: 14px; font-weight: 500;" id="overalldiscounttext">{overalldiscounttext}</span>
+                <strong style="font-size: 14px; font-weight: 700; color: #00d4f0;" id="Subtotalprice">{overalldiscountprice}</strong>
             </div>
             <div style="display: flex; align-items: baseline; justify-content: space-between;">
                 <span style="font-size: 14px; font-weight: 500;" id="vattext">{vattext}</span>
@@ -125,7 +217,7 @@ const OffersTemplatesEditPage = () => {
           </div></div>
         </div>
       </div>
-      <div style="position: relative; width: 100%; padding-right: 15px; padding-left: 15px; flex: 0 0 41.666667%; max-width: 41.666667%;">
+      <div class="coldivright" style="position: relative; width: 100%; padding-right: 15px; padding-left: 15px; flex: 0 0 41.666667%; max-width: 41.666667%;">
         <div style="background-color: #171f26; border: 1px solid #202e3c; border-radius: 8.7px; padding: 21px; margin-bottom: 23px; position: relative;">
           <div style="margin-bottom: 15px;">
             <a href="#"><img src="/assets/images/blog3.jpg" style="width: 100%; height: auto; border-radius: 12px; display: block;" alt=""></a>
@@ -143,13 +235,13 @@ const OffersTemplatesEditPage = () => {
     </div>
   </div>
 </section>
-
+</div>
 
 <script>
 
 </script>
 </body>
-        </html>`; // Example
+</html>`; // Example
 
     const [htmlCode, setHtmlCode] = useState(defaultHTML);
     const [title, setTitle] = useState('');
@@ -177,8 +269,11 @@ const OffersTemplatesEditPage = () => {
             { type: 'class', name: 'service-title', variable: 'servicetitle' },
             { type: 'class', name: 'service-description', variable: 'servicedescription' },
             { type: 'class', name: 'service-price', variable: 'serviceprice' },
+            { type: 'class', name: 'service-discount', variable: 'servicediscount' },
+            { type: 'class', name: 'service-finalprice', variable: 'servicefinalprice' },
             { type: 'id', name: 'Subtotaltext', variable: 'Subtotaltext' },
             { type: 'id', name: 'Subtotalprice', variable: 'Subtotalprice' },
+            { type: 'id', name: 'overalldiscountprice', variable: 'overalldiscountprice' },
             { type: 'id', name: 'vattext', variable: 'vattext' },
             { type: 'id', name: 'vatprice', variable: 'vatprice' },
             { type: 'id', name: 'totaltext', variable: 'totaltext' },

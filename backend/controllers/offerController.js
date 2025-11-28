@@ -1,6 +1,8 @@
 const db = require('../models');
 const { sendMail } = require('../utils/mail');
 const AskQuestionsTemplate = require('../EmailTemplate/AskQuestionsTemplate');
+const AcceptOfferTemplate = require('../EmailTemplate/AcceptOfferTemplate');
+
 const { runWorkflows } = require('../utils/runWorkflows');
 const user = require('../models/user');
 
@@ -58,6 +60,11 @@ exports.getOfferByQuoteId = async (req, res) => {
           as: 'status',
           attributes: ['id', 'name', 'statusFor'],
         },
+        {
+          model: Currency,     // ✅ Include the quote's own currency
+          as: 'currency',
+          attributes: ['id', 'name', 'code', 'symbol'],
+        }
       ],
     });
 
@@ -178,6 +185,14 @@ exports.getOfferByQuoteId = async (req, res) => {
           statusFor: offer.status.statusFor,
         }
         : null,
+         currency: offer.currency
+    ? {
+        id: offer.currency.id,
+        code: offer.currency.code,
+        name: offer.currency.name,
+        symbol: offer.currency.symbol,
+      }
+    : null,
     });
   } catch (error) {
     console.error('Error fetching offer:', error);
@@ -185,60 +200,105 @@ exports.getOfferByQuoteId = async (req, res) => {
   }
 };
 
-// Accept offer handler remains unchanged
+// Accept offer handler
 exports.acceptOffer = async (req, res) => {
   const { quoteId, chosenServices, totalPrice, rememberNotes } = req.body;
 
   try {
+    // 1. Validation
     if (!quoteId || !chosenServices || totalPrice === undefined) {
       return res.status(400).json({ message: 'Missing required fields for accepting offer.' });
     }
 
-    // Find the "Accepted" status for quotes
-    const acceptedStatus = await Status.findOne({
-      where: { name: 'Accepted', statusFor: 'Quote' },
-    });
+    // 2. Status Fetching
+    const acceptedStatus = await Status.findOne({ where: { name: 'Accepted', statusFor: 'Quote' } });
+    const wonStatus = await Status.findOne({ where: { name: 'Won', statusFor: 'Lead' } });
 
-    if (!acceptedStatus) {
-      return res.status(500).json({ message: 'Accepted status not configured in database.' });
-    }
-
-    // Find the "Won" status for leads
-    const wonStatus = await Status.findOne({
-      where: { name: 'Won', statusFor: 'Lead' },
-    });
-
-    if (!wonStatus) {
-      return res.status(500).json({ message: 'Won status not configured in database.' });
-    }
-
-    // Update the quote status to "Accepted"
-     await Quote.update(
+    // 3. Update Quote Status
+    await Quote.update(
       { statusId: acceptedStatus.id },
       { where: { id: quoteId } }
     );
 
-    const quote = await Quote.findByPk(quoteId);
+    // 4. Fetch Quote with Lead details
+    const quote = await Quote.findByPk(quoteId, {
+      include: [{ model: Lead, as: 'lead' },  {
+          model: Currency,     // ✅ Include the quote's own currency
+          as: 'currency',
+          attributes: ['id', 'name', 'code', 'symbol'],
+        }]
+    });
 
-     // Create a new AcceptedOffer record
+    // 5. Create AcceptedOffer Record
     const acceptedOffer = await AcceptedOffer.create({
       quoteId,
       chosenServices,
       totalPrice,
       rememberNotes: rememberNotes || null,
-      userId: quote.userId, // include this
+      userId: quote.userId,
     });
 
-    // Also update the lead status to "Won"
-  
+    // ============================================================
+    //   SEND EMAIL ON ACCEPT (UPDATED FOR NEW TEMPLATE)
+    // ============================================================
+
+    const salesUser = await User.findByPk(quote.userId);
+    const lead = await Lead.findByPk(quote.leadId);
+
+    const emailSetting = await Settings.findOne({
+      where: { userId: salesUser.id, key: 'emailNotifications' },
+    });
+
+    // Check if Email Notification is ON
+    if (emailSetting?.value === 'true') {
+
+      const offerLink = `${process.env.FRONTEND_URL}/offer/${quote.id}`;
+
+      // YAHAN CHANGE KIYA HAI: Naye Template ke hisaab se parameters map kiye hain
+      const emailHtml = AcceptOfferTemplate({
+        salesRepName: salesUser.name,   // Pehle ye salesUserName tha
+        customerName: lead.fullName,    // Lead ka pura naam
+        offerId: quoteId,
+        offerLink: offerLink,
+        totalPrice: totalPrice,
+        chosenServices: chosenServices,
+        notes: rememberNotes || '',     // Agar note nahi hai to empty string
+        signature: salesUser.emailSignature || null, // (Optional) Agar user ke paas signature hai
+        currency:quote.currency,
+      });
+
+      await sendMail(
+        salesUser.id,
+        {
+          to: salesUser.email,
+          subject: `🚀 Offer #${quoteId} Accepted by ${lead.fullName}`, // Subject me thoda emoji daal diya
+          html: emailHtml,
+        }
+      );
+
+      await sendMail(
+        lead.userId,
+        {
+          to: lead.email,
+          subject: `🚀 Offer #${quoteId} Accepted by ${lead.fullName}`, // Subject me thoda emoji daal diya
+          html: emailHtml,
+        }
+      );
+
+      console.log(`📧 Email sent to ${salesUser.email} — Offer accepted`);
+    } else {
+      console.log(`📵 Email notifications OFF for user ${salesUser.id}`);
+    }
+
+    // ============================================================
+
+    // 6. Update Lead Status -> WON
     if (quote && quote.leadId) {
-      const lead = await Lead.findByPk(quote.leadId);
-      const user = await User.findByPk(quote.userId);
-      await runWorkflows("leadMarkedAsWon", { lead, user });
       await db.Lead.update(
         { statusId: wonStatus.id },
         { where: { id: quote.leadId } }
       );
+
       await StatusUpdateLog.create({
         leadId: lead.id,
         statusId: wonStatus.id,
@@ -246,9 +306,10 @@ exports.acceptOffer = async (req, res) => {
     }
 
     res.status(200).json({
-      message: 'Offer accepted successfully! Lead status updated to Won.',
+      message: 'Offer accepted successfully! Email sent.',
       acceptedOfferId: acceptedOffer.id,
     });
+
   } catch (error) {
     console.error('Error accepting offer:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -300,8 +361,6 @@ exports.askedQuestion = async (req, res) => {
         statusId: inDialogueStatus.id,
       });
     }
-
-    console.log(lead.user?.email);
 
     // Send email to assigned sales rep
     if (lead.user?.email) {

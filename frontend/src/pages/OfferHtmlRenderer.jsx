@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 
 const OfferHtmlRenderer = ({
   offer,
+  currencySave,
   htmlCode,
   handleAcceptQuote,
   handleAskQuestion,
@@ -33,6 +34,8 @@ const OfferHtmlRenderer = ({
   const memoizedHtml = useMemo(() => {
     if (!htmlCode || !offer) return "";
 
+    const currencySymbol = offer.pricingTemplate?.currency?.symbol || currencySave?.symbol || '$';
+
     // Calculate totals based on selected services and overall discount
     const calculateTotals = () => {
       const subtotal = (offer.services || []).reduce((sum, s) => {
@@ -45,15 +48,16 @@ const OfferHtmlRenderer = ({
         return sum;
       }, 0);
 
-      const vat = subtotal * vatRate;
-      const total = subtotal + vat;
       const overallDiscountAmount = subtotal * (offer.overallDiscount / 100);
-      const totalAfterOverallDiscount = (subtotal - overallDiscountAmount) + vat;
+      const subtotalAfterDiscount = subtotal - overallDiscountAmount;
+      const vat = subtotalAfterDiscount * vatRate;
+      const total = subtotalAfterDiscount + vat;
 
-      return { subtotal, vat, total: totalAfterOverallDiscount, overallDiscountAmount };
+      return { subtotal, overallDiscountAmount, vat, total };
     };
 
-    const { subtotal, vat, total, overallDiscountAmount } = calculateTotals();
+    const { subtotal, overallDiscountAmount, vat, total } = calculateTotals();
+
 
     // Create a temporary DOM element to manipulate the HTML
     const tempDiv = document.createElement("div");
@@ -64,19 +68,21 @@ const OfferHtmlRenderer = ({
       "{quotestitle}": offer.title || "",
       "{quotesdescription}": offer.description || "",
       "{Subtotaltext}": "Subtotal",
-      "{Subtotalprice}": `${subtotal.toFixed(2)} ${offer.pricingTemplate?.currency?.symbol || ""}`,
+      "{Subtotalprice}": ` ${currencySymbol} ${subtotal.toFixed(2)}`,
       "{vattext}": `VAT (${vatRate * 100}%)`,
-      "{vatprice}": `${vat.toFixed(2)} ${offer.pricingTemplate?.currency?.symbol || ""}`,
+      "{vatprice}": `${currencySymbol} ${vat.toFixed(2)}`,
       "{totaltext}": "Total",
-      "{totalprice}": `${total.toFixed(2)} ${offer.pricingTemplate?.currency?.symbol || ""}`,
+      "{totalprice}": `${currencySymbol} ${total.toFixed(2)}`,
       "{termstext}": "Terms & Conditions",
       "{termsDescription}": offer.terms || "",
+      "{overalldiscounttext}": "Overall Discount",      // Bind the label
+      "{overalldiscountprice}": `${currencySymbol} -${overallDiscountAmount.toFixed(2)}`, // Bind the value
     };
 
     for (const placeholder in replacements) {
       tempDiv.innerHTML = tempDiv.innerHTML.replace(new RegExp(placeholder, "g"), replacements[placeholder]);
     }
-    
+
     // Services section
     const servicesContainer = tempDiv.querySelector("#mulipleserverdivmain");
     const templateDiv = tempDiv.querySelector("#mulipleserverdivrepated");
@@ -92,6 +98,9 @@ const OfferHtmlRenderer = ({
       servicesContainer.innerHTML = "";
 
       (offer.services || []).forEach((service, index) => {
+        const servicePrice = parseFloat(service.price) || 0;
+        const serviceDiscount = parseFloat(service.discount) || 0;
+        const finalPrice = servicePrice * (1 - serviceDiscount / 100);
         const serviceHtml = `
           <div class="service-item" style="${parentStyle}">
             <input 
@@ -109,7 +118,11 @@ const OfferHtmlRenderer = ({
               <div class="service-title" style="${titleStyle}">${service.name || ""}</div>
               <div class="service-description" style="${descriptionStyle}">${service.description || ""}</div>
             </div>
-            <div class="service-price" style="${priceStyle}">${(service.price ?? 0).toFixed(2)} ${offer.pricingTemplate?.currency?.symbol || ""}</div>
+            <div class="service-price" style="${priceStyle}">
+              ${currencySymbol} ${servicePrice.toFixed(2)}
+              ${serviceDiscount > 0 ? `<div class="service-discount" style="color:#ff6b6b; font-size:12px;">Discount: ${serviceDiscount}%</div>
+              <div class="service-finalprice" style="color:#00d4f0; font-weight:500;">Final: ${currencySymbol} ${finalPrice.toFixed(2)}</div>` : ""}
+            </div>
           </div>
         `;
         servicesContainer.innerHTML += serviceHtml;
@@ -136,7 +149,7 @@ const OfferHtmlRenderer = ({
       const overallDiscountHtml = `
         <div style="display: flex; align-items: baseline; justify-content: space-between;">
           <span style="font-size: 14px; font-weight: 500;">Overall Discount</span>
-          <strong style="font-size: 14px; font-weight: 700; color: #00d4f0;">-${overallDiscountAmount.toFixed(2)} ${offer.pricingTemplate?.currency?.symbol || ""}</strong>
+          <strong style="font-size: 14px; font-weight: 700; color: #00d4f0;">${currencySymbol} -${overallDiscountAmount.toFixed(2)}</strong>
         </div>
       `;
       const totalsDiv = tempDiv.querySelector(".totals");

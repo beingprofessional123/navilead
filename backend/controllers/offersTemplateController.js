@@ -162,20 +162,42 @@ exports.getTemplateById = async (req, res) => {
 
 exports.deleteTemplate = async (req, res) => {
   const { id } = req.params;
+  const userId = req.user.id; // assuming you have user info in req.user
 
   try {
-    const template = await OfferTemplate.findByPk(id); // Sequelize example
+    // 1️⃣ Find the template to delete
+    const template = await OfferTemplate.findOne({ where: { id, userId } });
     if (!template) {
       return res.status(404).json({ message: "Template not found" });
     }
 
-    await template.destroy(); // delete from DB
+    // 2️⃣ Count active templates for this user
+    const activeCount = await OfferTemplate.count({
+      where: { userId, status: 'active' }
+    });
+
+    // 3️⃣ Delete the template
+    await template.destroy();
+
+    // 4️⃣ If no active templates left, activate a default one
+    if (activeCount === 1 && template.status === 'active') {
+      // This means we just deleted the only active template
+      const defaultTemplate = await OfferTemplate.findOne({
+        where: { userId, type: 'Default' }
+      });
+
+      if (defaultTemplate) {
+        await defaultTemplate.update({ status: 'active' });
+      }
+    }
+
     res.json({ message: "Template deleted successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 exports.markAsDefault = async (req, res) => {

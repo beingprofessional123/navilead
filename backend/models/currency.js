@@ -28,6 +28,14 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'currencyId',
       as: 'pricingTemplates'
     });
+    Currency.hasMany(models.User, {
+      foreignKey: "currencyId",
+      as: "users"
+    });
+    Currency.hasMany(models.Quote, {
+      foreignKey: 'currencyId',
+      as: 'quotes'
+    });
   };
 
   return Currency;
