@@ -18,7 +18,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/admin/dashboard");
+      navigate("/admin/users-management");
     }
   }, [isAuthenticated, navigate]);
 
@@ -38,7 +38,7 @@ const LoginPage = () => {
 
       login(token, user);
       toast.success(t(message) || t("api.login.success"));
-      navigate("/admin/dashboard");
+      navigate("/admin/users-management");
     } catch (err) {
       console.error(err);
       const errorMessage =

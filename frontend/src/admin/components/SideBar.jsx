@@ -21,13 +21,13 @@ const SideBar = () => {
         <div className="sidebar">
             <div className="sidebar-logo">
                 {/* Assuming /admin/dashboard is the correct path */}
-                <Link to="/admin/dashboard"> 
+                <Link to="/admin/users-management"> 
                     <img src="/assets/images/logo.svg" className="img-fluid" alt="Logo" />
                 </Link>
             </div>
             <ul className="sidebar-menu">
                 {/* Dashboard (Home Icon) */}
-                <li className={isActive('/admin/dashboard') ? 'active' : ''}>
+                {/* <li className={isActive('/admin/dashboard') ? 'active' : ''}>
                     <Link to="/admin/dashboard">
                         <span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-house w-4 h-4" aria-hidden="true">
@@ -37,7 +37,7 @@ const SideBar = () => {
                         </span>
                         {t('sidebar.dashboard')}
                     </Link>
-                </li>
+                </li> */}
                 {/* Users Management (Users Icon) */}
                 <li className={isActive('/admin/users-management') ? 'active' : ''}>
                     <Link to="/admin/users-management">
