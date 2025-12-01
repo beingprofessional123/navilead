@@ -209,7 +209,7 @@ const Dashboard = () => {
 
         {/* --- Recent Activity & Notifications --- */}
         <div className="row">
-          <div className="col-md-8">
+          <div className="col-md-12">
             <div
               className="carddesign h-100"
               style={{
@@ -288,7 +288,7 @@ const Dashboard = () => {
               </ul>
             </div>
           </div>
-          <div className="col-md-4">
+          {/* <div className="col-md-4">
             <div className="carddesign h-100">
               <h2 className="card-title">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bell w-4 h-4" aria-hidden="true">
@@ -318,7 +318,7 @@ const Dashboard = () => {
                 </li>
               </ul>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* --- Quick Actions --- */}
