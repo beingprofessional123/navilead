@@ -14,6 +14,25 @@ import LimitModal from '../../components/LimitModal'; // the modal we created ea
 import { useLimit } from "../../context/LimitContext";
 
 
+// --- Standard SMS Constants (Updated to GSM-7 limits) ---
+const SMS_SINGLE_MAX_CHARS = 160;
+const SMS_CONCAT_MAX_CHARS = 153;
+
+// --- Helper function to calculate message count based on GSM-7 standard ---
+const calculateSmsMessageCount = (content) => {
+    const length = content.length;
+    if (length === 0) return 1;
+
+    // Simple check: If content contains only standard GSM-7 characters, use 160/153 split.
+    // If the content is simple and doesn't contain non-GSM-7 chars (which force UCS-2 encoding), 
+    // the calculation below is sufficient for billing accuracy.
+    if (length <= SMS_SINGLE_MAX_CHARS) {
+        return 1;
+    }
+    // For concatenated (multi-part) messages
+    return Math.ceil(length / SMS_CONCAT_MAX_CHARS);
+};
+
 
 const EmailSMSPage = () => {
     const { authToken } = useContext(AuthContext);
@@ -44,7 +63,7 @@ const EmailSMSPage = () => {
         subject: '',
         recipientEmail: '',
         body: '', // Email content
-        cc: '',   // New field for CC
+        cc: '',    // New field for CC
         attachments: [], // Array to hold attachment metadata { originalName, fileName, filePath, mimetype, size }
         recipientPhone: '',
         smsContent: '', // SMS message content
@@ -75,7 +94,6 @@ const EmailSMSPage = () => {
     // State for SMS character and message count
     const [smsCharCount, setSmsCharCount] = useState(0);
     const [smsMessageCount, setSmsMessageCount] = useState(1);
-    const SMS_MAX_CHARS = 80; // Max characters per single SMS message
 
     // Helper function to reset the form state to initial empty values
     const resetForm = () => {
@@ -98,6 +116,8 @@ const EmailSMSPage = () => {
         setIsEditing(false);
         setSmsCharCount(0);
         setSmsMessageCount(1);
+        setPhoneError('');
+        setRemovedAttachments([]); // Clear removed attachments
     };
 
     // --- Fetching Templates Functions ---
@@ -217,6 +237,7 @@ const EmailSMSPage = () => {
             });
             setIsEditing(true);
             setShowEmailModal(true);
+            setRemovedAttachments([]); // Ensure this is reset for editing
         } else {
             // Creating new template
             resetForm();
@@ -261,11 +282,12 @@ const EmailSMSPage = () => {
                 attachments: [],
             });
             setSmsCharCount(template.smsContent.length);
-            setSmsMessageCount(Math.ceil(template.smsContent.length / SMS_MAX_CHARS) || 1);
+            setSmsMessageCount(calculateSmsMessageCount(template.smsContent) || 1); // Use updated calc
             setIsEditing(true);
             setShowSmsModal(true);
+            setPhoneError('');
         } else {
-            // --- Creating new SMS template ---
+            // --- Creating new SMS template (Limit check implemented here) ---
             resetForm();
 
             if (!userPlan?.startDate) {
@@ -308,14 +330,15 @@ const EmailSMSPage = () => {
         setViewContent('');
     };
 
-    // --- Form Input Change Handler ---
+    // --- Form Input Change Handler (Updated SMS logic) ---
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setCurrentTemplate(prev => ({ ...prev, [name]: value }));
 
         if (name === 'smsContent') {
             setSmsCharCount(value.length);
-            setSmsMessageCount(Math.ceil(value.length / SMS_MAX_CHARS) || 1);
+            // Updated to use the standard calculation function
+            setSmsMessageCount(calculateSmsMessageCount(value));
         }
     };
 
@@ -326,10 +349,10 @@ const EmailSMSPage = () => {
     };
 
     const handleRemoveNewFile = (index) => {
-    const updatedFiles = [...selectedFiles];
-    updatedFiles.splice(index, 1);
-    setSelectedFiles(updatedFiles);
-};
+        const updatedFiles = [...selectedFiles];
+        updatedFiles.splice(index, 1);
+        setSelectedFiles(updatedFiles);
+    };
 
 
     const handleRemoveExistingAttachment = (filenameToRemove) => {
@@ -375,7 +398,8 @@ const EmailSMSPage = () => {
 
         if (input === smsContentRef.current) {
             setSmsCharCount(newValue.length);
-            setSmsMessageCount(Math.ceil(newValue.length / SMS_MAX_CHARS) || 1);
+            // Updated SMS count logic for inserted variables
+            setSmsMessageCount(calculateSmsMessageCount(newValue));
         }
 
         setTimeout(() => {
@@ -448,6 +472,11 @@ const EmailSMSPage = () => {
         e.preventDefault();
         if (!authToken) {
             toast.error(translate('api.smsTemplates.authError'));
+            return;
+        }
+
+        if (currentTemplate.recipientPhone && !validatePhoneWithCountryCode(currentTemplate.recipientPhone)) {
+            setPhoneError('Please enter a valid phone number with country code (e.g. +91XXXXXXXXXX)');
             return;
         }
 
@@ -541,8 +570,6 @@ const EmailSMSPage = () => {
         });
     };
 
-    // The hardcoded variableCategoriesasdf is no longer used, as `variableCategories` state is populated from API.
-    // const variableCategoriesasdf = { ... };
 
     return (
         <>
@@ -849,19 +876,19 @@ const EmailSMSPage = () => {
                                                         <div className="mt-2">
                                                             <label className="d-block mb-1">{translate('emailSmsPage.existingAttachmentsTitle')}</label>
                                                             <ul className="list-group">
-                                                                 {currentTemplate.attachments.map((file, index) => (
-                                                                      <a href={file.url} target="_blank" rel="noopener noreferrer">
-                                                                    <li key={`existing-${file.fileName || index}`} className="list-group-item d-flex justify-content-between align-items-center" style={{ background: 'rgb(27 38 50)', border: "1px solid #8cd9d9" }}>
-                                                                        <div className="file-info">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file w-4 h-4 mr-1" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>
-                                                                            <span className="file-name">{file.originalName}</span> | <span className="file-size">{(file.size / 1024).toFixed(2)} KB</span>
-                                                                        </div>
-                                                                        <button type="button" className="btn btn-add" onClick={() => handleRemoveExistingAttachment(file.fileName)}>
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 w-3 h-3 m-0" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                                                            {/* {translate('emailSmsPage.removeAttachment')} */}
-                                                                        </button>
-                                                                    </li>
-                                                                         </a>
+                                                                {currentTemplate.attachments.map((file, index) => (
+                                                                    <a href={file.url} target="_blank" rel="noopener noreferrer">
+                                                                        <li key={`existing-${file.fileName || index}`} className="list-group-item d-flex justify-content-between align-items-center" style={{ background: 'rgb(27 38 50)', border: "1px solid #8cd9d9" }}>
+                                                                            <div className="file-info">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file w-4 h-4 mr-1" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>
+                                                                                <span className="file-name">{file.originalName}</span> | <span className="file-size">{(file.size / 1024).toFixed(2)} KB</span>
+                                                                            </div>
+                                                                            <button type="button" className="btn btn-add" onClick={() => handleRemoveExistingAttachment(file.fileName)}>
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 w-3 h-3 m-0" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                                                                {/* {translate('emailSmsPage.removeAttachment')} */}
+                                                                            </button>
+                                                                        </li>
+                                                                    </a>
                                                                 ))}
                                                             </ul>
                                                         </div>
@@ -993,10 +1020,30 @@ const EmailSMSPage = () => {
                                                     <div className="col-md-12">
                                                         <div className="form-group">
                                                             <label>{translate('emailSmsPage.smsMessageLabel')}</label>
-                                                            <textarea className="form-control" rows="5" name="smsContent" maxLength={SMS_MAX_CHARS} ref={smsContentRef} value={currentTemplate.smsContent} onChange={handleInputChange} onFocus={() => setFocusedRef(smsContentRef)} placeholder={translate('emailSmsPage.smsMessagePlaceholder')}></textarea>
+                                                            <textarea
+                                                                className="form-control"
+                                                                rows="5"
+                                                                name="smsContent"
+                                                                // Removed maxLength attribute to allow users to type long messages,
+                                                                // but the counter will inform them of the segment count.
+                                                                ref={smsContentRef}
+                                                                value={currentTemplate.smsContent}
+                                                                onChange={handleInputChange}
+                                                                onFocus={() => setFocusedRef(smsContentRef)}
+                                                                placeholder={translate('emailSmsPage.smsMessagePlaceholder')}>
+                                                            </textarea>
                                                             <div className="texttypelimit">
-                                                                <span className="inputnote">{translate('emailSmsPage.smsLength')} {smsCharCount}/{SMS_MAX_CHARS} {translate('emailSmsPage.characters')}</span>
-                                                                <span className="texttype-besked">{smsMessageCount} {smsMessageCount > 1 ? translate('emailSmsPage.messages') : translate('emailSmsPage.message')}</span>
+                                                                {/* Display character count with current segment limit */}
+                                                                <span className="inputnote">
+                                                                    {translate('emailSmsPage.smsLength')}
+                                                                    {smsCharCount}/
+                                                                    {smsMessageCount === 1 ? SMS_SINGLE_MAX_CHARS : SMS_CONCAT_MAX_CHARS * smsMessageCount}
+                                                                    {translate('emailSmsPage.characters')}
+                                                                </span>
+                                                                {/* Display message count */}
+                                                                <span className="texttype-besked">
+                                                                    {smsMessageCount} {smsMessageCount > 1 ? translate('emailSmsPage.messages') : translate('emailSmsPage.message')}
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1005,7 +1052,7 @@ const EmailSMSPage = () => {
                                             <div className="col-md-4">
                                                 <VariableSelector
                                                     activeTab={activeSmsVariableTab} // Changed to activeSmsVariableTab
-                                                    setActiveTab={setActiveSmsVariableTab} // Changed to setActiveSmsVariableTab
+                                                    setActiveTab={setActiveSmsVariableTab} // Changed to activeSmsVariableTab
                                                     variableCategories={variableCategories}
                                                     insertVariable={insertVariable} // just the function
                                                 />
@@ -1032,29 +1079,6 @@ const EmailSMSPage = () => {
                     </div>
                 </div>
 
-                {/* View Content Modal */}
-                {/* <div className={`${showViewContentModal ? 'modal-backdrop fade show' : ''}`}></div>
-            <div className={`modal fade modaldesign emailmodal ${showViewContentModal ? 'show d-block' : ''}`} tabIndex="-1" role="dialog" style={{ display: showViewContentModal ? 'block' : 'none' }}>
-                <div className="modal-dialog modal-lg" role="document">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h4 className="modal-title">{translate('emailSmsPage.viewContent')}</h4>
-                            <button type="button" className="btn-close" onClick={closeViewContentModal} aria-label={translate('emailSmsPage.cancel')}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
-                                    <path d="M18 6 6 18"></path>
-                                    <path d="m6 6 12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <pre className="pre-wrap">{viewContent}</pre>
-                        </div>
-                        <div className="modalfooter">
-                            <button type="button" className="btn btn-add" onClick={closeViewContentModal}>{translate('emailSmsPage.cancel')}</button>
-                        </div>
-                    </div>
-                </div>
-            </div> */}
             </div>
 
 
