@@ -17,7 +17,8 @@
     "email",
     "company_name",
     "contact_phone",
-    "offer_link"
+    "offer_link",
+    "signature"
   ];
 
   async function ensureUserVariables(user) {
@@ -66,6 +67,10 @@
 
         case "offer_link":
           value = offerLink || null;
+          break;
+
+        case "signature":
+          value = user.emailSignature || null;
           break;
       }
 
