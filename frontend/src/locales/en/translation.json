@@ -372,7 +372,9 @@
     "yourEmailContentPlaceholder": "Your email content...",
     "attachments": "Attachments",
     "none": "None",
-    "chooseAttachment": "Choose"
+    "chooseAttachment": "Choose",
+    "finalCharacterCount": "Final character count :",
+    "sms": "SMS"
   },
   "pricingTemplatesPage": {
     "loading": "Loading...",

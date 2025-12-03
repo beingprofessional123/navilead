@@ -183,8 +183,8 @@ const OfferPage = () => {
       confirmButtonText: translate('offerPage.sendQuestionButton'), // Now using the new, specific translation key
       cancelButtonText: translate('emailSmsPage.cancel'), // Reusing cancel button translation
       customClass: {
-        popup: 'swal2-dark'
-      },
+                popup: 'custom-swal-popup'
+            },
       inputValidator: (value) => {
         if (!value || value.trim() === '') {
           return translate('offerPage.askQuestionInputValidator'); // Translated

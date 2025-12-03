@@ -27,6 +27,9 @@ const OffersTemplatesPage = () => {
             title: "Access Denied",
             text: "Your current plan does not allow creating or customizing templates. Please upgrade to access this feature.",
             confirmButtonText: "OK",
+            customClass: {
+                popup: 'custom-swal-popup'
+            }
             });
             return;
         }
@@ -106,7 +109,10 @@ const OffersTemplatesPage = () => {
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonText: 'Yes, delete it!',
+            customClass: {
+                popup: 'custom-swal-popup'
+            }
         });
 
         if (result.isConfirmed) {
@@ -145,6 +151,9 @@ const OffersTemplatesPage = () => {
                     title: 'Access Denied',
                     text: 'Your current plan does not allow creating or customizing templates. Please upgrade to access this feature.',
                     confirmButtonText: 'OK',
+                    customClass: {
+                        popup: 'custom-swal-popup'
+                    }
                 });
                 return;
             }

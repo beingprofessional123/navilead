@@ -341,3 +341,10 @@ h2.card-title {
     padding: 8px 15px;
 }
  
+
+.custom-swal-popup {
+  background: #0d1316 !important;
+  border: 2px solid #00d4f0;
+  border-radius: 10px !important;
+  color: #fff;
+}

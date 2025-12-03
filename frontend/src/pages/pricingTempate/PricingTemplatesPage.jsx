@@ -96,7 +96,10 @@ const PricingTemplatesPage = () => {
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: translate('pricingTemplatesPage.deleteConfirmButton'), // Translated
-            cancelButtonText: translate('pricingTemplatesPage.cancelButton') // Translated
+            cancelButtonText: translate('pricingTemplatesPage.cancelButton'), // Translated
+            customClass: {
+                popup: 'custom-swal-popup'
+            }
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {

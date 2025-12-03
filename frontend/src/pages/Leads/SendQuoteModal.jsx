@@ -13,16 +13,6 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
   const { authToken, user } = useContext(AuthContext);
   const { t: translate } = useTranslation();
   const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, refreshPlan, userPlan } = useLimit();
-
-  // --- SMS Character Constants ---
-  // The standard max length for a single GSM-7 SMS
-  const SMS_SINGLE_PART_LIMIT = 160;
-  // The max length for subsequent segments in a multi-part SMS (160 - 7 bytes header)
-  const SMS_MULTI_PART_LIMIT = 153;
-  // Max characters allowed in the input field (e.g., 4 full parts: 160 + 3*153 = 612)
-  const SMS_INPUT_MAX_LENGTH = 612; 
-  // --- End SMS Character Constants ---
-
   const [currentStatusId, setCurrentStatusId] = useState(quoteData?.statusId || '');
   const [sendSmsChecked, setSendSmsChecked] = useState(false);
   const [smsFromName, setSmsFromName] = useState(user.name);
@@ -46,23 +36,6 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
 
   // Character count for SMS
   const smsCharCount = smsMessage.length;
-  // Calculate parts based on the single part limit (160) for the first segment, 
-  // and the 153 limit for subsequent segments.
-  const calculateSmsParts = (length) => {
-    if (length <= 0) return 0;
-    if (length <= SMS_SINGLE_PART_LIMIT) return 1;
-
-    const remainingLength = length - SMS_SINGLE_PART_LIMIT;
-    const remainingParts = Math.ceil(remainingLength / SMS_MULTI_PART_LIMIT);
-    
-    return 1 + remainingParts;
-  };
-
-  const smsParts = calculateSmsParts(smsCharCount);
-  const smsType = smsCharCount <= SMS_SINGLE_PART_LIMIT 
-      ? translate('sendQuoteModal.singleSms') 
-      : translate('sendQuoteModal.multiPartSms', { parts: smsParts });
-
 
   // Update state when quoteData or lead changes (e.g., when a new quote is created)
   useEffect(() => {
@@ -310,22 +283,18 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
     setselectedAttachment(url && originalName ? [{ filename: originalName, path: url }] : []);
   };
 
-  // Function to calculate final replaced message length and parts
+  // Function to calculate final replaced message length
   const getReplacedSmsInfo = () => {
     const finalMessage = replaceVariables(smsMessage, variables, { quoteId: quoteData.id });
     const length = finalMessage.length;
     
-    const parts = calculateSmsParts(length);
-
     return { 
       length, 
-      parts, 
-      type: length <= SMS_SINGLE_PART_LIMIT ? translate('sendQuoteModal.singleSms') : translate('sendQuoteModal.multiPartSms', { parts }) 
+      type: translate('sendQuoteModal.sms') 
     };
   };
 
   const replacedSmsInfo = getReplacedSmsInfo();
-
 
   return (
     <>
@@ -454,18 +423,16 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
                       </div>
                       <div className="form-group">
                         <label>{translate('sendQuoteModal.smsMessage')}</label>
-                        {/* UPDATE: Increased max length to allow multi-part messages (e.g., 612 for 4 parts) */}
-                        <textarea 
+                         <textarea 
                           className="form-control" 
                           rows="5" 
                           placeholder={translate('sendQuoteModal.yourSmsMessagePlaceholder')} 
-                          maxLength={SMS_INPUT_MAX_LENGTH} 
                           value={smsMessage} 
                           onChange={(e) => setSmsMessage(e.target.value)}
                         ></textarea>
                         <div className="texttypelimit">
-                          <span className="inputnote">{translate('sendQuoteModal.characterCount')} {smsCharCount}/{SMS_INPUT_MAX_LENGTH}</span>
-                          <span className="texttype-besked">{smsType}</span>
+                           <span className="inputnote">{translate('sendQuoteModal.characterCount')} {smsCharCount}</span>
+                            <span className="texttype-besked">{translate('sendQuoteModal.sms')}</span>
                         </div>
                       </div>
                       <div className="form-group">
@@ -475,13 +442,10 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
                             <h5>{translate('sendQuoteModal.smsFrom', { fromName: smsFromName })}</h5>
                             <p>{replaceVariables(smsMessage, variables, { quoteId: quoteData.id })}</p>
                           </div>
-                          <div className="texttypelimit">
-                            <span
-                              // Check if the final message, after variable replacement, exceeds the single part limit.
-                              className={`inputnote ${replacedSmsInfo.parts > 1 ? "text-danger" : ""}`}
-                            >
-                              {/* Display length and the total parts it will be split into */}
-                              {translate('sendQuoteModal.characterCount')} {replacedSmsInfo.length} (Parts: {replacedSmsInfo.parts})
+                         <div className="texttypelimit">
+                            <span className="inputnote">
+                              {/* Display length of the final message after replacement */}
+                              {translate('sendQuoteModal.finalCharacterCount')} {replacedSmsInfo.length}
                             </span>
                           </div>
                         </div>
