@@ -38,7 +38,10 @@ const BillingPlansTab = ({ handleOpenUpgradeModal, userPlan, plans }) => {
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, cancel it!',
-        cancelButtonText: 'No, keep it'
+        cancelButtonText: 'No, keep it',
+        customClass: {
+                popup: 'custom-swal-popup'
+            }
       });
 
       if (!result.isConfirmed) return;

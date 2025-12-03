@@ -89,7 +89,10 @@ const LeadsPage = () => {
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
       confirmButtonText: t('leadsPage.deleteConfirmButton'), // Translated confirm button
-      cancelButtonText: t('leadsPage.deleteCancelButton')    // Translated cancel button
+      cancelButtonText: t('leadsPage.deleteCancelButton'),    // Translated cancel button
+      customClass: {
+                popup: 'custom-swal-popup'
+            }
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {

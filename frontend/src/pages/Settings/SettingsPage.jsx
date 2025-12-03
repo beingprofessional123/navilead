@@ -244,7 +244,10 @@ const SettingsPage = () => {
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: translate('emailSmsPage.yesDeleteIt'),
-            cancelButtonText: translate('emailSmsPage.cancel')
+            cancelButtonText: translate('emailSmsPage.cancel'),
+            customClass: {
+                popup: 'custom-swal-popup'
+            }
         }).then(async (result) => {
             if (result.isConfirmed) {
                 setCompanyLogoFile(null);

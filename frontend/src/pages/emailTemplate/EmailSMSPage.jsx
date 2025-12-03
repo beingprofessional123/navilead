@@ -13,27 +13,6 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import LimitModal from '../../components/LimitModal'; // the modal we created earlier
 import { useLimit } from "../../context/LimitContext";
 
-
-// --- Standard SMS Constants (Updated to GSM-7 limits) ---
-const SMS_SINGLE_MAX_CHARS = 160;
-const SMS_CONCAT_MAX_CHARS = 153;
-
-// --- Helper function to calculate message count based on GSM-7 standard ---
-const calculateSmsMessageCount = (content) => {
-    const length = content.length;
-    if (length === 0) return 1;
-
-    // Simple check: If content contains only standard GSM-7 characters, use 160/153 split.
-    // If the content is simple and doesn't contain non-GSM-7 chars (which force UCS-2 encoding), 
-    // the calculation below is sufficient for billing accuracy.
-    if (length <= SMS_SINGLE_MAX_CHARS) {
-        return 1;
-    }
-    // For concatenated (multi-part) messages
-    return Math.ceil(length / SMS_CONCAT_MAX_CHARS);
-};
-
-
 const EmailSMSPage = () => {
     const { authToken } = useContext(AuthContext);
     const { t: translate } = useTranslation();
@@ -70,8 +49,12 @@ const EmailSMSPage = () => {
     });
 
     // Validate phone with country code (e.g. +91, +44, +1)
-    const validatePhoneWithCountryCode = (phone) => {
-        const regex = /^\+\d{1,3}\d{7,14}$/; // +<country_code><number>
+   const validatePhoneWithCountryCode = (phone) => {
+        if (phone.trim() === '{{contact_phone}}') {
+            return true;
+        }
+
+        const regex = /^\+\d{1,3}\d{7,14}$/; 
         return regex.test(phone.trim());
     };
 
@@ -93,7 +76,6 @@ const EmailSMSPage = () => {
 
     // State for SMS character and message count
     const [smsCharCount, setSmsCharCount] = useState(0);
-    const [smsMessageCount, setSmsMessageCount] = useState(1);
 
     // Helper function to reset the form state to initial empty values
     const resetForm = () => {
@@ -115,7 +97,6 @@ const EmailSMSPage = () => {
         }
         setIsEditing(false);
         setSmsCharCount(0);
-        setSmsMessageCount(1);
         setPhoneError('');
         setRemovedAttachments([]); // Clear removed attachments
     };
@@ -282,7 +263,6 @@ const EmailSMSPage = () => {
                 attachments: [],
             });
             setSmsCharCount(template.smsContent.length);
-            setSmsMessageCount(calculateSmsMessageCount(template.smsContent) || 1); // Use updated calc
             setIsEditing(true);
             setShowSmsModal(true);
             setPhoneError('');
@@ -337,8 +317,6 @@ const EmailSMSPage = () => {
 
         if (name === 'smsContent') {
             setSmsCharCount(value.length);
-            // Updated to use the standard calculation function
-            setSmsMessageCount(calculateSmsMessageCount(value));
         }
     };
 
@@ -398,8 +376,6 @@ const EmailSMSPage = () => {
 
         if (input === smsContentRef.current) {
             setSmsCharCount(newValue.length);
-            // Updated SMS count logic for inserted variables
-            setSmsMessageCount(calculateSmsMessageCount(newValue));
         }
 
         setTimeout(() => {
@@ -517,7 +493,10 @@ const EmailSMSPage = () => {
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: translate('emailSmsPage.yesDeleteIt'),
-            cancelButtonText: translate('emailSmsPage.cancel')
+            cancelButtonText: translate('emailSmsPage.cancel'),
+            customClass: {
+                popup: 'custom-swal-popup'
+            }
         }).then(async (result) => {
             if (result.isConfirmed) {
                 if (!authToken) {
@@ -548,7 +527,10 @@ const EmailSMSPage = () => {
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: translate('emailSmsPage.yesDeleteIt'),
-            cancelButtonText: translate('emailSmsPage.cancel')
+            cancelButtonText: translate('emailSmsPage.cancel'),
+            customClass: {
+                popup: 'custom-swal-popup'
+            }
         }).then(async (result) => {
             if (result.isConfirmed) {
                 if (!authToken) {
@@ -1033,16 +1015,9 @@ const EmailSMSPage = () => {
                                                                 placeholder={translate('emailSmsPage.smsMessagePlaceholder')}>
                                                             </textarea>
                                                             <div className="texttypelimit">
-                                                                {/* Display character count with current segment limit */}
                                                                 <span className="inputnote">
                                                                     {translate('emailSmsPage.smsLength')}
-                                                                    {smsCharCount}/
-                                                                    {smsMessageCount === 1 ? SMS_SINGLE_MAX_CHARS : SMS_CONCAT_MAX_CHARS * smsMessageCount}
-                                                                    {translate('emailSmsPage.characters')}
-                                                                </span>
-                                                                {/* Display message count */}
-                                                                <span className="texttype-besked">
-                                                                    {smsMessageCount} {smsMessageCount > 1 ? translate('emailSmsPage.messages') : translate('emailSmsPage.message')}
+                                                                     {smsCharCount} {translate('emailSmsPage.characters')}
                                                                 </span>
                                                             </div>
                                                         </div>

@@ -931,6 +931,9 @@ const WorkflowsPage = () => {
             icon: "warning",
             showCancelButton: true,
             reverseButtons: true,
+            customClass: {
+                popup: 'custom-swal-popup'
+            }
         });
 
         if (result.isConfirmed) {
@@ -948,6 +951,9 @@ const WorkflowsPage = () => {
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false,
+                    customClass: {
+                        popup: 'custom-swal-popup'
+                    }
                 });
             } catch (err) {
                 console.error("Error deleting workflow:", err);
@@ -956,6 +962,9 @@ const WorkflowsPage = () => {
                     icon: "error",
                     timer: 2000,
                     showConfirmButton: false,
+                    customClass: {
+                        popup: 'custom-swal-popup'
+                    }
                 });
             }
         }
