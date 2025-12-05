@@ -198,6 +198,8 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
       }
     }
 
+    form.append("type", leadData ? "LeadUpdated" : "LeadCreated");
+
     // Append newly added files
     newlyAddedFiles.forEach((file) => {
       form.append('attachments', file); // 'attachments' is the field name expected by multer

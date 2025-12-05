@@ -8,15 +8,15 @@ module.exports = (sequelize, DataTypes) => {
     },
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     variableName: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     variableValue: {
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
     },
   }, {
     tableName: 'user_variables',

@@ -93,7 +93,6 @@ const planValidation = (type) => {
       const planKeysMap = {
         Leads: "Total_Leads_Allowed",
         SMS_Templates: "Total_SMS_Templates_Allowed",
-        SMS: "Total_SMS_allowed",
         Emails: "Total_emails_allowed",
         Email_Templates: "Total_email_templates_allowed",
         Offers: "Total_offers_Allowed",
@@ -121,9 +120,6 @@ const planValidation = (type) => {
       switch (type) {
         case "Leads":
           currentUsage = await Lead.count({ where: whereCondition });
-          break;
-        case "SMS":
-          currentUsage = await SendSms.count({ where: whereCondition });
           break;
         case "Emails":
           currentUsage = await SendEmail.count({ where: whereCondition });

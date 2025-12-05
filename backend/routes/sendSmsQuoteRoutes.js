@@ -9,6 +9,6 @@ const planValidation = require('../middleware/planValidationMiddleware');
 router.use(authMiddleware);
 
 // POST send SMS quote
-router.post('/', planValidation('SMS') , sendSmsQuoteController.storeSendSmsQuote);
+router.post('/', sendSmsQuoteController.storeSendSmsQuote);
 
 module.exports = router;

@@ -7,6 +7,7 @@ const User = db.User;
 const cronLog = db.cronLog;
 const StatusUpdateLog = db.StatusUpdateLog;
 const Settings = db.Settings;
+const SendSms = db.SendSms;
 const StanderdEmailTemplate = require('../EmailTemplate/StanderdEmailTemplate');
 
 
@@ -190,17 +191,72 @@ async function executeSingleStep(logRow, stepRow, configObj, variablesMap, baseT
 
     if (smsSetting.value === 'true') {
 
-      await sendSms({ to: lead.phone, message, from: (sender || 'NaviLead').substring(0, 10), });
-      console.log(`📱 Step ${logRow.orderNo} sendSms executed for lead ${logRow.leadId}`);
+      // --- Calculate segments ---
+      const { segments } = getSmsSegments(message);
 
-      await logRow.update({ status: "done", executedAt: now });
+      // --- Check balance BEFORE sending ---
+      if (user.smsBalance < segments) {
+        console.log(
+          `❌ User ${user.id} does not have enough SMS balance. ` +
+          `Required: ${segments}, Available: ${user.smsBalance}. Step marked as pending.`
+        );
+        await logRow.update({ status: "pending", executedAt: now });
+        return { executed: false, ready: true }; // return early
+      }
 
+      const smsRecord = await SendSms.create(
+        {
+          userId,
+          quoteId: null,
+          leadId: logRow.leadId,
+          recipientPhone: lead.phone,
+          smsMessage: message,
+          smsTemplateId: configObj.smsTemplateId || null,
+          senderName: sender || 'NaviLead',
+        },
+      );
+
+      const smsResponse = await sendSms({
+        to: lead.phone,
+        message: message,
+        from: (sender || 'NaviLead').substring(0, 10),
+      });
+
+      if (smsResponse && smsResponse) {
+        await smsRecord.update(
+          { spendCredits: smsResponse },
+        );
+      }
+
+      // ---- DYNAMIC SEGMENT BASED DEDUCTION ----
+      let segmentsUsed = 1;
+
+      if (
+        smsResponse &&
+        smsResponse.usage &&
+        smsResponse.usage.countries
+      ) {
+        const countries = smsResponse.usage.countries;
+
+        // Sum all SMS segment counts dynamically
+        segmentsUsed = Object.values(countries).reduce(
+          (sum, val) => sum + val,
+          0
+        );
+      }
+
+      console.log(`📩 Total Segments Used: ${segmentsUsed}`);
+
+      // Deduct segments from balance
+      const newBalance = user.smsBalance - segmentsUsed;
       await db.User.update(
-        { smsBalance: user.smsBalance - 1 },
+        { smsBalance: newBalance },
         { where: { id: userId } }
       );
-      user.smsBalance -= 1;
-      console.log(`💰 Deducted 1 SMS from user ${userId}. New balance: ${user.smsBalance}`);
+
+      console.log(`📱 Step ${logRow.orderNo} sendSms executed for lead ${logRow.leadId}`);
+      await logRow.update({ status: "done", executedAt: now });
+      console.log(`💰 Deducted ${segmentsUsed} SMS credits from user ${userId}. New balance: ${newBalance}`);
 
     } else {
       console.log(`📵 SMS notifications are disabled for user ${user.id}. Skipping SMS.`);
@@ -556,18 +612,74 @@ async function executeWorkflowCron(req, res) {
               where: { userId: user.id, key: 'smsNotifications' },
             });
 
-
             if (smsSetting.value === 'true') {
-              await sendSms({ to: lead.phone, message, from: (sender || 'NaviLead').substring(0, 10), userId: user.id });
-              console.log(`📱 Step ${log.orderNo} sendSms executed for lead ${log.leadId}`);
 
-              // Deduct 1 SMS from user balance
+              // --- Calculate segments ---
+              const { segments } = getSmsSegments(message);
+
+              // --- Check balance BEFORE sending ---
+              if (user.smsBalance < segments) {
+                console.log(
+                  `❌ User ${user.id} does not have enough SMS balance. ` +
+                  `Required: ${segments}, Available: ${user.smsBalance}. Step marked as pending.`
+                );
+                await log.update({ status: "pending", executedAt: now });
+                return { executed: false, ready: true }; // return early
+              }
+
+
+              const smsRecord = await SendSms.create(
+                {
+                  userId,
+                  leadId: log.leadId,
+                  quoteId: null,
+                  recipientPhone: lead.phone,
+                  smsMessage: message,
+                  smsTemplateId: configObj.smsTemplateId || null,
+                  senderName: sender || 'NaviLead',
+                },
+              );
+
+              const smsResponse = await sendSms({
+                to: lead.phone,
+                message: message,
+                from: (sender || 'NaviLead').substring(0, 10),
+              });
+
+              if (smsResponse && smsResponse) {
+                await smsRecord.update(
+                  { spendCredits: smsResponse },
+                );
+              }
+
+              // ---- DYNAMIC SEGMENT BASED DEDUCTION ----
+              let segmentsUsed = 1;
+
+              if (
+                smsResponse &&
+                smsResponse.usage &&
+                smsResponse.usage.countries
+              ) {
+                const countries = smsResponse.usage.countries;
+
+                // Sum all SMS segment counts dynamically
+                segmentsUsed = Object.values(countries).reduce(
+                  (sum, val) => sum + val,
+                  0
+                );
+              }
+
+              console.log(`📩 Total Segments Used: ${segmentsUsed}`);
+
+              // Deduct segments from balance
+              const newBalance = user.smsBalance - segmentsUsed;
               await db.User.update(
-                { smsBalance: user.smsBalance - 1 },
+                { smsBalance: newBalance },
                 { where: { id: userId } }
               );
-              user.smsBalance -= 1;
-              console.log(`💰 Deducted 1 SMS from user ${userId}. New balance: ${user.smsBalance}`);
+
+              console.log(`📱 Step ${log.orderNo} sendSms executed for lead ${log.leadId}`);
+              console.log(`💰 Deducted ${segmentsUsed} SMS credits from user ${userId}. New balance: ${newBalance}`);
 
             } else {
               console.log(`📵 SMS notifications are disabled for user ${user.id}. Skipping SMS.`);
@@ -628,6 +740,13 @@ async function executeWorkflowCron(req, res) {
         .json({ message: "Workflow cron failed", error: err.message });
   }
 }
+
+const getSmsSegments = (message) => {
+  const charsPerSegment = 160;
+  const length = message.length;
+  const segments = Math.ceil(length / charsPerSegment);
+  return { length, segments };
+};
 
 
 module.exports = { runWorkflows, executeWorkflowCron, executeSingleStep };

@@ -11,7 +11,7 @@ const LimitModal = ({
 }) => {
   if (!isOpen) return null;
 
-  const { type } = currentLimit || {};
+  const { type, segments, needed } = currentLimit || {};
 
   const billingType = userPlan?.plan?.billing_type;
   const startDate = userPlan?.startDate ? dayjs(userPlan.startDate) : null;
@@ -50,7 +50,7 @@ const LimitModal = ({
   const featureNames = {
     Leads: "Leads",
     SMS_Templates: "SMS Templates",
-    SMS: "SMS Messages",
+    // SMS: "SMS Messages",
     Emails: "Emails",
     Email_Templates: "Email Templates",
     Offers: "Offers",
@@ -58,6 +58,82 @@ const LimitModal = ({
     Pricing_Templates: "Pricing Templates",
     Workflows: "Workflows",
   };
+
+   if (type === "SMS" && totalAllowed === 0) {
+    return (
+      <>
+        <div className={`${isOpen ? "modal-backdrop fade show" : ""}`}></div>
+        <div className={`modal modaldesign leadsaddmodal ${isOpen ? "d-block" : ""}`}>
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header bg-red-100">
+                <h4 className="modal-title text-red-600 font-semibold">
+                  SMS Balance Empty
+                </h4>
+                <button type="button" className="btn-close" onClick={onClose}>
+                  ✕
+                </button>
+              </div>
+              <div className="modal-body">
+                <p className="text-gray-700">
+                  You don’t have any SMS balance to send SMS. Please recharge or upgrade your plan.
+                </p>
+                <div className="text-end mt-4">
+                  <button type="button" onClick={onClose} className="btn btn-add">
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+   if (type === "SMS" && needed > 0) {
+    return (
+      <>
+        <div className={`${isOpen ? "modal-backdrop fade show" : ""}`}></div>
+        <div className={`modal modaldesign leadsaddmodal ${isOpen ? "d-block" : ""}`}>
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header bg-yellow-100">
+                <h4 className="modal-title text-yellow-600 font-semibold">
+                  Insufficient SMS Credits
+                </h4>
+                <button type="button" className="btn-close" onClick={onClose}>
+                  ✕
+                </button>
+              </div>
+              <div className="modal-body">
+                <p className="text-gray-700 mb-3">
+                  Your SMS requires <strong>{segments}</strong> segments, but you only have{" "}
+                  <strong>{totalAllowed}</strong> SMS credits.
+                </p>
+
+                <div className="border rounded-md p-3 bg-gray-50">
+                  <p><strong>Segments Needed:</strong> {segments}</p>
+                  <p><strong>Your Balance:</strong> {totalAllowed}</p>
+                  <p><strong>Credits Missing:</strong> {needed}</p>
+                </div>
+
+                <p className="mt-3 text-sm text-gray-600">
+                  Please add more SMS credits to continue.
+                </p>
+
+                <div className="text-end mt-4">
+                  <button type="button" onClick={onClose} className="btn btn-add">
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   const featureName = featureNames[type] || "Feature";
   const remaining = totalAllowed - usedLimit > 0 ? totalAllowed - usedLimit : 0;

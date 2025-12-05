@@ -8,9 +8,20 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true, // can be null if no template used
     },
-    quoteId: {
+   quote_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
+      references: {
+        model: 'quotes',
+        key: 'id'
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE'
+    },
+    leadId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null,  // ✔ Also required
     },
     recipientPhone: {
       type: DataTypes.STRING,
@@ -24,6 +35,11 @@ module.exports = (sequelize, DataTypes) => {
     userId: { // <--- Add userId field
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    spendCredits: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null,
     }
   }, {
     tableName: 'sendSms', // your desired table name
@@ -32,7 +48,7 @@ module.exports = (sequelize, DataTypes) => {
 
   SendSms.associate = function(models) {
     SendSms.belongsTo(models.User, { foreignKey: 'userId' });
-    SendSms.belongsTo(models.Quote, { foreignKey: 'quoteId', onDelete: 'CASCADE' }); // ✅
+    SendSms.belongsTo(models.Quote, { foreignKey: 'quoteId', onDelete: 'CASCADE', constraints: false }); // ✅
     SendSms.belongsTo(models.SmsTemplate, { foreignKey: 'smsTemplateId' });
   };
 

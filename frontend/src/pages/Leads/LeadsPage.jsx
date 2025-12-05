@@ -146,7 +146,7 @@ const LeadsPage = () => {
 
   const handleStatusChange = async (leadId, newStatusId) => {
     try {
-      await api.put(`/leads/${leadId}`, { statusId: newStatusId }, {
+      await api.put(`/leads/${leadId}`, { statusId: newStatusId ,type: "leadStatusChanged" }, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       toast.success(t('api.leads.statusUpdateSuccess')); // Translated toast message
