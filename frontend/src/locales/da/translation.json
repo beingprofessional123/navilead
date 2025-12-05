@@ -374,7 +374,9 @@
     "none": "Ingen",
     "chooseAttachment": "Vælg",
     "finalCharacterCount": "Endeligt antal tegn :",
-    "sms": "SMS"
+    "sms": "SMS",
+    "Segments": "Segmenter",
+    "insufficientSmsBalance": "Du har {{balance}} SMS-kreditter, men din besked kræver {{segments}} segmenter. Du mangler {{needed}} kredit(ter). Tilføj venligst flere SMS-kreditter."
   },
   "pricingTemplatesPage": {
     "loading": "Indlæser...",

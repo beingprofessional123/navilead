@@ -12,7 +12,7 @@ import { useLimit } from "../../context/LimitContext";
 const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, totalSmsSend, totalEmailsSend, fetchAllQuotesHistory }) => {
   const { authToken, user } = useContext(AuthContext);
   const { t: translate } = useTranslation();
-  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, refreshPlan, userPlan } = useLimit();
+  const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, refreshPlan, userPlan, smsBalance } = useLimit();
   const [currentStatusId, setCurrentStatusId] = useState(quoteData?.statusId || '');
   const [sendSmsChecked, setSendSmsChecked] = useState(false);
   const [smsFromName, setSmsFromName] = useState(user.name);
@@ -171,10 +171,17 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
   };
 
   const handleSendOffer = async () => {
+    // Check SMS limit
     if (sendSmsChecked) {
-      const canProceedSms = checkLimit(totalSmsSend, "SMS");
+      const canProceedSms = checkLimit(totalSmsSend, "SMS", { 
+        segments: smsInfo.segments, 
+        needed: smsInfo.segments - smsBalance 
+      });
+
       if (!canProceedSms) return;
     }
+
+
     // Check Email limit
     if (sendEmailChecked) {
       const canProceedEmail = checkLimit(totalEmailsSend, "Emails");
@@ -224,13 +231,21 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
   };
 
   const handleSetSendSmsChecked = (checked) => {
-    const canProceedSms = checkLimit(totalSmsSend, "SMS");
+    const canProceedSms = checkLimit(totalSmsSend, "SMS", { 
+      segments: smsInfo.segments,
+      needed: smsInfo.segments - smsBalance
+    });
+
     if (!canProceedSms) {
-      toast.warning("SMS limit reached!");
+      toast.warning(
+        `You have ${smsBalance ?? 0} SMS credits, but your message requires ${smsInfo.segments} segments. You need ${smsInfo.segments - smsBalance} more credit(s). Please add more SMS credits.`
+      );
       return;
     }
+
     setSendSmsChecked(checked);
   };
+
 
   // Similarly for Email
   const handleSetSendEmailChecked = (checked) => {
@@ -283,18 +298,17 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
     setselectedAttachment(url && originalName ? [{ filename: originalName, path: url }] : []);
   };
 
-  // Function to calculate final replaced message length
-  const getReplacedSmsInfo = () => {
-    const finalMessage = replaceVariables(smsMessage, variables, { quoteId: quoteData.id });
-    const length = finalMessage.length;
-    
-    return { 
-      length, 
-      type: translate('sendQuoteModal.sms') 
+    // Calculate final replaced SMS length & segments
+    const getSmsSegments = () => {
+      const finalMessage = replaceVariables(smsMessage, variables, { quoteId: quoteData?.id });
+      const charsPerSegment = 160;
+      const length = finalMessage.length;
+      const segments = Math.ceil(length / charsPerSegment);
+      return { length, segments };
     };
-  };
+    const smsInfo = getSmsSegments();
+    const insufficientSmsBalance = sendSmsChecked && smsInfo.segments > (smsBalance ?? 0);
 
-  const replacedSmsInfo = getReplacedSmsInfo();
 
   return (
     <>
@@ -396,7 +410,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
                           </svg>{translate('sendQuoteModal.sendSms')}
                         </label>
                       </div>
-                      <span> USED:{totalSmsSend ?? 0} /  LIMIT: {userPlan.plan.Total_SMS_allowed} </span>
+                      <span> Balance: {smsBalance ?? 0} </span>
                     </h2>
                     <div className="carddesign" style={{ opacity: sendSmsChecked ? 1 : 0.5, pointerEvents: sendSmsChecked ? 'auto' : 'none' }}>
                       <h2 className="card-title">{translate('sendQuoteModal.smsEditor')}</h2>
@@ -423,16 +437,16 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
                       </div>
                       <div className="form-group">
                         <label>{translate('sendQuoteModal.smsMessage')}</label>
-                         <textarea 
-                          className="form-control" 
-                          rows="5" 
-                          placeholder={translate('sendQuoteModal.yourSmsMessagePlaceholder')} 
-                          value={smsMessage} 
+                        <textarea
+                          className="form-control"
+                          rows="5"
+                          placeholder={translate('sendQuoteModal.yourSmsMessagePlaceholder')}
+                          value={smsMessage}
                           onChange={(e) => setSmsMessage(e.target.value)}
                         ></textarea>
                         <div className="texttypelimit">
-                           <span className="inputnote">{translate('sendQuoteModal.characterCount')} {smsCharCount}</span>
-                            <span className="texttype-besked">{translate('sendQuoteModal.sms')}</span>
+                          <span className="inputnote">{translate('sendQuoteModal.characterCount')} {smsCharCount}</span>
+                          <span className="texttype-besked">{translate('sendQuoteModal.sms')}</span>
                         </div>
                       </div>
                       <div className="form-group">
@@ -442,12 +456,22 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
                             <h5>{translate('sendQuoteModal.smsFrom', { fromName: smsFromName })}</h5>
                             <p>{replaceVariables(smsMessage, variables, { quoteId: quoteData.id })}</p>
                           </div>
-                         <div className="texttypelimit">
+                          <div className="texttypelimit">
                             <span className="inputnote">
                               {/* Display length of the final message after replacement */}
-                              {translate('sendQuoteModal.finalCharacterCount')} {replacedSmsInfo.length}
+                              {translate('sendQuoteModal.finalCharacterCount')} {smsInfo.length}
+                            </span>
+                            <span className="inputnote">
+                              {/* Display length of the final message after replacement */}
+                              {translate('sendQuoteModal.Segments')} : {smsInfo.segments}
                             </span>
                           </div>
+                          {insufficientSmsBalance && (
+                            <div className="text-danger mt-1">
+                              {translate('sendQuoteModal.insufficientSmsBalance', { segments: smsInfo.segments, balance: smsBalance, needed: smsInfo.segments - smsBalance })}
+                            </div>
+                          )}
+
                         </div>
                       </div>
 
@@ -535,7 +559,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
                               emailTemplates
                                 .find(t => t.id === selectedEmailTemplateId)
                                 ?.attachments?.map((att) => (
-                                 <option
+                                  <option
                                     key={att.url}
                                     data-url={att.url}
                                     data-originalname={att.originalName}
@@ -573,6 +597,16 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
           </div>
         </div>
       </div>
+
+      {/* Limit Modal */}
+      <LimitModal
+        isOpen={isLimitModalOpen}
+        onClose={closeLimitModal}
+        usedLimit={currentLimit.usage}
+        totalAllowed={currentLimit.totalAllowed}
+        currentLimit={currentLimit}
+        userPlan={userPlan}
+      />
     </>
 
   );

@@ -13,6 +13,7 @@ export const LimitProvider = ({ children }) => {
   const { authToken } = useContext(AuthContext);
   const [userPlan, setUserPlan] = useState(null);
   const [CurrencySave, setCurrency] = useState(null);
+  const [smsBalance, setsmsBalance] = useState(null);
   const [isLimitModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const [currentLimit, setCurrentLimit] = useState({
@@ -22,6 +23,8 @@ export const LimitProvider = ({ children }) => {
     cycleStart: null,
     cycleEnd: null,
     remainingDays: 0,
+    needed: 0,
+    segments: 0,
   });
 
   const fetchUserPlan = async () => {
@@ -34,6 +37,9 @@ export const LimitProvider = ({ children }) => {
 
     if (res.data.success && res.data.currency) {
       setCurrency(res.data.currency);
+    }
+    if (res.data.success && res.data.smsBalance) {
+      setsmsBalance(res.data.smsBalance);
     }
 
     if (res.data.success && res.data.plan !== null) {
@@ -153,11 +159,53 @@ export const LimitProvider = ({ children }) => {
   };
 
   // ✅ Check limit usage
-  const checkLimit = (usage, type) => {
+  const checkLimit = (usage, type, extra = {}) => {
     if (!userPlan || !userPlan.plan) return false;
+    let totalAllowed = 0;
+
+    // ⭐ SMS CUSTOM LOGIC
+    if (type === "SMS") {
+      totalAllowed = smsBalance ?? 0;
+      const segments = extra.segments ?? 0;
+      const needed = extra.needed ?? (segments - totalAllowed);
+
+      // no credits at all
+      if (totalAllowed <= 0) {
+        setCurrentLimit({
+          usage,
+          totalAllowed,
+          type,
+          cycleStart: null,
+          cycleEnd: null,
+          remainingDays: 0,
+          needed,
+          segments
+        });
+        setIsModalOpen(true);
+        return false;
+      }
+
+      // not enough credits
+      if (segments > totalAllowed) {
+        setCurrentLimit({
+          usage,
+          totalAllowed,
+          type,
+          cycleStart: null,
+          cycleEnd: null,
+          remainingDays: 0,
+          needed,
+          segments
+        });
+        setIsModalOpen(true);
+        return false;
+      }
+
+      return true; // enough SMS credits
+    }
 
     const totalAllowedKey = planKeysMap[type];
-    const totalAllowed = userPlan.plan[totalAllowedKey] ?? 0;
+      totalAllowed = userPlan.plan[totalAllowedKey] ?? 0;
 
     if (totalAllowed === 0) return true;
 
@@ -212,6 +260,7 @@ export const LimitProvider = ({ children }) => {
         currentLimit,
         checkLimit,
         CurrencySave,
+        smsBalance,
         closeLimitModal,
         refreshPlan: fetchUserPlan,
         isOfferPageCustomizationAllowed,

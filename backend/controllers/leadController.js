@@ -162,6 +162,8 @@ exports.updateLead = async (req, res) => {
     }
 
     let statusId = req.body.statusId || lead.statusId;
+    let updateType = req.body.type;
+
     if (req.body.status === "Qualified") {
       statusId = await getQualifiedStatusId();
       await StatusUpdateLog.create({
@@ -207,7 +209,7 @@ exports.updateLead = async (req, res) => {
     });
 
     // ✅ Run "leadStatusChanged" ONLY if status actually changed
-    if (lead.statusId !== statusId) {
+    if (lead.statusId !== statusId && updateType === "leadStatusChanged") {
       await StatusUpdateLog.create({
         leadId: lead.id,
         statusId: statusId,
@@ -215,7 +217,11 @@ exports.updateLead = async (req, res) => {
       await runWorkflows("leadStatusChanged", { lead, user: req.user });
     }
 
-    await runWorkflows("leadUpdated", { lead, user: req.user });
+    if (updateType === "LeadUpdated") {
+
+      await runWorkflows("leadUpdated", { lead, user: req.user });
+    }
+
     const updatedLead = await Lead.findOne({
       where: { id: req.params.id },
       include: [{ model: Status, as: "status" }],

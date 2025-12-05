@@ -75,30 +75,65 @@ exports.storeSendSmsQuote = async (req, res) => {
 
       // Check SMS balance before sending
       if (!user || user.smsBalance <= 0) {
-        console.warn(`User ${userId} has 0 SMS balance. SMS not sent to ${recipientPhone}.`);
         await smsRecord.update({ status: 'pending' }, { transaction: t });
-        return; // exit the try block
+        console.warn(`User ${userId} has 0 SMS balance. SMS not sent to ${recipientPhone}.`);
+        return res.status(400).json({
+          message: `Your SMS balance is 0. SMS to ${recipientPhone} was not sent. Please recharge to continue sending messages.`,
+          smsRecord, // optional: include the record info
+        });
       }
 
        const smsSetting = await Settings.findOne({
           where: { userId: user.id, key: 'smsNotifications' },
         });
 
-
-      if (smsSetting.value === 'true') {
-        await sendSms({
+        if (smsSetting.value === 'true') {
+        // SEND SMS VIA GATEWAY API
+        const smsResponse = await sendSms({
           to: recipientPhone,
           message: replacedMessage,
           from: (senderName || 'NaviLead').substring(0, 10),
         });
 
-         // ✅ Deduct 1 SMS from user balance
-        user.smsBalance -= 1;
+        // SAVE spendCredits INFO
+        if (smsResponse && smsResponse) {
+          await smsRecord.update(
+            { spendCredits: smsResponse },
+            { transaction: t }
+          );
+        }
+
+        // ---- DYNAMIC SEGMENT BASED DEDUCTION ----
+        let segmentsUsed = 1;
+
+        if (
+          smsResponse &&
+          smsResponse.usage &&
+          smsResponse.usage.countries
+        ) {
+          const countries = smsResponse.usage.countries;
+
+          // Sum all SMS segment counts dynamically
+          segmentsUsed = Object.values(countries).reduce(
+            (sum, val) => sum + val,
+            0
+          );
+        }
+
+        console.log(`📩 Total Segments Used: ${segmentsUsed}`);
+
+        // Deduct segments from balance
+        user.smsBalance -= segmentsUsed;
         await user.save({ transaction: t });
-        console.log(`💰 Deducted 1 SMS from user ${userId}. New balance: ${user.smsBalance}`);
+
+        console.log(
+          `💰 Deducted ${segmentsUsed} SMS credits from user ${userId}. New balance: ${user.smsBalance}`
+        );
+
       } else {
-        console.log(`📵 SMS notifications are disabled for user ${user.id}. Skipping SMS.`);
+        console.log(`📵 SMS notifications disabled for user ${user.id}. Skipping SMS.`);
       }
+
 
     } catch (smsError) {
       console.error('Error sending SMS:', smsError);

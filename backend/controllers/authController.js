@@ -1,4 +1,5 @@
   require('dotenv').config();
+  const { Op } = require("sequelize");
   const jwt = require('jsonwebtoken');
   const bcrypt = require('bcryptjs');
   const crypto = require('crypto');
@@ -478,6 +479,7 @@
           message: "No plan found for this user",
           plan: null,
           currency: user.currency,
+          smsBalance: user.smsBalance,
         });
       }
 
@@ -487,11 +489,26 @@
           message: "Plan details missing",
           plan: null,
           currency: user.currency,
+          smsBalance: user.smsBalance,
         });
       }
 
-      // 🟢 Now it's safe to access userPlan.plan
-      const totalLeads = await Lead.count({ where: { userId } });
+
+      // 🟢 COUNT LEADS ONLY FROM PLAN START DATE
+      const startDate = userPlan.startDate;
+      let totalLeads = 0;
+
+      if (startDate) {
+        totalLeads = await Lead.count({
+          where: {
+            userId,
+            createdAt: { [Op.gte]: startDate }, // 🟢 Only leads created after plan start
+          },
+        });
+      } else {
+        // fallback (should never happen)
+        totalLeads = await Lead.count({ where: { userId } });
+      }
 
       const allowedLeads = userPlan.plan.Total_Leads_Allowed || 0;
       const remainingLeads = Math.max(allowedLeads - totalLeads, 0);
@@ -512,6 +529,7 @@
         success: true,
         plan: planWithUsage,
         currency: user.currency,
+        smsBalance: user.smsBalance,
       });
     } catch (error) {
       console.error("Error fetching current plan:", error);

@@ -374,7 +374,9 @@
     "none": "None",
     "chooseAttachment": "Choose",
     "finalCharacterCount": "Final character count :",
-    "sms": "SMS"
+    "sms": "SMS",
+    "Segments": "Segments",
+    "insufficientSmsBalance": "You have {{balance}} SMS credits, but your message requires {{segments}} segments. You need {{needed}} more credit(s). Please add more SMS credits."
   },
   "pricingTemplatesPage": {
     "loading": "Loading...",
