@@ -149,6 +149,7 @@
     const defaultSettings = [
       { key: 'emailNotifications', value: 'true' },
       { key: 'smsNotifications', value: 'true' },
+      { key: 'notificationSoundTicket', value: 'true' },
     ];
 
     // 🟢 Only keep settings that are missing

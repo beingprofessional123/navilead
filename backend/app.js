@@ -13,6 +13,7 @@ const PlanManagementRoutes = require('./routes/admin/PlanManagementRoutes');
 const SmsCreditPlanRoutes = require('./routes/admin/SmsCreditPlanRoutes');
 const TransactionManagementRoutes = require('./routes/admin/TransactionManagementRoutes');
 const AdminSettingsRoutes = require('./routes/admin/AdminSettingsRoutes');
+const AdminTicketRoutes = require('./routes/admin/AdminTicketRoutes');
 
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const leadRoutes = require('./routes/leadRoutes');
@@ -35,6 +36,7 @@ const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const transactionsRoutes = require('./routes/transactionsRoutes');
 const paymentMethodsRoutes = require('./routes/paymentMethodsRoutes');
 const smsCreditsRoutes = require('./routes/smsCreditsRoutes');
+const ticketRoutes = require('./routes/ticketRoutes');
 
 const workflowRoutes = require('./routes/workflowRoutes');
 const publicWorkflowRoutes = require('./routes/publicWorkflowRoutes');
@@ -69,6 +71,7 @@ app.use('/api/admin/plan-management', PlanManagementRoutes);
 app.use('/api/admin/sms-credit-plans', SmsCreditPlanRoutes);
 app.use('/api/admin/transaction-management', TransactionManagementRoutes);
 app.use('/api/admin/settings', AdminSettingsRoutes);
+app.use('/api/admin/tickets', AdminTicketRoutes);
 
 //User
 app.use('/api/dashboard', dashboardRoutes);
@@ -92,6 +95,7 @@ app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/transactions', transactionsRoutes);
 app.use('/api/paymentMethods', paymentMethodsRoutes);
 app.use('/api/smsCredits', smsCreditsRoutes);
+app.use('/api/tickets', ticketRoutes);
 
 
 // Public leads route (no auth required)

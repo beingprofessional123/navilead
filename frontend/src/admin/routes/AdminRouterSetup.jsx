@@ -10,6 +10,7 @@ import PlanManagementPage from '../pages/PlanManagement/PlanManagementPage';
 import CreditPlanManagementPage from '../pages/CreditPlanManagement/CreditPlanManagementPage';
 import TransactionManagementPage from '../pages/TransactionManagement/TransactionManagementPage';
 import SettingsPage from '../pages/Settings/SettingsPage';
+import TicketPage from '../pages/Tickets/TicketPage';
 
 const AdminRouterSetup = () => {
   return (
@@ -71,6 +72,18 @@ const AdminRouterSetup = () => {
           </ProtectedRoute>
         }
       />
+
+        <Route
+        path="/admin/tickets"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <TicketPage /> {/* Placeholder, replace with actual TicketPage if available */}
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/admin/settings"
         element={

@@ -1,11 +1,11 @@
 // src/App.js
 import React from 'react';
 import { BrowserRouter as Router, useLocation } from 'react-router-dom';
-import UserRouterSetup from './routes/UserRoutes';
+import UserRouterSetup from './user/routes/UserRoutes';
 import { ToastContainer } from 'react-toastify';
-import { LimitProvider } from "./context/LimitContext";
-import { AuthProvider } from './context/AuthContext';
-import FloatingLanguageToggle from './components/common/FloatingLanguageToggle';
+import { LimitProvider } from "./user/context/LimitContext";
+import { AuthProvider } from './user/context/AuthContext';
+import FloatingLanguageToggle from './user/components/common/FloatingLanguageToggle';
 
 import { AdminAuthProvider } from './admin/context/AdminAuthContext';
 import AdminFloatingLanguageToggle from './admin/components/FloatingLanguageToggle';
