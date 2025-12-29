@@ -126,7 +126,8 @@
     "users-management": "Users Management",
     "plan-management": "Plan Management",
     "credit-plan-management": "Credit Plan Management",
-    "transaction-management": "Transaction"
+    "transaction-management": "Transaction",
+    "tickets": "Tickets"
   },
   "leadsPage": {
     "title": "Lead Management",

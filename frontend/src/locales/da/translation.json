@@ -126,7 +126,8 @@
     "users-management": "Brugerstyring",
     "plan-management": "Planstyring",
     "credit-plan-management": "Kreditplansstyring",
-    "transaction-management": "Transaktion"
+    "transaction-management": "Transaktion",
+     "tickets": "Billetter"
   },
   "leadsPage": {
     "title": "Leadhåndtering",

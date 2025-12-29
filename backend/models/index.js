@@ -31,6 +31,8 @@ const Transaction = require('./Transaction');
 const PaymentMethod = require('./PaymentMethod');
 const SMSCreditPlan = require('./smsCreditPlan');
 const SmtpSetting = require('./SmtpSetting');
+const Ticket = require('./ticket');
+const TicketMessage = require('./ticketMessage');
 
 const db = {};
 
@@ -66,6 +68,8 @@ db.Transaction = Transaction(sequelize, DataTypes);
 db.PaymentMethod = PaymentMethod(sequelize, DataTypes);
 db.SMSCreditPlan = SMSCreditPlan(sequelize, DataTypes);
 db.SmtpSetting = SmtpSetting(sequelize, DataTypes); 
+db.Ticket = Ticket(sequelize, DataTypes);
+db.TicketMessage = TicketMessage(sequelize, DataTypes);
 
 // Setup associations
 Object.keys(db).forEach(modelName => {
