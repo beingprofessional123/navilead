@@ -214,8 +214,8 @@ const OffersTemplatesViewPage = () => {
                                                                         ></textarea>
                                                                     </div>
                                                                     <div className="modalfooter">
-                                                                        <button className="btn btn-add">Accept Quote</button>
-                                                                        <button className="btn btn-send">Ask a Question</button>
+                                                                        <button className="btn btn-add">Ask a Question</button>
+                                                                        <button className="btn btn-send">Accept Quote</button>
                                                                     </div>
                                                                 </div>
                                                             </div>

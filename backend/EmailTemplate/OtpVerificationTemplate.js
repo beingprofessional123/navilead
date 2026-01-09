@@ -1,61 +1,64 @@
 // backend/EmailTemplate/OtpVerificationTemplate.js
 module.exports = function OtpVerificationTemplate({ firstName, otpCode }) {
-  const appUrl = process.env.FRONTEND_URL || '#';
-  const logoUrl = `${appUrl}/assets/images/logo.svg`;
+  const appUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+  const logoUrl = `${appUrl}/assets/images/logo.png`;
   const recipientName = firstName || "User";
 
   return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Verify Your OTP</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+  <style type="text/css">
     body {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
       margin: 0;
-      background: #fff;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333333;
     }
   </style>
 </head>
-<body>
+<body style="background-color: #f9f9f9; padding: 20px;">
 
-<div style="width: 640px; margin: 50px auto; color: rgba(204,255,255,1);">
-  <div style="padding: 20px; background: #101418;">
-    <div style="background: #171f26; padding: 30px; border: 1px solid #202e3c;">
-      <div style="margin-bottom: 20px; text-align: center;">
-        <a href="${appUrl}" style="display:inline-block; width:160px;">
-          <img src="${logoUrl}" alt="Logo" style="max-width:100%; height:auto;">
-        </a>
-      </div>
+<div style="max-width: 600px; margin: 40px auto; background: #ffffff; border: 1px solid #dddddd; border-radius: 8px; overflow: hidden;">
+  
+  <div style="padding: 40px;">
 
-      <div style="padding: 28px 36px; border-radius: 2px; background: #171f26; border: 1px solid #202e3c; text-align: center; margin-bottom: 20px;">
-        <p style="font-weight: 500; font-size: 18px; line-height: 26px; color: #cff; margin: 0 0 10px;">
-          Hello ${recipientName},
-        </p>
-        <p style="font-size: 15px; line-height: 24px; color: #8cd9d9; margin: 0 0 15px;">
-          Please use the following One-Time Password (OTP) to verify your account. This code is valid for the next <strong>10 minutes</strong>.
-        </p>
-
-        <h2 style="font-size: 32px; letter-spacing: 8px; color: #00d4f0; font-weight: 700; margin: 20px 0;">
-          ${otpCode}
-        </h2>
-
-        <p style="font-size: 14px; color: #8cd9d9; margin: 0;">
-          If you didn’t request this code, you can safely ignore this email.
-        </p>
-      </div>
-
-      <div style="padding-top: 20px; text-align: center; color: #8cd9d9;">
-        <h3 style="margin: 0 0 7px; font-size: 14px; font-weight: 600; color: #cff;">Best Regards,</h3>
-        <p style="font-size: 14px; margin: 0;">Team NaviLead</p>
-        <p style="font-size: 12px; margin: 15px 0 0; color: #555;">
-          (You are receiving this email because an OTP verification was requested on NaviLead.)
-        </p>
-      </div>
+    <div style="text-align: center; margin-bottom: 30px;">
+      <a href="${appUrl}" style="display: inline-block;">
+        <img src="${logoUrl}" alt="Logo" style="width: 150px; height: auto;">
+      </a>
     </div>
+
+    <div style="text-align: center; margin-bottom: 25px;">
+      <h2 style="font-size: 20px; color: #111111; margin: 0;">Verify Your Account</h2>
+    </div>
+
+    <div style="font-size: 15px; line-height: 1.6; color: #444444; text-align: center;">
+      <p>Hello <strong>${recipientName}</strong>,</p>
+      <p>Please use the following One-Time Password (OTP) to complete your verification. This code is valid for <strong>10 minutes</strong>.</p>
+
+      <div style="margin: 30px 0; padding: 20px; background-color: #f4f4f4; border: 1px dashed #cccccc; border-radius: 6px;">
+        <span style="font-size: 36px; letter-spacing: 10px; color: #000000; font-weight: 700; font-family: Courier, monospace;">
+          ${otpCode}
+        </span>
+      </div>
+
+      <p style="font-size: 13px; color: #777777;">
+        If you didn’t request this code, you can safely ignore this email.
+      </p>
+    </div>
+
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eeeeee; text-align: center;">
+       <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #111;">Best Regards,</h4>
+       <p style="font-size: 14px; margin: 0; color: #666;">Team NaviLead</p>
+       <p style="font-size: 11px; margin-top: 25px; color: #999999; line-height: 1.4;">
+         This is an automated security notification. Please do not reply to this email.
+       </p>
+    </div>
+
   </div>
 </div>
 

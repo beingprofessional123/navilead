@@ -348,3 +348,7 @@ h2.card-title {
   border-radius: 10px !important;
   color: #fff;
 }
+
+.emailcard .navpublic .btn.btn-send {
+   width: auto;
+}

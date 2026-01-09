@@ -173,13 +173,24 @@ const EmailSMSPage = () => {
                 headers: { Authorization: `Bearer ${authToken}` },
             });
 
-            // Transform into categories
-            const categories = { contact: [] }; // you can expand categories later
+            // Categories initialize karein
+            const categories = { contact: [], lead: [] };
+
             response.data.forEach(variable => {
-                categories.contact.push({
-                    name: variable.variableName.replace(/_/g, ' '), // "first_name" → "first name"
+                const varName = variable.variableName;
+                
+                // Check karein ki variable 'lead' se start ho raha hai ya nahi
+                const categoryType = varName.startsWith('lead_') ? 'lead' : 'contact';
+
+                categories[categoryType].push({
+                    // Name ko sundar banane ke liye: "lead_first_name" -> "First Name"
+                    name: varName
+                        .replace(/^lead_/, '') // 'lead_' prefix hatao (optional)
+                        .replace(/_/g, ' ') 
+                        .replace(/\b\w/g, l => l.toUpperCase()), // Capitalize first letter
+                    
                     description: `${variable.variableValue}`,
-                    variable: `{{${variable.variableName}}}`,
+                    variable: `{{${varName}}}`,
                 });
             });
 
@@ -633,7 +644,6 @@ const EmailSMSPage = () => {
                                 <table className="table">
                                     <thead style={{ position: "sticky", top: 0, background: "rgb(22 31 38)", zIndex: 10, }}>
                                         <tr>
-                                            <th className="talechebox"><input className="form-check-input" type="checkbox" /></th>
                                             <th>{translate('emailSmsPage.templateNameTable')}</th>
                                             <th>{translate('emailSmsPage.subjectTable')}</th>
                                             <th>{translate('emailSmsPage.recipientEmailTable')}</th>
@@ -653,7 +663,6 @@ const EmailSMSPage = () => {
                                         ) : (
                                             emailTemplates.map((template) => (
                                                 <tr key={template.id} className={emailTemplates.length === 1 ? "tablemaiikdata" : ""}>
-                                                    <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
                                                     <td><strong>{template.templateName}</strong></td>
                                                     <td>{template.subject}</td>
                                                     <td>{template.recipientEmail}</td>
@@ -687,7 +696,6 @@ const EmailSMSPage = () => {
                                 <table className="table">
                                     <thead style={{ position: "sticky", top: 0, background: "rgb(22 31 38)", zIndex: 10, }}>
                                         <tr>
-                                            <th className="talechebox"><input className="form-check-input" type="checkbox" /></th>
                                             <th>{translate('emailSmsPage.templateNameTable')}</th>
                                             <th>{translate('emailSmsPage.recipientPhoneTable')}</th>
                                             <th>{translate('emailSmsPage.smsContentTable')}</th>
@@ -707,7 +715,6 @@ const EmailSMSPage = () => {
                                         ) : (
                                             smsTemplates.map((template) => (
                                                 <tr key={template.id} className={smsTemplates.length === 1 ? "tablemaiikdata" : ""}>
-                                                    <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
                                                     <td><strong>{template.templateName}</strong></td>
                                                     <td>{template.recipientPhone}</td>
                                                     <td>{template.smsContent}</td>
@@ -827,9 +834,26 @@ const EmailSMSPage = () => {
                                                                     });
                                                                 }}
                                                                 onFocus={() => setFocusedRef(emailBodyRef)}
-                                                                config={{
-                                                                    placeholder: translate('emailSmsPage.emailContentPlaceholder')
-                                                                }}
+                                                                 config={{
+                                                                placeholder: translate('emailSmsPage.emailContentPlaceholder'),
+                                                                toolbar: [
+                                                                    'heading',
+                                                                    '|',
+                                                                    'bold',
+                                                                    'italic',
+                                                                    'underline',
+                                                                    'bulletedList',
+                                                                    'numberedList',
+                                                                    '|',
+                                                                    'insertTable',
+                                                                    '|',
+                                                                    'undo',
+                                                                    'redo'
+                                                                ],
+                                                                mediaEmbed: {
+                                                                    previewsInData: true
+                                                                }
+                                                            }}
                                                             />
                                                             {/* <textarea className="form-control" rows="5" name="body" ref={emailBodyRef} value={currentTemplate.body} onChange={handleInputChange} onFocus={() => setFocusedRef(emailBodyRef)} placeholder={translate('emailSmsPage.emailContentPlaceholder')}></textarea> */}
                                                         </div>

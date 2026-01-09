@@ -291,7 +291,7 @@ const LeadsPage = () => {
           </div>
 
           {/* Lead Summary Cards */}
-          <div className="leads-row">
+          <div className="leads-row leadspage">
             <div className="leads-col">
               <div className="carddesign">
                 <div className="leads-card leads-card1">
@@ -425,7 +425,6 @@ const LeadsPage = () => {
                     <table className="table">
                       <thead style={{ position: "sticky", top: 0, background: "rgb(22 31 38)", zIndex: 10, }}>
                         <tr>
-                          <th className="talechebox"><input className="form-check-input" type="checkbox" id="checkAll" /></th>
                           <th>{t('leadsPage.tableHeaderLeadID')}</th>
                           <th>{t('leadsPage.tableHeaderName')}</th>
                           <th>{t('leadsPage.tableHeaderCompany')}</th>
@@ -450,7 +449,6 @@ const LeadsPage = () => {
                         ) : filteredAndSortedLeads.length > 0 ? (
                           filteredAndSortedLeads.map((lead) => (
                             <tr key={lead.id} className={filteredAndSortedLeads.length === 1 ? "tablemaiikdata" : ""}>
-                              <td className="talechebox"><input className="form-check-input" type="checkbox" /></td>
                               <td><Link to={`/leads/${lead.id}`} className="leadlink">{lead.leadNumber}</Link></td>
                               <td><strong>{lead.fullName}</strong></td>
                               <td>{lead.companyName}</td>

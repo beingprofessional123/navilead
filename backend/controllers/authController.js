@@ -19,7 +19,12 @@
     "company_name",
     "contact_phone",
     "offer_link",
-    "signature"
+    "signature",
+    "lead_full_name",
+    "lead_phone",
+    "lead_email",
+    "lead_company_name",
+    "lead_cvr_number",
   ];
 
   async function ensureUserVariables(user) {
@@ -71,7 +76,22 @@
           break;
 
         case "signature":
-          value = user.emailSignature || null;
+          value =  null;
+          break;
+        case "lead_full_name":
+          value =  null;
+          break;
+        case "lead_phone":
+          value =  null;
+          break;
+        case "lead_email":
+          value =  null;
+          break;
+        case "lead_company_name":
+          value =  null;
+          break;
+        case "lead_cvr_number":
+          value =  null;
           break;
       }
 
