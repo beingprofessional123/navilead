@@ -102,7 +102,9 @@ exports.getOfferByQuoteId = async (req, res) => {
 
 
 
-      return res.status(400).json({ message: 'This offer has expired.' });
+      if (currentDate > validUntilDate) {
+        return res.status(400).json({ message: 'api.offers.offerExpired' });
+      }
     }
 
     // Update quote status to "Viewed by customer" if first time viewing
@@ -306,7 +308,7 @@ exports.acceptOffer = async (req, res) => {
     }
 
     res.status(200).json({
-      message: 'Offer accepted successfully! Email sent.',
+      message: 'api.offers.offerAcceptedSuccess', // Key bhejein, string nahi
       acceptedOfferId: acceptedOffer.id,
     });
 
@@ -393,8 +395,9 @@ exports.askedQuestion = async (req, res) => {
       
     }
 
+    // Replace static message in askedQuestion
     res.status(200).json({
-      message: "Question saved, lead status updated, and email sent.",
+      message: "api.offers.questionSentSuccess", // Key bhejein
       askQuestion
     });
 

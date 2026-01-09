@@ -7,54 +7,123 @@ const Lead = db.Lead;
 const Status = db.Status;
 const User = db.User;
 const Settings = db.Settings;
-const { sendSms } = require('../utils/sms'); // using GatewayAPI
+const { sendSms } = require('../utils/sms');
 const sequelize = db.sequelize;
 
+// --------------------------------------------------
+// VARIABLE REPLACEMENT HELPER
+// --------------------------------------------------
 function replaceVariables(text, variablesMap) {
-  return text.replace(/\{\{(\w+)\}\}/g, (match, varName) =>
-    variablesMap[varName] !== undefined ? variablesMap[varName] : match
+  return text.replace(/\{\{(\w+)\}\}/g, (match, key) =>
+    variablesMap[key] !== undefined ? variablesMap[key] : match
   );
 }
 
 exports.storeSendSmsQuote = async (req, res) => {
   const t = await sequelize.transaction();
+
   try {
     const userId = req.user.id;
-    const { quoteId, recipientPhone, smsMessage, smsTemplateId, senderName } = req.body;
+    const {
+      quoteId,
+      recipientPhone,
+      smsMessage,
+      smsTemplateId,
+      senderName
+    } = req.body;
 
+    // --------------------------------------------------
+    // 1. BASIC VALIDATION
+    // --------------------------------------------------
     if (!quoteId || !recipientPhone || (!smsMessage && !smsTemplateId)) {
-      // Changed message to i18n key
       return res.status(400).json({ message: 'api.smsQuotes.missingFields' });
     }
 
-    // Fetch user variables
-    const userVariables = await UserVariable.findAll({ where: { userId } });
-    const variablesMap = {};
-    userVariables.forEach(({ variableName, variableValue }) => {
-      variablesMap[variableName] = variableValue;
+    // --------------------------------------------------
+    // 2. FETCH QUOTE + LEAD
+    // --------------------------------------------------
+    const quote = await Quote.findByPk(quoteId, {
+      include: [{ model: Lead, as: 'lead' }],
+      transaction: t
     });
 
-    // Add dynamic offer link
-    const frontendUrl = process.env.FRONTEND_URL;
-    variablesMap.offer_link = `${frontendUrl}/offer/${quoteId}`;
+    if (!quote || !quote.lead) {
+      await t.rollback();
+      return res.status(404).json({ message: 'api.smsQuotes.leadNotFound' });
+    }
 
-    // Determine final message
-    let finalMessage = smsMessage && smsMessage.trim() !== "" ? smsMessage : null;
+    const lead = quote.lead;
+
+    // --------------------------------------------------
+    // 3. FETCH USER VARIABLES
+    // --------------------------------------------------
+    const userVariables = await UserVariable.findAll({
+      where: { userId },
+      transaction: t
+    });
+
+    const userVariablesMap = {};
+    userVariables.forEach(({ variableName, variableValue }) => {
+      userVariablesMap[variableName] = variableValue;
+    });
+
+    // --------------------------------------------------
+    // 4. LEAD VARIABLES MAP
+    // --------------------------------------------------
+    const leadVariablesMap = {
+      lead_full_name: lead.fullName || '',
+      lead_phone: lead.phone || '',
+      lead_email: lead.email || '',
+      lead_company_name: lead.companyName || '',
+      lead_cvr_number: lead.cvrNumber || ''
+    };
+
+    // --------------------------------------------------
+    // 5. SYSTEM VARIABLES (OFFER LINK)
+    // --------------------------------------------------
+    const frontendUrl = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
+    const systemVariablesMap = {
+      offer_link: `${frontendUrl}/offer/${quoteId}`
+    };
+
+    // --------------------------------------------------
+    // 6. MERGE ALL VARIABLES
+    // --------------------------------------------------
+    const finalVariablesMap = {
+      ...userVariablesMap,
+      ...leadVariablesMap,
+      ...systemVariablesMap
+    };
+
+    // --------------------------------------------------
+    // 7. DETERMINE FINAL SMS MESSAGE
+    // --------------------------------------------------
+    let finalMessage = smsMessage && smsMessage.trim() !== ''
+      ? smsMessage
+      : null;
 
     if (!finalMessage && smsTemplateId) {
-      const template = await SmsTemplate.findOne({ where: { id: smsTemplateId, userId } });
+      const template = await SmsTemplate.findOne({
+        where: { id: smsTemplateId, userId },
+        transaction: t
+      });
+
       if (!template) {
-        // Changed message to i18n key
+        await t.rollback();
         return res.status(404).json({ message: 'api.smsTemplates.notFound' });
       }
+
       finalMessage = template.smsContent;
     }
 
+    // --------------------------------------------------
+    // 8. REPLACE VARIABLES
+    // --------------------------------------------------
+    const replacedMessage = replaceVariables(finalMessage, finalVariablesMap);
 
-    // Replace variables in the message
-    const replacedMessage = replaceVariables(finalMessage, variablesMap);
-
-    // Store SMS in SendSms table
+    // --------------------------------------------------
+    // 9. STORE SMS RECORD
+    // --------------------------------------------------
     const smsRecord = await SendSms.create(
       {
         userId,
@@ -62,48 +131,56 @@ exports.storeSendSmsQuote = async (req, res) => {
         recipientPhone,
         smsMessage: replacedMessage,
         smsTemplateId: smsTemplateId || null,
-        senderName: senderName,
+        senderName
       },
       { transaction: t }
     );
 
-    // Optionally send SMS via GatewayAPI (uncomment if needed)
+    // --------------------------------------------------
+    // 10. FETCH USER & CHECK BALANCE
+    // --------------------------------------------------
+    const user = await User.findByPk(userId, { transaction: t });
 
-    try {
-      // Fetch user first
-      const user = await User.findByPk(userId, { transaction: t });
+    if (!user || user.smsBalance <= 0) {
+      await smsRecord.update({ status: 'pending' }, { transaction: t });
+      await t.commit();
 
-      // Check SMS balance before sending
-      if (!user || user.smsBalance <= 0) {
-        await smsRecord.update({ status: 'pending' }, { transaction: t });
-        console.warn(`User ${userId} has 0 SMS balance. SMS not sent to ${recipientPhone}.`);
-        return res.status(400).json({
-          message: `Your SMS balance is 0. SMS to ${recipientPhone} was not sent. Please recharge to continue sending messages.`,
-          smsRecord, // optional: include the record info
-        });
-      }
+      return res.status(400).json({
+        message: 'api.smsQuotes.insufficientBalance',
+        smsRecord
+      });
+    }
 
-       const smsSetting = await Settings.findOne({
-          where: { userId: user.id, key: 'smsNotifications' },
-        });
+    // --------------------------------------------------
+    // 11. CHECK SMS SETTINGS
+    // --------------------------------------------------
+    const smsSetting = await Settings.findOne({
+      where: { userId, key: 'smsNotifications' },
+      transaction: t
+    });
 
-        if (smsSetting.value === 'true') {
-        // SEND SMS VIA GATEWAY API
+    if (smsSetting && smsSetting.value === 'true') {
+      try {
+        // --------------------------------------------------
+        // 12. SEND SMS
+        // --------------------------------------------------
         const smsResponse = await sendSms({
           to: recipientPhone,
           message: replacedMessage,
-          from: (senderName || 'NaviLead').substring(0, 10),
+          from: (senderName || 'NaviLead').substring(0, 10)
         });
 
-        // SAVE spendCredits INFO
-        if (smsResponse && smsResponse) {
+        // Save gateway response
+        if (smsResponse) {
           await smsRecord.update(
             { spendCredits: smsResponse },
             { transaction: t }
           );
         }
 
-        // ---- DYNAMIC SEGMENT BASED DEDUCTION ----
+        // --------------------------------------------------
+        // 13. DYNAMIC SEGMENT DEDUCTION
+        // --------------------------------------------------
         let segmentsUsed = 1;
 
         if (
@@ -111,53 +188,51 @@ exports.storeSendSmsQuote = async (req, res) => {
           smsResponse.usage &&
           smsResponse.usage.countries
         ) {
-          const countries = smsResponse.usage.countries;
-
-          // Sum all SMS segment counts dynamically
-          segmentsUsed = Object.values(countries).reduce(
-            (sum, val) => sum + val,
-            0
-          );
+          segmentsUsed = Object.values(
+            smsResponse.usage.countries
+          ).reduce((sum, val) => sum + val, 0);
         }
 
-        console.log(`📩 Total Segments Used: ${segmentsUsed}`);
-
-        // Deduct segments from balance
         user.smsBalance -= segmentsUsed;
         await user.save({ transaction: t });
 
-        console.log(
-          `💰 Deducted ${segmentsUsed} SMS credits from user ${userId}. New balance: ${user.smsBalance}`
-        );
-
-      } else {
-        console.log(`📵 SMS notifications disabled for user ${user.id}. Skipping SMS.`);
-      }
-
-
-    } catch (smsError) {
-      console.error('Error sending SMS:', smsError);
-      await smsRecord.update({ status: 'Failed' }, { transaction: t });
-    }
-    
-    // Update Lead status to "Offer Sent"
-    const quote = await Quote.findByPk(quoteId);
-    if (quote) {
-      const offerSentStatus = await Status.findOne({
-        where: { name: 'Offer Sent', statusFor: 'Lead' },
-      });
-      if (offerSentStatus) {
-        await Lead.update({ statusId: offerSentStatus.id }, { where: { id: quote.leadId }, transaction: t });
+      } catch (smsError) {
+        console.error('SMS sending failed:', smsError);
+        await smsRecord.update({ status: 'Failed' }, { transaction: t });
       }
     }
 
+    // --------------------------------------------------
+    // 14. UPDATE LEAD STATUS → OFFER SENT
+    // --------------------------------------------------
+    const offerSentStatus = await Status.findOne({
+      where: { name: 'Offer Sent', statusFor: 'Lead' },
+      transaction: t
+    });
+
+    if (offerSentStatus) {
+      await Lead.update(
+        { statusId: offerSentStatus.id },
+        { where: { id: quote.leadId }, transaction: t }
+      );
+    }
+
+    // --------------------------------------------------
+    // 15. COMMIT TRANSACTION
+    // --------------------------------------------------
     await t.commit();
-    // Changed message to i18n key
-    res.status(201).json({ message: 'api.smsQuotes.storeSuccess', smsRecord });
+
+    res.status(201).json({
+      message: 'api.smsQuotes.storeSuccess',
+      smsRecord
+    });
+
   } catch (error) {
     await t.rollback();
     console.error('Error storing SMS quote:', error);
-    // Changed message to i18n key
-    res.status(500).json({ message: 'api.smsQuotes.serverError', error: error.message });
+    res.status(500).json({
+      message: 'api.smsQuotes.serverError',
+      error: error.message
+    });
   }
 };

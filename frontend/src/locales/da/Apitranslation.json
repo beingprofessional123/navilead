@@ -132,26 +132,6 @@
       "authError": "Godkendelsestoken ikke fundet til variabler.",
       "fetchError": "Kunne ikke hente variabler."
     },
-    "offers": {
-      "quoteIdRequired": "Tilbuds-ID er påkrævet",
-      "offerNotFound": "Tilbud ikke fundet",
-      "offerExpired": "Dette tilbud er udløbet.",
-      "internalServerError": "Intern serverfejl",
-      "acceptOfferMissingFields": "Manglende påkrævede felter for at acceptere tilbud.",
-      "acceptedStatusNotConfigured": "Accepteret status er ikke konfigureret i databasen.",
-      "wonStatusNotConfigured": "Vundet status er ikke konfigureret i databasen.",
-      "offerAcceptedSuccess": "Tilbud accepteret med succes! Vores team er blevet underrettet, og leadstatus er nu 'Vundet'.",
-      "offerAcceptFailed": "Kunne ikke acceptere tilbud.",
-      "questionSentSuccess": "Dit spørgsmål er blevet sendt med succes! Vi har opdateret leadstatus til 'I Dialog' og underrettet vores salgsrepræsentant.",
-      "questionSendFailed": "Kunne ikke sende spørgsmål.",
-      "offerExpiredError": "Dette tilbud er udløbet og kan ikke accepteres.",
-      "offerAlreadyAccepted": "Dette tilbud er allerede accepteret.",
-      "offerExpiredQuestion": "Dette tilbud er udløbet. Du kan ikke stille spørgsmål om det.",
-      "offerAlreadyAcceptedQuestion": "Dette tilbud er allerede accepteret. Du kan ikke stille yderligere spørgsmål.",
-      "questionAlreadySent": "Et spørgsmål er allerede sendt for dette tilbud. Vent venligst på et svar fra vores team.",
-      "termsNotAccepted": "Accepter venligst Vilkår og Betingelser for at fortsætte.",
-      "noOfferData": "Ingen tilbudsdata tilgængelig."
-    },
     "settings": {
       "saveSuccess": "Indstillinger gemt succesfuldt!",
       "saveError": "Kunne ikke gemme indstillinger.",
@@ -176,6 +156,24 @@
       "deletedSuccessfully": "Arbejdsgang slettet med succes!",
       "deleteFailed": "Kunne ikke slette arbejdsgang.",
       "cancel": "Er du sikker på, at du vil annullere sletning?"
+    },
+    "offers": {
+      "quoteIdRequired": "Tilbuds-ID er påkrævet",
+      "offerNotFound": "Tilbud ikke fundet",
+      "offerExpired": "Dette tilbud er udløbet.",
+      "internalServerError": "Intern serverfejl",
+      "acceptOfferMissingFields": "Manglende felter for at acceptere tilbuddet.",
+      "offerAcceptedSuccess": "Tilbuddet er accepteret! Vores team er blevet underrettet, og status er nu 'Vundet'.",
+      "offerAcceptFailed": "Kunne ikke acceptere tilbuddet.",
+      "questionSentSuccess": "Dit spørgsmål er sendt! Vi har opdateret status til 'I dialog' og underrettet vores sælger.",
+      "questionSendFailed": "Kunne ikke sende spørgsmål.",
+      "offerExpiredError": "Dette tilbud er udløbet og kan ikke accepteres.",
+      "offerAlreadyAccepted": "Dette tilbud er allerede blevet accepteret.",
+      "offerExpiredQuestion": "Dette tilbud er udløbet. Du kan ikke stille spørgsmål om det.",
+      "offerAlreadyAcceptedQuestion": "Dette tilbud er allerede blevet accepteret. Du kan ikke stille flere spørgsmål.",
+      "questionAlreadySent": "Et spørgsmål er allerede sendt for dette tilbud. Vent venligst på svar.",
+      "termsNotAccepted": "Accepter venligst vilkår og betingelser for at fortsætte.",
+      "noOfferData": "Ingen tilbudsdata tilgængelige."
     }
   }
 }

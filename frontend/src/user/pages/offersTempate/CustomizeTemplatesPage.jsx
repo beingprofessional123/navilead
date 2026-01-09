@@ -90,8 +90,8 @@ const OffersTemplatesPage = () => {
           </div>
 
           <div style="display: flex; gap: 0px 9px; justify-content: space-between; border-top: 1px solid #202e3c; padding-top: 20px; margin-top: 20px;">
-            <button style="padding: 7px 14px; color: #cff !important; background-color: #101418; font-size: 12.25px; border: 1px solid #202e3c !important; border-radius: 8.7px; outline: none !important; box-shadow: none !important;" id="acceptQuoteBtn">Accept Quote</button>
-            <button style="padding: 7px 14px; color: #101418 !important; background-color: #00d4f0; font-size: 12.25px; border: 1px solid #202e3c !important; border-radius: 8.7px; outline: none !important; box-shadow: none !important;" id="askQuestionBtn">Ask a Question</button>
+            <button style="padding: 7px 14px; color: #cff !important; background-color: #101418; font-size: 12.25px; border: 1px solid #202e3c !important; border-radius: 8.7px; outline: none !important; box-shadow: none !important;"  id="askQuestionBtn">Ask a Question</button>
+            <button style="padding: 7px 14px; color: #101418 !important; background-color: #00d4f0; font-size: 12.25px; border: 1px solid #202e3c !important; border-radius: 8.7px; outline: none !important; box-shadow: none !important;" id="acceptQuoteBtn">Accept Quote</button>
           </div></div>
         </div>
       </div>

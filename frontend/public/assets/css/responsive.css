@@ -87,7 +87,10 @@
     white-space: normal;
 }
 .leaddropdown .btn.btn-primary {
-    white-space: normal;
+    /* white-space: normal; */
+}
+.leadspage .leads-col {
+   width: 50%;
 }
 .sendemaiinfo span {
     word-break: break-all;

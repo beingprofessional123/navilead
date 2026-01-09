@@ -173,9 +173,9 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
   const handleSendOffer = async () => {
     // Check SMS limit
     if (sendSmsChecked) {
-      const canProceedSms = checkLimit(totalSmsSend, "SMS", { 
-        segments: smsInfo.segments, 
-        needed: smsInfo.segments - smsBalance 
+      const canProceedSms = checkLimit(totalSmsSend, "SMS", {
+        segments: smsInfo.segments,
+        needed: smsInfo.segments - smsBalance
       });
 
       if (!canProceedSms) return;
@@ -231,7 +231,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
   };
 
   const handleSetSendSmsChecked = (checked) => {
-    const canProceedSms = checkLimit(totalSmsSend, "SMS", { 
+    const canProceedSms = checkLimit(totalSmsSend, "SMS", {
       segments: smsInfo.segments,
       needed: smsInfo.segments - smsBalance
     });
@@ -258,24 +258,52 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
   };
 
 
-  const replaceVariables = (message, variables, extra = {}) => {
+  const replaceVariables = (message, variables, lead, extra = {}) => {
     if (!message) return "";
 
     let replaced = message;
 
-    // Replace database variables first
-    variables.forEach(v => {
-      const regex = new RegExp(`{{${v.variableName}}}`, "g");
-      replaced = replaced.replace(regex, v.variableValue || "");
-    });
+    // --------------------------------------------------
+    // 1. USER VARIABLES (SKIP lead_* VARIABLES)
+    // --------------------------------------------------
+    if (Array.isArray(variables)) {
+      variables.forEach(v => {
+        // ❗ Skip lead variables here
+        if (v.variableName.startsWith("lead_")) return;
 
-    // Handle special dynamic placeholders like :quoteId
+        const regex = new RegExp(`{{\\s*${v.variableName}\\s*}}`, "g");
+        replaced = replaced.replace(regex, v.variableValue || "");
+      });
+    }
+
+    // --------------------------------------------------
+    // 2. LEAD VARIABLES (AUTHORITATIVE SOURCE)
+    // --------------------------------------------------
+    if (lead) {
+      const leadMap = {
+        lead_full_name: lead.fullName || "",
+        lead_phone: lead.phone || "",
+        lead_email: lead.email || "",
+        lead_company_name: lead.companyName || "",
+        lead_cvr_number: lead.cvrNumber || ""
+      };
+
+      Object.entries(leadMap).forEach(([key, value]) => {
+        const regex = new RegExp(`{{\\s*${key}\\s*}}`, "g");
+        replaced = replaced.replace(regex, value);
+      });
+    }
+
+    // --------------------------------------------------
+    // 3. SYSTEM PLACEHOLDERS
+    // --------------------------------------------------
     if (extra.quoteId) {
       replaced = replaced.replace(/:quoteId/g, extra.quoteId);
     }
 
     return replaced;
   };
+
 
   const canSend = () => {
     if (!sendSmsChecked && !sendEmailChecked) return false;
@@ -298,16 +326,16 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
     setselectedAttachment(url && originalName ? [{ filename: originalName, path: url }] : []);
   };
 
-    // Calculate final replaced SMS length & segments
-    const getSmsSegments = () => {
-      const finalMessage = replaceVariables(smsMessage, variables, { quoteId: quoteData?.id });
-      const charsPerSegment = 160;
-      const length = finalMessage.length;
-      const segments = Math.ceil(length / charsPerSegment);
-      return { length, segments };
-    };
-    const smsInfo = getSmsSegments();
-    const insufficientSmsBalance = sendSmsChecked && smsInfo.segments > (smsBalance ?? 0);
+  // Calculate final replaced SMS length & segments
+  const getSmsSegments = () => {
+    const finalMessage = replaceVariables(smsMessage, variables, lead, { quoteId: quoteData?.id });
+    const charsPerSegment = 160;
+    const length = finalMessage.length;
+    const segments = Math.ceil(length / charsPerSegment);
+    return { length, segments };
+  };
+  const smsInfo = getSmsSegments();
+  const insufficientSmsBalance = sendSmsChecked && smsInfo.segments > (smsBalance ?? 0);
 
 
   return (
@@ -454,7 +482,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
                         <div className="carddesign smspreview">
                           <div className="smspreviewbox">
                             <h5>{translate('sendQuoteModal.smsFrom', { fromName: smsFromName })}</h5>
-                            <p>{replaceVariables(smsMessage, variables, { quoteId: quoteData.id })}</p>
+                            <p>{replaceVariables(smsMessage, variables, lead, { quoteId: quoteData.id })}</p>
                           </div>
                           <div className="texttypelimit">
                             <span className="inputnote">
@@ -541,6 +569,35 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
                             setEmailContent(data);
                             const fakeEvent = { target: { value: data } };
                             setEmailContent(fakeEvent.target.value);
+                          }}
+                          onReady={(editor) => {
+                            // Apply height style directly when editor is ready
+                            editor.editing.view.change((writer) => {
+                              writer.setStyle(
+                                "min-height",
+                                "200px", // change as per need
+                                editor.editing.view.document.getRoot()
+                              );
+                            });
+                          }}
+                          config={{
+                            toolbar: [
+                              'heading',
+                              '|',
+                              'bold',
+                              'italic',
+                              'underline',
+                              'bulletedList',
+                              'numberedList',
+                              '|',
+                              'insertTable',
+                              '|',
+                              'undo',
+                              'redo'
+                            ],
+                            mediaEmbed: {
+                              previewsInData: true
+                            }
                           }}
                         />
                       </div>

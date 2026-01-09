@@ -38,7 +38,7 @@ const OffersTemplatesEditPage = () => {
         htmlCode: '',
         ...defaultColors,
     });
-     const defaultHTML = `<!DOCTYPE html>
+    const defaultHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <title>Navilead</title>
@@ -212,8 +212,8 @@ body {
           </div>
 
           <div style="display: flex; gap: 0px 9px; justify-content: space-between; border-top: 1px solid #202e3c; padding-top: 20px; margin-top: 20px;">
-            <button style="padding: 7px 14px; color: #cff !important; background-color: #101418; font-size: 12.25px; border: 1px solid #202e3c !important; border-radius: 8.7px; outline: none !important; box-shadow: none !important;" id="acceptQuoteBtn">Accept Quote</button>
-            <button style="padding: 7px 14px; color: #101418 !important; background-color: #00d4f0; font-size: 12.25px; border: 1px solid #202e3c !important; border-radius: 8.7px; outline: none !important; box-shadow: none !important;" id="askQuestionBtn">Ask a Question</button>
+            <button style="padding: 7px 14px; color: #cff !important; background-color: #101418; font-size: 12.25px; border: 1px solid #202e3c !important; border-radius: 8.7px; outline: none !important; box-shadow: none !important;" id="askQuestionBtn">Ask a Question</button> 
+            <button style="padding: 7px 14px; color: #101418 !important; background-color: #00d4f0; font-size: 12.25px; border: 1px solid #202e3c !important; border-radius: 8.7px; outline: none !important; box-shadow: none !important;" id="acceptQuoteBtn">Accept Quote</button>
           </div></div>
         </div>
       </div>
@@ -721,18 +721,18 @@ body {
                                                         )}
                                                         <div class="upload-files-container">
                                                             <div class="drag-file-area">
-                                                            <span class="material-icons-outlined upload-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload w-8 h-8 text-muted-foreground" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg></span>
-                                                            
-                                                            <label class="label"><span class="browse-files"> <input type="file" name="companyLogo" onChange={handleFormChange} class="default-file-input"/> <span class="browse-files-text">Upload File Here</span></span> </label>
-                                                            <h3 class="dynamic-message">JPG, PNG IMG ONLY 5MB</h3>
-                                                            <span class="cannot-upload-message"> <span class="material-icons-outlined">error</span> Please select a file first <span class="material-icons-outlined cancel-alert-button">cancel</span> </span>
-                                                            <div class="file-block">
-                                                            <div class="file-info"> <span class="material-icons-outlined file-icon"><i class="la la-file-import"></i></span> <span class="file-name"> </span> | <span class="file-size">  </span> </div>
-                                                            <span class="material-icons remove-file-icon"><i class="la la-trash"></i></span>
-                                                            <div class="progress-bar"> </div>
+                                                                <span class="material-icons-outlined upload-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload w-8 h-8 text-muted-foreground" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg></span>
+
+                                                                <label class="label"><span class="browse-files"> <input type="file" name="companyLogo" onChange={handleFormChange} class="default-file-input" /> <span class="browse-files-text">Upload File Here</span></span> </label>
+                                                                <h3 class="dynamic-message">JPG, PNG IMG ONLY 5MB</h3>
+                                                                <span class="cannot-upload-message"> <span class="material-icons-outlined">error</span> Please select a file first <span class="material-icons-outlined cancel-alert-button">cancel</span> </span>
+                                                                <div class="file-block">
+                                                                    <div class="file-info"> <span class="material-icons-outlined file-icon"><i class="la la-file-import"></i></span> <span class="file-name"> </span> | <span class="file-size">  </span> </div>
+                                                                    <span class="material-icons remove-file-icon"><i class="la la-trash"></i></span>
+                                                                    <div class="progress-bar"> </div>
+                                                                </div>
+                                                                <button type="button" class="upload-button" style={{ width: 0, opacity: 0, height: 0, padding: 0, margin: 0 }}> Upload </button>
                                                             </div>
-                                                            <button type="button" class="upload-button" style={{ width: 0, opacity: 0, height: 0, padding: 0, margin: 0 }}> Upload </button>
-                                                            </div>                        
                                                         </div>
                                                     </div>
                                                     <div class="form-group">
@@ -742,18 +742,18 @@ body {
                                                         )}
                                                         <div class="upload-files-container">
                                                             <div class="drag-file-area">
-                                                            <span class="material-icons-outlined upload-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload w-8 h-8 text-muted-foreground" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg></span>
-                                                            
-                                                            <label class="label"><span class="browse-files"> <input type="file" name="aboutUsLogo" onChange={handleFormChange} class="default-file-input"/> <span class="browse-files-text">Upload File Here</span></span> </label>
-                                                            <h3 class="dynamic-message">JPG, PNG IMG ONLY 5MB</h3>
-                                                            <span class="cannot-upload-message"> <span class="material-icons-outlined">error</span> Please select a file first <span class="material-icons-outlined cancel-alert-button">cancel</span> </span>
-                                                            <div class="file-block">
-                                                            <div class="file-info"> <span class="material-icons-outlined file-icon"><i class="la la-file-import"></i></span> <span class="file-name"> </span> | <span class="file-size">  </span> </div>
-                                                            <span class="material-icons remove-file-icon"><i class="la la-trash"></i></span>
-                                                            <div class="progress-bar"> </div>
+                                                                <span class="material-icons-outlined upload-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload w-8 h-8 text-muted-foreground" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg></span>
+
+                                                                <label class="label"><span class="browse-files"> <input type="file" name="aboutUsLogo" onChange={handleFormChange} class="default-file-input" /> <span class="browse-files-text">Upload File Here</span></span> </label>
+                                                                <h3 class="dynamic-message">JPG, PNG IMG ONLY 5MB</h3>
+                                                                <span class="cannot-upload-message"> <span class="material-icons-outlined">error</span> Please select a file first <span class="material-icons-outlined cancel-alert-button">cancel</span> </span>
+                                                                <div class="file-block">
+                                                                    <div class="file-info"> <span class="material-icons-outlined file-icon"><i class="la la-file-import"></i></span> <span class="file-name"> </span> | <span class="file-size">  </span> </div>
+                                                                    <span class="material-icons remove-file-icon"><i class="la la-trash"></i></span>
+                                                                    <div class="progress-bar"> </div>
+                                                                </div>
+                                                                <button type="button" class="upload-button" style={{ width: 0, opacity: 0, height: 0, padding: 0, margin: 0 }}> Upload </button>
                                                             </div>
-                                                            <button type="button" class="upload-button" style={{ width: 0, opacity: 0, height: 0, padding: 0, margin: 0 }}> Upload </button>
-                                                            </div>                        
                                                         </div>
                                                     </div>
                                                     <div className="form-group">
@@ -767,27 +767,34 @@ body {
                                                                     aboutUsDescription: editor.getData()
                                                                 }));
                                                             }}
+                                                            onReady={(editor) => {
+                                                                // Apply height style directly when editor is ready
+                                                                editor.editing.view.change((writer) => {
+                                                                    writer.setStyle(
+                                                                        "min-height",
+                                                                        "200px", // change as per need
+                                                                        editor.editing.view.document.getRoot()
+                                                                    );
+                                                                });
+                                                            }}
                                                             config={{
                                                                 toolbar: [
+                                                                    'heading',
+                                                                    '|',
                                                                     'bold',
                                                                     'italic',
                                                                     'underline',
-                                                                    'link',
                                                                     'bulletedList',
                                                                     'numberedList',
+                                                                    '|',
+                                                                    'insertTable',
+                                                                    '|',
                                                                     'undo',
-                                                                    'redo',
-                                                                    'fontColor',           // Add text color
-                                                                    'fontBackgroundColor'  // Add background color
+                                                                    'redo'
                                                                 ],
-                                                                removePlugins: [
-                                                                    'EasyImage',
-                                                                    'ImageUpload',
-                                                                    'ImageToolbar',
-                                                                    'ImageCaption',
-                                                                    'MediaEmbed',
-                                                                    'CKFinder'
-                                                                ]
+                                                                mediaEmbed: {
+                                                                    previewsInData: true
+                                                                }
                                                             }}
                                                         />
 
@@ -928,8 +935,8 @@ body {
                                                                         ></textarea>
                                                                     </div>
                                                                     <div className="modalfooter">
-                                                                        <button className="btn btn-add">Accept Quote</button>
-                                                                        <button className="btn btn-send">Ask a Question</button>
+                                                                        <button className="btn btn-add">Ask a Question</button>
+                                                                        <button className="btn btn-send">Accept Quote</button>
                                                                     </div>
                                                                 </div>
                                                             </div>

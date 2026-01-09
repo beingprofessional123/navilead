@@ -7,14 +7,14 @@ module.exports = function AskQuestionsTemplate({
   customerEmail,
 }) {
 
-    const appUrl = process.env.FRONTEND_URL || '#'; // Fallback to '#' if env var is missing
-  const logoUrl = `${appUrl}/assets/images/logo.svg`;
+  const appUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+  const logoUrl = `${appUrl}/assets/images/logo.png`;
 
-  // Set default values for placeholders in case data is missing
+  // Set default values for placeholders
   const recipientName = firstName || "Partner";
   const custName = customerFullName || "a Customer";
   const questionText = question || "The customer did not provide a question.";
-  const replyEmail = customerEmail || "#"; // Use # if email is missing
+  const replyEmail = customerEmail || "No email provided";
   const replyLink = customerEmail ? `mailto:${customerEmail}` : "#";
   const linkText = offerLink || "#";
 
@@ -22,65 +22,60 @@ module.exports = function AskQuestionsTemplate({
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Question About Your Offer</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style type="text/css">
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
     body {
-        font-family: 'Montserrat', sans-serif;
+        font-family: 'Segoe UI', Arial, sans-serif;
         margin: 0px;
-        background: #fff;
+        padding: 0px;
+        background-color: #f9f9f9;
+        color: #333333;
     }
   </style>
 </head>
-<body>
+<body style="background-color: #f9f9f9; padding: 20px;">
 
-<div class="mail-messages-body-top" style="width: 640px;margin: 50px auto;color: rgba(204, 255, 255, 1);">
-  <div class="mail-messages-body" style="padding: 20px;background: #101418;">
+<div style="max-width: 600px; margin: 40px auto; background: #ffffff; border: 1px solid #dddddd; border-radius: 8px; overflow: hidden;">
+  
+  <div style="padding: 40px;">
 
-    <div class="mail-messages" style="background: #171f26;padding: 30px;border: 1px solid #202e3c;">
-    
-    <div class="mail-logo" style="margin-bottom: 20px;">
-      <a href="${appUrl}" style="display: inline-block; width: 160px;"><img src="${logoUrl}" class="img-fluid" alt="" style="max-width: 100%; height: auto;"></a>
+    <div style="text-align: center; margin-bottom: 30px;">
+      <a href="${appUrl}" style="display: inline-block;">
+        <img src="${logoUrl}" alt="Logo" style="width: 150px; height: auto;">
+      </a>
     </div>
 
-    <div class="mail-docu" style="padding: 28px 36px 36px 36px;border-radius: 2px;background: #171f26;border: 1px solid #202e3c;;text-align: center;margin-bottom: 20px;">     
-      <p style="font-weight: 400;font-size: 16px;line-height: 24px;color: #cff;margin-bottom: 0px;margin-top: 0px;">
-        <span style="font-weight: 700;">Hello ${recipientName},</span> a customer has a question about your offer!
+    <div style="border-bottom: 1px solid #eeeeee; padding-bottom: 20px; margin-bottom: 25px;">     
+      <p style="font-size: 16px; line-height: 24px; color: #111111; margin: 0;">
+        <span style="font-weight: 700;">Hello ${recipientName},</span>
+        <br>A customer has a question regarding your offer.
       </p> 
     </div>
 
-    <div class="namemail">
-      <h3 style="margin: 0px 0px 10px 0px;font-weight: 500;font-size: 16px;color: #cff;">Question from ${custName}</h3>
+    <div style="margin-bottom: 30px;">
+      <h3 style="margin: 0px 0px 10px 0px; font-weight: 600; font-size: 16px; color: #111111;">
+        Question from ${custName}:
+      </h3>
       
-      <p style="font-size: 14px;margin: 0px 0px 10px 0px;color: #8cd9d9;">
-        Offer: <a href="${linkText}" style="color: #00d4f0;">${linkText}</a>
-      </p>
+      <div style="font-size: 15px; color: #444444; padding: 20px; border-left: 4px solid #000000; background: #fcfcfc; font-style: italic; margin-bottom: 15px;">
+        "${questionText}"
+      </div>
 
-      <p style="font-size: 14px;margin: 0px 0px 20px 0px;color: #cff; padding: 10px; border-left: 3px solid #00d4f0; background: #202e3c;">
-        <span style="font-style: italic;">"${questionText}"</span>
+      <p style="font-size: 14px; color: #666666;">
+        <strong>Reference Offer:</strong> <a href="${linkText}" style="color: #0066cc; text-decoration: underline;">${linkText}</a>
       </p>
-
-      <h3 style="margin: 0px 0px 7px 0px;font-weight: 500;font-size: 16px;color: #cff;">How to Reply:</h3>
-      <p style="font-size: 14px;margin: 0px 0px 17px 0px;color: #8cd9d9;">
-        Please reply directly to the customer at their email address below:
-      </p>
-      <a href="${replyLink}" style="color: #00d4f0;margin: 0px 0px 10px 0px;display: block; font-weight: 600;">${replyEmail}</a>
-    </div>  
-
     </div>
 
-    <div class="mail-messages-bottom" style="padding: 30px;">
-     
-     <div class="footer">
-     <h3 style="margin: 0px 0px 7px 0px;font-size: 14px;font-weight: 600;color: #cff;">Best Regards,</h3>
-     <p style="font-size: 14px;margin: 0px;color: #8cd9d9;">Team NaviLead</p>
-     <p style="font-size: 12px;margin: 15px 0 0 0;color: #555;">(You are receiving this email because you sent an offer through the NaviLead platform.)</p>
-    </div> 
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eeeeee;">
+       <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #111;">Best Regards,</h4>
+       <p style="font-size: 14px; margin: 0; color: #666;">Team NaviLead</p>
+       <p style="font-size: 11px; margin-top: 20px; color: #999; line-height: 1.4;">
+         This is a system notification because an offer was sent through the NaviLead platform.
+       </p>
     </div>
 
-</div>
+  </div>
 </div>
 
 </body>

@@ -149,8 +149,8 @@ const OfferPage = () => {
         totalPrice: totalWithVat,
         rememberNotes: customerNotes.trim(),
       };
-      await api.put('/offers/accept-offer', payload);
-      toast.success("Offer accepted successfully! Our team has been notified and the lead status is now 'Won'.");
+      const response = await api.put('/offers/accept-offer', payload);
+      toast.success(translate(response.data.message));
       fetchOffer();
     } catch (error) {
       console.error("Error accepting offer:", error);
@@ -206,7 +206,7 @@ const OfferPage = () => {
           question: question.trim(),
         };
         const response = await api.post('/offers/asked-question', payload);
-        toast.success(translate(response.data.message)); // Translated API message
+        toast.success(translate(response.data.message));
         fetchOffer();
       } catch (error) {
         console.error("Error asking question:", error);
@@ -380,11 +380,11 @@ const OfferPage = () => {
                       </div>
                     </div>
                     <div className="modalfooter">
-                      <button className="btn btn-add" onClick={handleAcceptQuote} disabled={interactionDisabled}>
-                        {interactionDisabled ? translate('offerPage.offerAcceptedButton') : translate('offerPage.acceptQuoteButton')} {/* Translated */}
-                      </button>
-                      <button className="btn btn-send" onClick={handleAskQuestion} disabled={interactionDisabled}>
+                      <button className="btn btn-add" onClick={handleAskQuestion} disabled={interactionDisabled}>
                         {translate('offerPage.askQuestionButton')} {/* Translated */}
+                      </button>
+                       <button className="btn btn-send" onClick={handleAcceptQuote} disabled={interactionDisabled}>
+                        {interactionDisabled ? translate('offerPage.offerAcceptedButton') : translate('offerPage.acceptQuoteButton')} {/* Translated */}
                       </button>
                     </div>
                   </div>

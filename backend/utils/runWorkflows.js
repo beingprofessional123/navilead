@@ -27,11 +27,38 @@ function parseConfig(config) {
 }
 
 /** Replace variables like {{first_name}} in text */
-function replaceVariables(text, variablesMap) {
-  return text.replace(/\{\{(\w+)\}\}/g, (match, varName) =>
-    variablesMap[varName] !== undefined ? variablesMap[varName] : match
-  );
+function replaceVariables(text = "", variablesMap = {}, lead = {}) {
+  if (!text) return "";
+
+  return text.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
+    // 1️⃣ User-defined variables (DB variables)
+    if (variablesMap[varName] !== undefined && variablesMap[varName] !== "") {
+      return variablesMap[varName];
+    }
+
+    // 2️⃣ Lead-based variables
+    switch (varName) {
+      case "lead_full_name":
+        return lead.fullName || "";
+
+      case "lead_phone":
+        return lead.phone || "";
+
+      case "lead_email":
+        return lead.email || "";
+
+      case "lead_company_name":
+        return lead.companyName || "";
+
+      case "lead_cvr_number":
+        return lead.cvrNumber || "";
+
+      default:
+        return match; // keep placeholder unchanged
+    }
+  });
 }
+
 
 function formatIST(date) {
   return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
@@ -103,9 +130,9 @@ async function executeSingleStep(logRow, stepRow, configObj, variablesMap, baseT
       }
     }
 
-    subject = replaceVariables(subject, variablesMap);
-    text = replaceVariables(text, variablesMap);
-    if (html) html = replaceVariables(html, variablesMap);
+    subject = replaceVariables(subject, variablesMap, lead);
+    text = replaceVariables(text, variablesMap, lead);
+    if (html) html = replaceVariables(html, variablesMap, lead);
 
     // Format attachments (safe)
     let formattedAttachments = [];
@@ -182,7 +209,7 @@ async function executeSingleStep(logRow, stepRow, configObj, variablesMap, baseT
       if (template) message = template.smsContent;
     }
 
-    message = replaceVariables(message, variablesMap);
+    message = replaceVariables(message, variablesMap, lead);
 
     const smsSetting = await Settings.findOne({
       where: { userId: user.id, key: 'smsNotifications' },
@@ -533,9 +560,9 @@ async function executeWorkflowCron(req, res) {
               }
             }
 
-            subject = replaceVariables(subject, variablesMap);
-            text = replaceVariables(text, variablesMap);
-            if (html) html = replaceVariables(html, variablesMap);
+            subject = replaceVariables(subject, variablesMap, lead);
+            text = replaceVariables(text, variablesMap, lead);
+            if (html) html = replaceVariables(html, variablesMap, lead);
 
             // Format attachments (safe)
             let formattedAttachments = [];
@@ -605,7 +632,7 @@ async function executeWorkflowCron(req, res) {
               if (template) message = template.smsContent;
             }
 
-            message = replaceVariables(message, variablesMap);
+            message = replaceVariables(message, variablesMap, lead);
 
 
             const smsSetting = await Settings.findOne({

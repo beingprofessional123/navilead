@@ -455,7 +455,6 @@ const TicketPage = () => {
                                     <table className="table">
                                         <thead>
                                             <tr>
-                                                <th className="talechebox"><input className="form-check-input" type="checkbox" /></th>
                                                 <th>{t('Ticket ID')}</th>
                                                 <th>{t('Subject')}</th>
                                                 <th>{t('Category')}</th>
@@ -469,9 +468,6 @@ const TicketPage = () => {
                                             {tickets.length > 0 ? (
                                                 tickets.map((ticket) => (
                                                     <tr key={ticket.id}>
-                                                        <td className="talechebox">
-                                                            <input className="form-check-input" type="checkbox" />
-                                                        </td>
                                                         <td>
                                                             <a href="#" className="leadlink" onClick={(e) => { e.preventDefault(); handleOpenChat(ticket); }}>
                                                                 #{ticket.ticket_id}
