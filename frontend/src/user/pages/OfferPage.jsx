@@ -35,11 +35,15 @@ const OfferPage = () => {
       validUntilDate.setDate(createdAtDate.getDate() + fetchedOffer.validDays);
       const currentDate = new Date();
 
-      if (currentDate > validUntilDate) {
-        setIsOfferExpired(true);
-        toast.error("This offer has expired.");
+
+      const expired = currentDate > validUntilDate;
+      setIsOfferExpired(expired);
+
+      // ❗ Show expired error ONLY if offer NOT accepted
+      if (expired && fetchedOffer.status?.name !== 'Accepted') {
         toast.error(translate('api.offers.offerExpired'));
       }
+
 
       const initialSelectedServices = new Set();
       const processedServices = fetchedOffer.services.map(service => {
@@ -218,8 +222,8 @@ const OfferPage = () => {
     }
   };
 
+  const interactionDisabled = offer?.status?.name === 'Accepted' || offer?.status?.name === 'In Dialogue' || (isOfferExpired && offer?.status?.name !== 'Accepted');
 
-  const interactionDisabled = offer?.status?.name === 'Accepted' || offer?.status?.name === 'In Dialogue' || isOfferExpired;
 
   if (loading) {
     return <FullPageLoader />;

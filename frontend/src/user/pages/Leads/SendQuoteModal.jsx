@@ -32,6 +32,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
   const [variables, setVariables] = useState([]);
   const [loadingVariables, setLoadingVariables] = useState(false);
   const [sending, setSending] = useState(false);
+  const [initialStatusId, setInitialStatusId] = useState( quoteData?.statusId || '');
 
 
   // Character count for SMS
@@ -40,6 +41,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
   // Update state when quoteData or lead changes (e.g., when a new quote is created)
   useEffect(() => {
     if (quoteData) {
+      setInitialStatusId(quoteData.statusId);
       setCurrentStatusId(quoteData.statusId || quoteStatuses.find(s => s.name === 'Not sent')?.id || '');
     }
     if (lead) {
@@ -337,6 +339,34 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
   const smsInfo = getSmsSegments();
   const insufficientSmsBalance = sendSmsChecked && smsInfo.segments > (smsBalance ?? 0);
 
+  
+const showStatusSaveButton =
+  !sendSmsChecked &&
+  !sendEmailChecked &&
+  currentStatusId !== initialStatusId;
+  
+  const handleSaveStatusOnly = async () => {
+    setSending(true);
+    try {
+      const actions = {
+        newStatusId: currentStatusId,
+        sendSms: false,
+        sendEmail: false,
+      };
+
+      const result = await onSend(actions);
+
+      if (result?.success) {
+        onHide();
+        fetchAllQuotesHistory();
+      }
+    } catch (error) {
+      console.error("Status update failed:", error);
+    } finally {
+      setSending(false);
+    }
+  };
+
 
   return (
     <>
@@ -372,6 +402,16 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
                     </div>
                     <span>{translate('sendQuoteModal.currently')} {quoteStatuses.find(s => s.id === currentStatusId)?.name || translate('leadViewPage.na')}</span>
                   </div>
+                   {showStatusSaveButton && (
+                      <button
+                        type="button"
+                        className="btn btn-add mb-4"
+                        disabled={sending}
+                        onClick={handleSaveStatusOnly}
+                      >
+                        {sending ? translate('sendQuoteModal.saving') : translate('sendQuoteModal.save')}
+                      </button>
+                    )}
                 </div>
                 <div className="modalfooter btn-right">
                   <button type="button" className="btn btn-add" onClick={onHide}>{translate('sendQuoteModal.cancel')}</button>

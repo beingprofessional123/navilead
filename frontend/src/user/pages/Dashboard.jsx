@@ -235,31 +235,30 @@ const Dashboard = () => {
                     switch (activity.type) {
                       case "lead":
                         title = translate("dashboard.newLeadReceived");
-                        subtitle = `${activity.fullName} - ${activity.leadSource}`;
+                        subtitle = `${activity.fullName} - ${activity.leadSource} - ${activity?.email || activity?.fullName}`;
                         break;
                       case "offer":
                         title = translate("dashboard.offerAccepted");
                         subtitle = `${
                           activity.quote?.title || translate("common.untitled")
-                        } - ${activity.totalPrice} DKK`;
+                        } - ${activity.totalPrice.toFixed(2)} DKK - ${activity.quote?.lead?.email || activity.quote?.lead?.fullName}`;
                         break;
                       case "email":
                         title = translate("dashboard.emailSent");
                         subtitle = `${activity.emailSubject} — ${
                           activity.Quote?.title || translate("common.untitledQuote")
-                        }`;
+                        } - ${activity.Quote?.lead?.email || activity.Quote?.lead?.fullName}`;
                         break;
                       case "sms":
                         title = translate("dashboard.smsSent");
                         subtitle = `${
-                          activity.senderName || translate("common.unknownSender")
-                        } — ${activity.Quote?.title || translate("common.untitledQuote")}`;
+                          activity.senderName || translate("common.unknownSender")} — ${
+                          activity.Quote?.title || translate("common.untitledQuote")} - ${activity.Quote?.lead?.email || activity.Quote?.lead?.fullName}`;  
                         break;
                       case "question":
                         title = translate("dashboard.questionAsked");
                         subtitle = `${activity.question} — ${
-                          activity.quote?.title || translate("common.untitledQuote")
-                        }`;
+                          activity.quote?.title || translate("common.untitledQuote")} - ${activity?.quote?.lead.email || activity.quote?.lead?.fullName}`;
                         break;
                       default:
                         return null; 

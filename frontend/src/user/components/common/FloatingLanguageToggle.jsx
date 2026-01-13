@@ -1,21 +1,27 @@
 import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import api from "../../../utils/api"; // ✅ axios instance with baseURL & headers
+import api from "../../../utils/api";
 
 const FloatingLanguageToggle = () => {
   const { i18n } = useTranslation();
   const { user, authToken, login } = useContext(AuthContext);
+  const location = useLocation();
 
   const isDanish = i18n.language === "da";
+  const isSettingsPage = location.pathname === "/settings";
+  const isLoggedOut = !user || !authToken;
+
+  // ✅ SHOW ONLY on settings page OR when logged out
+  if (!isSettingsPage && !isLoggedOut) {
+    return null;
+  }
 
   const setLanguage = async (lang) => {
-    // update i18n + localStorage always
     i18n.changeLanguage(lang);
     localStorage.setItem("i18nextLng", lang);
 
-    // ✅ If user is logged in -> update in DB
     if (user && authToken) {
       try {
         const res = await api.put(
@@ -25,22 +31,14 @@ const FloatingLanguageToggle = () => {
         );
 
         if (res.data.success) {
-          // update user in localStorage + context
           const updatedUser = { ...user, language: lang };
           localStorage.setItem("user", JSON.stringify(updatedUser));
           login(authToken, updatedUser);
         }
-      } catch (error) {
-        console.error("Language update failed:", error);
+      } catch (err) {
+        console.error("Language update failed:", err);
       }
     }
-
-    // ✅ Show toast regardless
-    // toast.success(
-    //   lang === "da"
-    //     ? "Sprog ændret til Dansk 🇩🇰"
-    //     : "Language changed to English 🇬🇧"
-    // );
   };
 
   return (
@@ -50,13 +48,13 @@ const FloatingLanguageToggle = () => {
     >
       <div className="btn-group">
         <button
-          className={`btn ${!isDanish ? "btn btn-send" : "btn btn-add"}`}
+          className={`btn ${!isDanish ? "btn-send" : "btn-add"}`}
           onClick={() => setLanguage("en")}
         >
           EN
         </button>
         <button
-          className={`btn ${isDanish ? "btn btn-send" : "btn btn-add"}`}
+          className={`btn ${isDanish ? "btn-send" : "btn-add"}`}
           onClick={() => setLanguage("da")}
         >
           DA
