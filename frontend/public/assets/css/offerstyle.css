@@ -352,3 +352,17 @@ h2.card-title {
 .emailcard .navpublic .btn.btn-send {
    width: auto;
 }
+
+@media (min-width: 320px) and (max-width: 767px) {
+
+  .cardfixdevice {
+      overflow: scroll;
+      padding: 0px !important;
+  }
+
+  .cardfixdevice .item {
+      flex-wrap: wrap;
+      display: flex;
+  }
+}
+ 

@@ -501,11 +501,13 @@ body {
                             </div>
                             <div className="newoffertemplate-previewmain">
                                 <div className="newoffertemplate-preview" style={{ display: 'flex', justifyContent: 'center', overflow: 'scroll' }}>
+                                    <div>
                                     <iframe
                                         ref={iframeRef}
                                         title="live-preview"
                                         style={{ width: iframeWidth, height: '76vh', border: 'none' }}
                                     />
+                                    </div>
                                 </div>
                             </div>
                         </div>

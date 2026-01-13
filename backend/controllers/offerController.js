@@ -78,34 +78,40 @@ exports.getOfferByQuoteId = async (req, res) => {
     validUntilDate.setDate(createdAtDate.getDate() + offer.validDays);
     const currentDate = new Date();
 
-    if (currentDate > validUntilDate) {
-      console.log('Offer has expired:', offer.id);
+    const isExpired = currentDate > validUntilDate;
+    const isAccepted = offer.status?.name === 'Accepted';
 
-      // Update lead status to "Lost"
+    // ❗ Only mark lead as Lost if expired AND NOT accepted
+    if (isExpired && !isAccepted && offer.leadId) {
+      console.log('Offer expired and not accepted:', offer.id);
+
       const lostStatus = await Status.findOne({
         where: { name: 'Lost', statusFor: 'Lead' },
       });
 
-      if (lostStatus && offer.leadId) {
+      if (lostStatus) {
         const lead = await Lead.findByPk(offer.leadId);
         const user = await User.findByPk(offer.userId);
-        await runWorkflows("leadMarkedAsLost", { lead, user });
-        await db.Lead.update(
-          { statusId: lostStatus.id },
-          { where: { id: offer.leadId } }
-        );
-        await StatusUpdateLog.create({
-          leadId: lead.id,
-          statusId: lostStatus.id,
-        });
+
+        if (lead && lead.statusId !== lostStatus.id) {
+          await runWorkflows("leadMarkedAsLost", { lead, user });
+
+          await db.Lead.update(
+            { statusId: lostStatus.id },
+            { where: { id: offer.leadId } }
+          );
+
+          await StatusUpdateLog.create({
+            leadId: lead.id,
+            statusId: lostStatus.id,
+          });
+        }
       }
 
-
-
-      if (currentDate > validUntilDate) {
-        return res.status(400).json({ message: 'api.offers.offerExpired' });
-      }
+      // ❌ Block API for non-accepted expired offers
+      return res.status(400).json({ message: 'api.offers.offerExpired' });
     }
+
 
     // Update quote status to "Viewed by customer" if first time viewing
     const viewedStatus = await Status.findOne({
@@ -148,10 +154,10 @@ exports.getOfferByQuoteId = async (req, res) => {
 
     const replacedDescription = replaceVars(offer.description);
     const replacedTerms = replaceVars(offer.terms);
-    const offerTemplate = await OfferTemplate.findOne({ where: { userId: offer.userId ,status: 'active' } });
+    const offerTemplate = await OfferTemplate.findOne({ where: { userId: offer.userId, status: 'active' } });
     const acceptedOffers = await AcceptedOffer.findOne({ where: { quoteId } });
     const users = await User.findOne({ where: { id: offer.userId } });
-    
+
 
     res.json({
       id: offer.id,
@@ -187,14 +193,14 @@ exports.getOfferByQuoteId = async (req, res) => {
           statusFor: offer.status.statusFor,
         }
         : null,
-         currency: offer.currency
-    ? {
-        id: offer.currency.id,
-        code: offer.currency.code,
-        name: offer.currency.name,
-        symbol: offer.currency.symbol,
-      }
-    : null,
+      currency: offer.currency
+        ? {
+          id: offer.currency.id,
+          code: offer.currency.code,
+          name: offer.currency.name,
+          symbol: offer.currency.symbol,
+        }
+        : null,
     });
   } catch (error) {
     console.error('Error fetching offer:', error);
@@ -224,11 +230,11 @@ exports.acceptOffer = async (req, res) => {
 
     // 4. Fetch Quote with Lead details
     const quote = await Quote.findByPk(quoteId, {
-      include: [{ model: Lead, as: 'lead' },  {
-          model: Currency,     // ✅ Include the quote's own currency
-          as: 'currency',
-          attributes: ['id', 'name', 'code', 'symbol'],
-        }]
+      include: [{ model: Lead, as: 'lead' }, {
+        model: Currency,     // ✅ Include the quote's own currency
+        as: 'currency',
+        attributes: ['id', 'name', 'code', 'symbol'],
+      }]
     });
 
     // 5. Create AcceptedOffer Record
@@ -266,7 +272,7 @@ exports.acceptOffer = async (req, res) => {
         chosenServices: chosenServices,
         notes: rememberNotes || '',     // Agar note nahi hai to empty string
         signature: salesUser.emailSignature || null, // (Optional) Agar user ke paas signature hai
-        currency:quote.currency,
+        currency: quote.currency,
       });
 
       await sendMail(
@@ -381,18 +387,18 @@ exports.askedQuestion = async (req, res) => {
 
       if (emailSetting.value === 'true') {
         await sendMail(
-        lead.user.id,
-        {
-          to: lead.user.email,
-          subject: `Customer Question About Offer #${quote.id}`,
-          html: emailHtml,
-        });
+          lead.user.id,
+          {
+            to: lead.user.email,
+            subject: `Customer Question About Offer #${quote.id}`,
+            html: emailHtml,
+          });
         console.log(`📧 Email sent to user ${lead.user.email} for offer #${quote.id}`);
       } else {
         console.log(`📵 Email notifications are disabled for user ${lead.user.id}. Skipping email.`);
       }
 
-      
+
     }
 
     // Replace static message in askedQuestion

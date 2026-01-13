@@ -16,7 +16,8 @@ const OffersTemplatesViewPage = () => {
     const navigate = useNavigate();
     const iframeRef = useRef(null);
     const [iframeWidth, setIframeWidth] = useState('100%'); // default desktop
-    const [isFullPreview, setIsFullPreview] = useState(false);
+    const isMobile = iframeWidth === '375px';
+
 
     useEffect(() => {
         const iframe = iframeRef.current;
@@ -139,7 +140,7 @@ const OffersTemplatesViewPage = () => {
                                     </div>
                                     <div className="newoffertemplate-previewmain">
                                         <div className="newoffertemplate-preview" style={{ display: 'flex', justifyContent: 'center', overflow: 'scroll' }}>
-                                            <div className="carddesign emailcard p-4" style={{ backgroundColor: template.mainBgColor }}>
+                                            <div className="carddesign emailcard cardfixdevice p-4" style={{ backgroundColor: template.mainBgColor }}>
                                                 <section className="navpublic" style={{ width: iframeWidth }}>
 
                                                     <div className="container">
@@ -162,7 +163,7 @@ const OffersTemplatesViewPage = () => {
                                                             </div>
                                                         </div>
                                                         <div className="row">
-                                                            <div className="col-md-7">
+                                                            <div className={isMobile ? 'col-md-12' : 'col-md-7'}>
                                                                 <div className="carddesign" style={{ backgroundColor: template.leftCardBgColor }}>
                                                                     <div className="offer-title">
                                                                         <h1 className="tilbud-title" style={{ color: template.textColor }}>Your Quote</h1>
@@ -219,7 +220,7 @@ const OffersTemplatesViewPage = () => {
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="col-md-5">
+                                                            <div className={isMobile ? 'col-md-12' : 'col-md-5'}>
                                                                 <div className="carddesign" style={{ backgroundColor: template.rightCardBgColor }}>
                                                                     <div className="about-media">
                                                                         <a href="#">

@@ -377,6 +377,8 @@
     "finalCharacterCount": "Final character count :",
     "sms": "SMS",
     "Segments": "Segments",
+    "save": "Save",
+    "saving": "saving...",
     "insufficientSmsBalance": "You have {{balance}} SMS credits, but your message requires {{segments}} segments. You need {{needed}} more credit(s). Please add more SMS credits."
   },
   "pricingTemplatesPage": {

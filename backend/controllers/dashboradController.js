@@ -45,31 +45,83 @@ exports.getDashboardData = async (req, res) => {
       Lead.findAll({
         where: { userId },
         order: [["createdAt", "DESC"]],
-        attributes: ["id", "fullName", "leadSource", "createdAt"],
+        attributes: ["id", "fullName", "leadSource", "email", "createdAt"],
       }),
       AcceptedOffer.findAll({
         where: { userId },
         order: [["createdAt", "DESC"]],
         attributes: ["id", "totalPrice", "createdAt"],
-        include: [{ model: Quote, as: "quote", attributes: ["id", "title"] }],
+        include: [
+          {
+            model: Quote,
+            as: "quote",
+            attributes: ["id", "title"],
+            include: [
+              {
+                model: Lead,
+                as: "lead",
+                attributes: ["id", "email", "fullName"],
+              }
+            ]
+          }
+        ],
       }),
       SendEmail.findAll({
         where: { userId },
         order: [["createdAt", "DESC"]],
         attributes: ["id", "emailSubject", "createdAt"],
-        include: [{ model: Quote, as: "Quote", attributes: ["id", "title"] }],
+        include: [
+          {
+            model: Quote,
+            as: "Quote",
+            attributes: ["id", "title"],
+            include: [
+              {
+                model: Lead,
+                as: "lead",
+                attributes: ["id", "email", "fullName"],
+              }
+            ]
+          }
+        ],
       }),
       SendSms.findAll({
         where: { userId },
         order: [["createdAt", "DESC"]],
         attributes: ["id", "senderName", "createdAt"],
-        include: [{ model: Quote, as: "Quote", attributes: ["id", "title"] }],
+        include: [
+          {
+            model: Quote,
+            as: "Quote",
+            attributes: ["id", "title"],
+            include: [
+              {
+                model: Lead,
+                as: "lead",
+                attributes: ["id", "email", "fullName"],
+              }
+            ]
+          }
+        ],
       }),
       AskQuestion.findAll({
         where: { userId },
         order: [["createdAt", "DESC"]],
         attributes: ["id", "question", "createdAt"],
-        include: [{ model: Quote, as: "quote", attributes: ["id", "title"] }],
+        include: [
+          {
+            model: Quote,
+            as: "quote",
+            attributes: ["id", "title"],
+            include: [
+              {
+                model: Lead,
+                as: "lead",
+                attributes: ["id", "email", "fullName"],
+              }
+            ]
+          }
+        ],
       }),
     ]);
 

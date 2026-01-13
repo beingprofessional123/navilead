@@ -296,13 +296,13 @@ const SettingsPage = () => {
                                 </div>
                             </div>
                             <div className="row">
-                                <div className="col-md-6">
+                                <div className="col-md-12">
                                     <div className="form-group mb-2">
                                         <label>{translate('admin.settingsPage.phoneLabel')}</label>
                                         <input type="text" className="form-control" name="phone" value={formData.phone} onChange={handleChange} placeholder={translate('admin.settingsPage.phonePlaceholder')} />
                                     </div>
                                 </div>
-                                <div className="col-md-6">
+                                {/* <div className="col-md-6">
                                     <div className="form-group mb-1">
                                         <label>{translate('admin.settingsPage.languageLabel')}</label>
                                         <div className="inputselect">
@@ -313,7 +313,7 @@ const SettingsPage = () => {
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                                         </div>
                                     </div>
-                                </div>
+                                </div> */}
                             </div>
                         </form>
                     </div>
