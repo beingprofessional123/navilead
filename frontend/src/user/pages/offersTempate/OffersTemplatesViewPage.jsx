@@ -92,14 +92,16 @@ const OffersTemplatesViewPage = () => {
                                     <h4>{t('OffersTemplatesCreatePage.livePreviewTitle')}</h4><span>{iframeWidth}</span>
                                 </div>
                                 <div className="newoffertemplate-previewmain">
-                                    <div className="newoffertemplate-preview" style={{ display: 'flex', justifyContent: 'center', overflow: 'scroll' }}>
-                                        <iframe
-                                            ref={iframeRef}
-                                            title="live-preview"
-                                            style={{ width: iframeWidth, height: '76vh', border: 'none' }}
-                                        />
+                                <div className="newoffertemplate-preview" style={{ overflow: 'scroll' }}>
+                                    <div className={iframeWidth === '100%' ? 'iframe-desktop' : 'iframe-normalwidth'}>
+                                    <iframe
+                                        ref={iframeRef}
+                                        title="live-preview"
+                                        style={{ width: iframeWidth, height: '76vh', border: 'none' }}
+                                    />
                                     </div>
                                 </div>
+                            </div>
                             </div>
                         </div>
                     </div>
