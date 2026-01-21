@@ -433,6 +433,7 @@ const LeadsPage = () => {
                           <th>{t('leadsPage.tableHeaderStatus')}</th>
                           <th>{t('leadsPage.tableHeaderValue')}</th>
                           <th>{t('leadsPage.tableHeaderSource')}</th>
+                          <th>{t('leadsPage.tableHeaderAddress')}</th>
                           <th>{t('leadsPage.tableHeaderActions')}</th>
                         </tr>
                       </thead>
@@ -473,6 +474,7 @@ const LeadsPage = () => {
                               </td>
                               <td><strong>{formatCurrency(lead.value)}</strong></td>
                               <td>{lead.leadSource}</td>
+                              <td>{lead.address}</td>
                               <td className="actionbtn">
                                 <div className="dropdown leaddropdown">
                                   <button type="button" className="btn btn-add dropdown-toggle" data-bs-toggle="dropdown">

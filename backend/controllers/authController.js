@@ -25,6 +25,7 @@
     "lead_email",
     "lead_company_name",
     "lead_cvr_number",
+    "lead_address",
   ];
 
   async function ensureUserVariables(user) {
@@ -91,6 +92,9 @@
           value =  null;
           break;
         case "lead_cvr_number":
+          value =  null;
+          break;
+        case "lead_address":
           value =  null;
           break;
       }

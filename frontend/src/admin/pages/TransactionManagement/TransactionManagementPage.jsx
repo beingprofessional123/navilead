@@ -161,9 +161,7 @@ const TransactionManagementPage = () => {
         sort: true,
         customBodyRender: (value) => (
           // Use status name for color coding
-          <span className={`text-${value === 'paid' || value === 'succeeded' ? 'success' : 'danger'}`}>
-            <b>{value.toUpperCase()}</b>
-          </span>
+          <span className={`tableboxspain badge`}>{value}</span>
         ),
       },
     },
@@ -181,7 +179,7 @@ const TransactionManagementPage = () => {
         customBodyRender: (value) =>
           value && value !== t('admin.transactionManagement.table.notApplicable') ? (
             <a href={value} style={{ color: '#00d4f0' }} target="_blank" rel="noopener noreferrer">
-              <b>{t('admin.transactionManagement.table.viewLink')}</b>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>                      
             </a>
           ) : (
             t('admin.transactionManagement.table.notApplicable')

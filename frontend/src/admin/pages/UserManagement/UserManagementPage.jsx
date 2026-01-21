@@ -377,10 +377,10 @@ const UserManagementPage = () => {
                                         <p><strong>{t('admin.userManagement.modal.input.fullNameLabel')}:</strong> {viewingUser.name}</p>
                                         <p><strong>{t('admin.userManagement.modal.input.emailLabel')}:</strong> {viewingUser.email}</p>
                                         <p><strong>{t('admin.userManagement.modal.input.phoneLabel')}:</strong> {viewingUser.phone}</p>
-                                        <p><strong>{t('admin.userManagement.modal.viewCompanyName')}:</strong> {viewingUser.companyName || t('admin.userManagement.table.notApplicable')}</p>
-                                        <p><strong>{t('admin.userManagement.modal.viewStatus')}:</strong> <span className={`badge ${viewingUser.status === 'active' ? 'badge4' : 'badge1'}`}>{t(`admin.userManagement.modal.input.${viewingUser.status}`)}</span></p>
-                                        <p><strong>{t('admin.userManagement.modal.viewPlan')}:</strong> {viewingUser.plan || t('admin.userManagement.table.notApplicable')}</p>
-                                        <p><strong>{t('admin.userManagement.modal.viewSmsBalance')}:</strong> {viewingUser.smsBalance ?? 0}</p>
+                                        <p><strong>{t('admin.userManagement.modal.viewCompanyName')} </strong> {viewingUser.companyName || t('admin.userManagement.table.notApplicable')}</p>
+                                        <p><strong>{t('admin.userManagement.modal.viewStatus')} </strong> <span className={`badge ${viewingUser.status === 'active' ? 'badge4' : 'badge1'}`}>{t(`admin.userManagement.modal.input.${viewingUser.status}`)}</span></p>
+                                        <p><strong>{t('admin.userManagement.modal.viewPlan')} </strong> {viewingUser.plan || t('admin.userManagement.table.notApplicable')}</p>
+                                        <p><strong>{t('admin.userManagement.modal.viewSmsBalance')} </strong> {viewingUser.smsBalance ?? 0}</p>
                                         <div className="modalfooter btn-right">
                                             <button type="button" className="btn btn-add" data-bs-dismiss="modal">{t('admin.userManagement.modal.buttons.close')}</button>
                                         </div>

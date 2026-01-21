@@ -324,14 +324,14 @@ const CreditPlanManagementPage = () => {
                             <div className="formdesign">
                                 {viewingPlan ? (
                                     /* VIEW MODE */
-                                    <div className="view-plan-details">
+                                     <div className="view-user-details">
                                         <h2 className="card-title">{t('admin.smsPlan.modal.generalInfo')}</h2>
                                         <p><strong>{t('admin.smsPlan.table.name')}:</strong> {viewingPlan.name}</p>
                                         <p><strong>{t('admin.smsPlan.table.price')}:</strong> DKK{viewingPlan.price}</p>
                                         <p><strong>{t('admin.smsPlan.table.smsCount')}:</strong> {viewingPlan.smsCount}</p>
                                         <p><strong>{t('admin.smsPlan.table.status')}:</strong> <span className={`badge ${viewingPlan.status === 'active' ? 'badge4' : 'badge1'}`}>{t(`admin.smsPlan.modal.input.${viewingPlan.status}`)}</span></p>
 
-                                        <h2 className="card-title mt-4">{t('admin.smsPlan.modal.featuresDesc')}</h2>
+                                        <h2 className="card-title">{t('admin.smsPlan.modal.featuresDesc')}</h2>
                                         <ul>
                                             {/* Viewing logic remains the same (splitting comma-separated string) */}
                                             {viewingPlan.description?.split(',').map((item, index) => <li key={index}>{item.trim()}</li>)}
