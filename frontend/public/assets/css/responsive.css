@@ -37,6 +37,9 @@
 /*320-1199 End*/
 
 @media all and (min-width:320px) and (max-width: 767px) {
+.iframe-desktop iframe {
+    width: 1200px !important;
+}
 .dashright {
     text-align: left;
     margin-top: 15px;
@@ -165,7 +168,7 @@
     overflow-y: initial;
 }
 .newoffertemplate-col-right {
-    width: 100%;
+    width: 100% !important;
 }
 .newoffertop-left {
     flex-wrap: wrap;

@@ -345,18 +345,17 @@ const PlanManagementPage = () => {
                             <div className="formdesign">
                                 {viewingPlan ? (
                                     /* VIEW MODE */
-                                    <div className="view-plan-details">
-                                        <h2 className="card-title">{t('admin.planManagement.modal.generalInfo')}</h2>
+                                     <div className="view-user-details">
+                                        <h2 className="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>{t('admin.planManagement.modal.generalInfo')}</h2>
                                         <p><strong>{t('admin.planManagement.table.name')}:</strong> {viewingPlan.name}</p>
                                         <p><strong>{t('admin.planManagement.modal.input.shortDescLabel')}:</strong> {viewingPlan.shortdescription || t('admin.planManagement.modal.view.shortDescNA')}</p>
                                         <p><strong>{t('admin.planManagement.modal.description')}:</strong></p>
                                         <ul>
                                             {viewingPlan.description?.split(',').map((item, index) => <li key={index}>{item.trim()}</li>)}
                                         </ul>
-                                        <p><strong>{t('admin.planManagement.table.price')}:</strong> DKK{viewingPlan.price} ({t(`admin.planManagement.table.billingType.${viewingPlan.billing_type}`)})</p>
+                                        <p><strong>{t('admin.planManagement.table.priceBilling')}:</strong> DKK{viewingPlan.price} ({t(`admin.planManagement.table.billingType.${viewingPlan.billing_type}`)})</p>
                                         <p><strong>{t('admin.planManagement.modal.input.discountLabel')}:</strong> {viewingPlan.discount_percentage}%</p>
-                                        <p><strong>{t('admin.planManagement.table.status')}:</strong> <span className={`badge ${viewingPlan.status === 'active' ? 'badge4' : 'badge1'}`}>{t(`admin.planManagement.modal.input.${viewingPlan.status}`)}</span></p>
-
+                                        <p><strong>{t('admin.planManagement.table.status')}:</strong> <span className={`badge badge4`}>{t(`admin.planManagement.modal.input.${viewingPlan.status}`)}</span></p>
                                         <h2 className="card-title mt-4">{t('admin.planManagement.modal.featureLimits')} & {t('admin.planManagement.modal.accessIntegration')}</h2>
                                         <p><strong>{t('admin.planManagement.modal.view.leadsAllowed')}</strong> {viewingPlan.Total_Leads_Allowed}</p>
                                         <p><strong>{t('admin.planManagement.modal.view.emailsAllowed')}</strong> {viewingPlan.Total_emails_allowed}</p>

@@ -28,6 +28,8 @@ const LeadViewPage = () => {
   const [statuses, setStatuses] = useState([]);
   const [quoteStatuses, setQuoteStatuses] = useState([]);
   const [pricingTemplates, setPricingTemplates] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  
   const [isEditing, setIsEditing] = useState({
     fullName: false,
     email: false,
@@ -198,6 +200,7 @@ const LeadViewPage = () => {
       if (leadData.address) {
         geocodeAddress(leadData.address);
       }
+
     } catch (err) {
       console.error('Error fetching lead details:', err);
       setError(translate('api.leads.fetchError')); // Translated error message
@@ -350,33 +353,33 @@ const LeadViewPage = () => {
   };
 
   const formatCurrency = (value, currencyCodeParam) => {
-  if (
-    value === null || 
-    value === undefined || 
-    isNaN(value) || 
-    value === ''
-  ) {
-    return translate('leadViewPage.na');
-  }
+    if (
+      value === null ||
+      value === undefined ||
+      isNaN(value) ||
+      value === ''
+    ) {
+      return translate('leadViewPage.na');
+    }
 
-  // Currency select priority:
-  // 1️⃣ template.currency.code (passed argument)
-  // 2️⃣ CurrencySave.code
-  // 3️⃣ DKK fallback
-  const currencyCode = currencyCodeParam || CurrencySave?.code || "DKK";
+    // Currency select priority:
+    // 1️⃣ template.currency.code (passed argument)
+    // 2️⃣ CurrencySave.code
+    // 3️⃣ DKK fallback
+    const currencyCode = currencyCodeParam || CurrencySave?.code || "DKK";
 
-  // USD should always use "$"
-  if (currencyCode === "USD") {
-    return `$${Number(value).toLocaleString('en-DK')}`;
-  }
+    // USD should always use "$"
+    if (currencyCode === "USD") {
+      return `$${Number(value).toLocaleString('en-DK')}`;
+    }
 
-  return new Intl.NumberFormat('en-DK', {
-    style: 'currency',
-    currency: currencyCode,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value);
-};
+    return new Intl.NumberFormat('en-DK', {
+      style: 'currency',
+      currency: currencyCode,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
 
 
 
@@ -527,103 +530,103 @@ const LeadViewPage = () => {
 
 
   const handleSaveQuote = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // 🗓️ Ensure plan start date exists
-  if (!userPlan?.startDate) {
-    toast.error("Plan start date not found");
-    return;
-  }
-
-  const planStartDate = new Date(userPlan.startDate);
-
-  // ✅ Count only quotes created on or after plan start date
-  const filteredQuotes = allquotesHistory.filter((quote) => {
-    const createdAt = new Date(quote.createdAt);
-    return createdAt >= planStartDate;
-  });
-
-  const currentOfferCount = filteredQuotes.length;
-
-  // ✅ Enforce offer (quote) plan limit
-  const canProceed = checkLimit(currentOfferCount, "Offers");
-  if (!canProceed) return;
-
-  const action = e.nativeEvent.submitter?.value;
-  setLoading(true);
-
-  try {
-    const notSentStatus = quoteStatuses.find(s => s.name === 'Not sent');
-    if (!notSentStatus) {
-      toast.error(translate('api.quotes.statusLoadError'));
-      setLoading(false);
+    // 🗓️ Ensure plan start date exists
+    if (!userPlan?.startDate) {
+      toast.error("Plan start date not found");
       return;
     }
 
-    // ✅ Include currentQuoteService if user has typed something
-    const servicesToSave = [...newQuoteFormData.services];
-    if (currentQuoteService.name && currentQuoteService.pricePerUnit >= 0) {
-      servicesToSave.push({ ...currentQuoteService });
+    const planStartDate = new Date(userPlan.startDate);
+
+    // ✅ Count only quotes created on or after plan start date
+    const filteredQuotes = allquotesHistory.filter((quote) => {
+      const createdAt = new Date(quote.createdAt);
+      return createdAt >= planStartDate;
+    });
+
+    const currentOfferCount = filteredQuotes.length;
+
+    // ✅ Enforce offer (quote) plan limit
+    const canProceed = checkLimit(currentOfferCount, "Offers");
+    if (!canProceed) return;
+
+    const action = e.nativeEvent.submitter?.value;
+    setLoading(true);
+
+    try {
+      const notSentStatus = quoteStatuses.find(s => s.name === 'Not sent');
+      if (!notSentStatus) {
+        toast.error(translate('api.quotes.statusLoadError'));
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Include currentQuoteService if user has typed something
+      const servicesToSave = [...newQuoteFormData.services];
+      if (currentQuoteService.name && currentQuoteService.pricePerUnit >= 0) {
+        servicesToSave.push({ ...currentQuoteService });
+      }
+
+      // Recalculate total including current service
+      const total = calculateQuoteTotal(servicesToSave, newQuoteFormData.overallDiscount);
+
+      // ✅ Use servicesToSave in payload, not newQuoteFormData.services
+      const payload = {
+        userId: lead.userId,
+        leadId: lead.id,
+        pricingTemplateId: newQuoteFormData.pricingTemplateId || null,
+        title: newQuoteFormData.title,
+        description: newQuoteFormData.description,
+        validDays: newQuoteFormData.validDays,
+        overallDiscount: newQuoteFormData.overallDiscount,
+        terms: newQuoteFormData.terms,
+        total, // use recalculated total
+        currencyId: newQuoteFormData.currency?.id || CurrencySave?.id || null,
+        services: servicesToSave.map(service => ({
+          name: service.name,
+          description: service.description,
+          quantity: service.quantity,
+          unit: service.unit,
+          discount: service.discountPercent,
+          price: service.pricePerUnit, // <- fix here
+        })),
+        statusId: notSentStatus.id,
+      };
+
+      const response = await api.post('/quotes', payload, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      toast.success(translate(response.data.message || 'leadViewPage.quoteSaveSuccess'));
+      fetchAllQuotesHistory();
+      fetchQuotesHistory();
+      refreshPlan();
+      setQuoteToActOn(response.data.quotes);
+      if (action === "saveAndSend") setShowSendQuoteModal(true);
+
+      // Reset form
+      setNewQuoteFormData({
+        title: '',
+        description: '',
+        validDays: 7,
+        overallDiscount: 0,
+        terms: '',
+        services: [],
+        pricingTemplateId: '',
+        total: 0,
+        currency: { id: '', code: '', name: '', symbol: '' }
+      });
+      setCurrentQuoteService({ name: '', description: '', quantity: 1, unit: '', pricePerUnit: 0, discountPercent: 0, total: 0 });
+
+    } catch (err) {
+      console.error('Error saving quote:', err);
+      const errorMessage = err.response?.data?.message || 'leadViewPage.quoteSaveError';
+      toast.error(translate(errorMessage));
+    } finally {
+      setLoading(false);
     }
-
-    // Recalculate total including current service
-    const total = calculateQuoteTotal(servicesToSave, newQuoteFormData.overallDiscount);
-
-    // ✅ Use servicesToSave in payload, not newQuoteFormData.services
-    const payload = {
-      userId: lead.userId,
-      leadId: lead.id,
-      pricingTemplateId: newQuoteFormData.pricingTemplateId || null,
-      title: newQuoteFormData.title,
-      description: newQuoteFormData.description,
-      validDays: newQuoteFormData.validDays,
-      overallDiscount: newQuoteFormData.overallDiscount,
-      terms: newQuoteFormData.terms,
-      total, // use recalculated total
-      currencyId: newQuoteFormData.currency?.id || CurrencySave?.id || null,
-      services: servicesToSave.map(service => ({
-        name: service.name,
-        description: service.description,
-        quantity: service.quantity,
-        unit: service.unit,
-        discount: service.discountPercent,
-        price: service.pricePerUnit, // <- fix here
-      })),
-      statusId: notSentStatus.id,
-    };
-
-    const response = await api.post('/quotes', payload, {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
-    toast.success(translate(response.data.message || 'leadViewPage.quoteSaveSuccess'));
-    fetchAllQuotesHistory();
-    fetchQuotesHistory();
-    refreshPlan();
-    setQuoteToActOn(response.data.quotes);
-    if (action === "saveAndSend") setShowSendQuoteModal(true);
-
-    // Reset form
-    setNewQuoteFormData({
-      title: '',
-      description: '',
-      validDays: 7,
-      overallDiscount: 0,
-      terms: '',
-      services: [],
-      pricingTemplateId: '',
-      total: 0,
-      currency: { id: '', code: '', name: '', symbol: '' }
-    });
-    setCurrentQuoteService({ name: '', description: '', quantity: 1, unit: '', pricePerUnit: 0, discountPercent: 0, total: 0 });
-
-  } catch (err) {
-    console.error('Error saving quote:', err);
-    const errorMessage = err.response?.data?.message || 'leadViewPage.quoteSaveError';
-    toast.error(translate(errorMessage));
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   const handleSendQuoteActions = async (actions) => {
@@ -700,6 +703,14 @@ const LeadViewPage = () => {
 
     return { success };
   };
+
+
+  useEffect(() => {
+    if (lead?.statusId) {
+      setSelectedStatus(Number(lead.statusId));
+    }
+  }, [lead]);
+
 
 
   if (loading && !lead) {
@@ -849,23 +860,36 @@ const LeadViewPage = () => {
               </div>
             </div>
 
-            {/* <div className="leads-infocol">
-              <h3 className="leads-subheading">{translate('leadViewPage.communicationSubheading')}</h3>
+            <div className="leads-infocol">
+              <h3 className="leads-subheading">{translate('leadViewPage.Status')}</h3>
               <div className="leads-view-action">
-                <Link to="#" className="btn btn-add">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail w-3 h-3 mr-2" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg>
-                  {translate('leadViewPage.sendEmail')}
-                </Link>
-                <Link to="#" className="btn btn-add">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square w-3 h-3 mr-2" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg>
-                  {translate('leadViewPage.sendSms')}
-                </Link>
-                <Link href={`tel:${lead.phone}`} className="btn btn-add">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone w-3 h-3 mr-2" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg>
-                  {translate('leadViewPage.callUp')}
-                </Link>
+                <div className="sendoffer-status">
+                  <div className="inputselect">
+               <select
+  className="form-select"
+  value={Number(selectedStatus)}
+  onChange={(e) => {
+    const newStatusId = Number(e.target.value);
+    setSelectedStatus(newStatusId);
+    handleStatusChange(newStatusId);
+  }}
+>
+  {quoteStatuses.map(status => (
+    <option key={status.id} value={status.id}>
+      {status.name}
+    </option>
+  ))}
+</select>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true">
+                      <path d="m6 9 6 6 6-6"></path>
+                    </svg>
+                  </div>
+                </div>
               </div>
-            </div> */}
+            </div>
 
             <div className="leads-infocol">
               <div className="formdesign lead-message">

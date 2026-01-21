@@ -320,7 +320,7 @@ body {
             });
 
             toast.success('Template Created successfully!');
-            navigate('/templatesoffers');
+            // navigate('/templatesoffers');
         } catch (error) {
             console.error(error);
             toast.error('Failed to create template.');
@@ -437,7 +437,7 @@ body {
                                             <div className="form-group">
                                                 <textarea
                                                     ref={textareaRef}
-                                                    className="form-control"
+                                                    className="form-control textareanew"
                                                     rows="47"
                                                     name="htmlCode"
                                                     value={htmlCode}
@@ -500,8 +500,8 @@ body {
                                 <h4>{t('OffersTemplatesCreatePage.livePreviewTitle')}</h4><span>{iframeWidth}</span>
                             </div>
                             <div className="newoffertemplate-previewmain">
-                                <div className="newoffertemplate-preview" style={{ display: 'flex', justifyContent: 'center', overflow: 'scroll' }}>
-                                    <div>
+                                <div className="newoffertemplate-preview" style={{ overflow: 'scroll' }}>
+                                    <div className={iframeWidth === '100%' ? 'iframe-desktop' : 'iframe-normalwidth'}>
                                     <iframe
                                         ref={iframeRef}
                                         title="live-preview"

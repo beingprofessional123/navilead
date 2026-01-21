@@ -44,7 +44,7 @@ const EmailSMSPage = () => {
         body: '', // Email content
         cc: '',    // New field for CC
         attachments: [], // Array to hold attachment metadata { originalName, fileName, filePath, mimetype, size }
-        recipientPhone: '',
+        recipientPhone: '+45',
         smsContent: '', // SMS message content
     });
 
@@ -87,7 +87,7 @@ const EmailSMSPage = () => {
             body: '',
             cc: '',
             attachments: [],
-            recipientPhone: '',
+            recipientPhone: '+45',
             smsContent: '',
         });
         setSelectedFiles([]); // Clear selected files
@@ -224,7 +224,7 @@ const EmailSMSPage = () => {
                 body: template.body,
                 cc: template.cc || '',
                 attachments: template.attachments || [],
-                recipientPhone: '',
+                recipientPhone: '+45',
                 smsContent: '',
             });
             setIsEditing(true);

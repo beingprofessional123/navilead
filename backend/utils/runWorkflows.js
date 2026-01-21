@@ -53,6 +53,9 @@ function replaceVariables(text = "", variablesMap = {}, lead = {}) {
       case "lead_cvr_number":
         return lead.cvrNumber || "";
 
+      case "lead_address":
+        return lead.address || "";
+
       default:
         return match; // keep placeholder unchanged
     }

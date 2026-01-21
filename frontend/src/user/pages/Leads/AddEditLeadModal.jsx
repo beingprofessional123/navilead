@@ -15,7 +15,7 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
   const [formData, setFormData] = useState({
     fullName: '',
     attName: '',
-    phone: '',
+    phone: '+45',
     email: '',
     address: '',
     companyName: '',
@@ -75,7 +75,7 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
       setFormData({
         fullName: leadData.fullName || '',
         attName: leadData.attName || '',
-        phone: leadData.phone || '',
+        phone: leadData.phone || '+45',
         email: leadData.email || '',
         address: leadData.address || '',
         companyName: leadData.companyName || '',
@@ -97,7 +97,7 @@ const AddEditLeadModal = ({ show, onHide, onSuccess, leadData }) => {
       setFormData({
         fullName: '',
         attName: '',
-        phone: '',
+        phone: '+45',
         email: '',
         address: '',
         companyName: '',

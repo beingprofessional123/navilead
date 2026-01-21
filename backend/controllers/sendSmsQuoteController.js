@@ -75,7 +75,8 @@ exports.storeSendSmsQuote = async (req, res) => {
       lead_phone: lead.phone || '',
       lead_email: lead.email || '',
       lead_company_name: lead.companyName || '',
-      lead_cvr_number: lead.cvrNumber || ''
+      lead_cvr_number: lead.cvrNumber || '',
+      lead_address: lead.address || ''
     };
 
     // --------------------------------------------------

@@ -376,7 +376,6 @@ body {
                     },
                 });
                 toast.success("Template updated successfully!");
-                navigate('/templatesoffers');
             }
         } catch (error) {
             console.error("Error saving template:", error);
@@ -639,12 +638,14 @@ body {
                                     <h4>{t('OffersTemplatesCreatePage.livePreviewTitle')}</h4><span>{iframeWidth}</span>
                                 </div>
                                 <div className="newoffertemplate-previewmain">
-                                    <div className="newoffertemplate-preview" style={{ display: 'flex', justifyContent: 'center', overflow: 'scroll' }}>
-                                        <iframe
+                                    <div className="newoffertemplate-preview" style={{ overflow: 'scroll' }}>
+                                        <div className={iframeWidth === '100%' ? 'iframe-desktop' : 'iframe-normalwidth'}>
+                                             <iframe
                                             ref={iframeRef}
                                             title="live-preview"
                                             style={{ width: iframeWidth, height: '76vh', border: 'none' }}
                                         />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -859,9 +860,9 @@ body {
                                         <h4>{t('OffersTemplatesCreatePage.livePreviewTitle')}</h4><span>{iframeWidth}</span>
                                     </div>
                                     <div className="newoffertemplate-previewmain">
-                                        <div className="newoffertemplate-preview" style={{ display: 'flex', justifyContent: 'center', overflow: 'scroll' }}>
-                                            <div className="carddesign emailcard p-4" style={{ backgroundColor: formData.mainBgColor }}>
-                                                <section className="navpublic" style={{ width: iframeWidth }}>
+                                        <div className="newoffertemplate-preview" style={{ overflow: 'scroll' }}>
+                                            <div className="carddesign emailcard p-4" style={{ backgroundColor: formData.mainBgColor,  width: iframeWidth }}>
+                                                <section className="navpublic" >
 
                                                     <div className="container">
                                                         <div className="row">
@@ -882,8 +883,8 @@ body {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div className="row">
-                                                            <div className="col-md-7">
+                                                       <div className={`row ${iframeWidth === '375px' ? 'offercustomrow' : ''}`}>
+                                                            <div className="col-md-7 col-12">
                                                                 <div className="carddesign" style={{ backgroundColor: formData.leftCardBgColor }}>
                                                                     <div className="offer-title">
                                                                         <h1 className="tilbud-title" style={{ color: formData.textColor }}>Your Quote</h1>
@@ -940,7 +941,7 @@ body {
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="col-md-5">
+                                                            <div className="col-md-5 col-12">
                                                                 <div className="carddesign" style={{ backgroundColor: formData.rightCardBgColor }}>
                                                                     <div className="about-media">
                                                                         <a href="#">
