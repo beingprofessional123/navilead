@@ -2,9 +2,9 @@ require('dotenv').config();
 const { Op } = require("sequelize");
 const db = require("../models");
 const { Lead, Status, User, Plan, UserPlan, ApiLog, Settings, StatusUpdateLog, AskQuestion, AcceptedOffer, SendSms, SendEmail, Quote } = db;
-
+const NewLeadEmailTemplate = require('../EmailTemplate/NewLeadEmailTemplate');
 const { runWorkflows } = require('../utils/runWorkflows');
-
+const { sendMail } = require('../utils/mail');
 const BACKEND_URL = process.env.BACKEND_URL;
 
 // Helper to generate unique leadNumber incrementally
@@ -115,8 +115,36 @@ exports.createLead = async (req, res) => {
       leadId: lead.id,
       statusId: statusId,
     });
-
     await runWorkflows("newLeadCreated", { lead, user: req.user });
+   
+    // 🔥 EMAIL BACKGROUND MEIN SEND HOGA (NON-BLOCKING)
+    if (lead.email) {
+      setImmediate(async () => {
+        try {
+          const html = NewLeadEmailTemplate({
+            fullName: lead.fullName,
+            email: lead.email,
+            phone: lead.phone,
+            address: lead.address,
+            companyName: lead.companyName,
+            cvrNumber: lead.cvrNumber,
+            value: lead.value,
+            attachments: lead.attachments,
+          });
+
+          await sendMail(req.user.id, {
+            to: lead.email,
+            subject: "Your Lead Has Been Created",
+            text: `Hello ${lead.fullName}, your lead has been created successfully.`,
+            html,
+          });
+        } catch (emailErr) {
+          console.error("Background email failed:", emailErr);
+        }
+      });
+    }
+
+
     res.status(201).json({ message: "api.leads.createSuccess", lead });
   } catch (err) {
     console.error(err);
@@ -692,6 +720,30 @@ exports.createPublicLead = async (req, res) => {
       await runWorkflows("leadCreatedViaFacebook", { lead, user });
     }
 
+     // 🔥 EMAIL BACKGROUND MEIN SEND HOGA (NON-BLOCKING)
+    if (lead.email) {
+        try {
+          const html = NewLeadEmailTemplate({
+            fullName: lead.fullName,
+            email: lead.email,
+            phone: lead.phone,
+            address: lead.address,
+            companyName: lead.companyName,
+            cvrNumber: lead.cvrNumber,
+            value: lead.value,
+            attachments: lead.attachments,
+          });
+
+          await sendMail(req.user.id, {
+            to: lead.email,
+            subject: "Your Lead Has Been Created",
+            text: `Hello ${lead.fullName}, your lead has been created successfully.`,
+            html,
+          });
+        } catch (emailErr) {
+          console.error("Background email failed:", emailErr);
+        }
+    }
 
 
     return res.status(201).json({
