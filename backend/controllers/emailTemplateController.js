@@ -176,5 +176,61 @@ exports.deleteEmailTemplate = async (req, res) => {
     res.status(500).json({ error: 'api.emailTemplates.deleteError' });
   }
 };
+
+
+exports.makeDefaultTemplate = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  try {
+    // 🔍 Find current default (if any)
+    const existingDefault = await EmailTemplate.findOne({
+      where: {
+        userId,
+        isDefault: true,
+      },
+    });
+
+    // 🟢 CASE 1: Same template already default
+    if (existingDefault && existingDefault.id === Number(id)) {
+      return res.json({
+        message: 'This template is already the default',
+      });
+    }
+
+    // 🟡 CASE 2: Another template is default → remove it
+    if (existingDefault && existingDefault.id !== Number(id)) {
+      await EmailTemplate.update(
+        { isDefault: false },
+        { where: { id: existingDefault.id, userId } }
+      );
+    }
+
+    // 🟢 CASE 3: Make selected template default
+    const updated = await EmailTemplate.update(
+      { isDefault: true },
+      { where: { id, userId } }
+    );
+
+    if (updated[0] === 0) {
+      return res.status(404).json({
+        message: 'Template not found',
+      });
+    }
+
+    return res.json({
+      message: 'Template marked as default successfully',
+    });
+
+  } catch (error) {
+    console.error('makeDefaultTemplate error:', error);
+    return res.status(500).json({
+      message: 'Failed to set default template',
+    });
+  }
+};
+
+
+
 // Expose the upload middleware so it can be used in your route definitions
 exports.upload = upload;

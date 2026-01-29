@@ -45,6 +45,7 @@ const EmailSMSPage = () => {
         cc: '',    // New field for CC
         attachments: [], // Array to hold attachment metadata { originalName, fileName, filePath, mimetype, size }
         recipientPhone: '+45',
+        isDefault: false,
         smsContent: '', // SMS message content
     });
 
@@ -88,6 +89,7 @@ const EmailSMSPage = () => {
             cc: '',
             attachments: [],
             recipientPhone: '+45',
+            isDefault: false,
             smsContent: '',
         });
         setSelectedFiles([]); // Clear selected files
@@ -124,6 +126,7 @@ const EmailSMSPage = () => {
                 attachments: template.attachments || [], // Include attachments
                 createdAt: template.createdAt,
                 updatedAt: template.updatedAt,
+                isDefault: template.isDefault,
             })));
         } catch (error) {
             console.error("Error fetching email templates:", error);
@@ -152,6 +155,7 @@ const EmailSMSPage = () => {
                 smsContent: template.smsContent,
                 createdAt: template.createdAt,
                 updatedAt: template.updatedAt,
+                isDefault: template.isDefault,
             })));
         } catch (error) {
             console.error("Error fetching SMS templates:", error);
@@ -563,6 +567,81 @@ const EmailSMSPage = () => {
         });
     };
 
+    const BuyDefultEmailActiveNOt = async (templateId) => {
+    const template = emailTemplates.find(t => t.id === templateId);
+    if (!template) return;
+
+    // If already default → nothing to do
+    if (template.isDefault) {
+        toast.info('This email template is already active');
+        return;
+    }
+
+    const result = await Swal.fire({
+        title: 'Set as Active?',
+        text: 'This will deactivate the current active email template and activate this one.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Activate',
+        cancelButtonText: 'Cancel',
+        customClass: { popup: 'custom-swal-popup' },
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        await api.patch(
+        `/email-templates/${templateId}/make-default`,
+        {},
+        { headers: { Authorization: `Bearer ${authToken}` } }
+        );
+
+        toast.success('Email Template activated successfully');
+        fetchEmailTemplates(); // refresh list
+    } catch (err) {
+        toast.error(err?.response?.data?.message || 'Failed to activate email template');
+    }
+    };
+
+     const BuyDefultSMSActiveNOt = async (templateId) => {
+    const template = smsTemplates.find(t => t.id === templateId);
+    if (!template) return;
+
+    // If already default → nothing to do
+    if (template.isDefault) {
+        toast.info('This sms template is already active');
+        return;
+    }
+
+    const result = await Swal.fire({
+        title: 'Set as Active?',
+        text: 'This will deactivate the current active sms template and activate this one.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Activate',
+        cancelButtonText: 'Cancel',
+        customClass: { popup: 'custom-swal-popup' },
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        await api.patch(
+        `/sms-templates/${templateId}/make-default`,
+        {},
+        { headers: { Authorization: `Bearer ${authToken}` } }
+        );
+
+        toast.success('SMS Template activated successfully');
+        fetchSmsTemplates(); // refresh list
+    } catch (err) {
+        toast.error(err?.response?.data?.message || 'Failed to activate sms template');
+    }
+    };
+
+
+
+
 
     return (
         <>
@@ -663,17 +742,36 @@ const EmailSMSPage = () => {
                                         ) : (
                                             emailTemplates.map((template) => (
                                                 <tr key={template.id} className={emailTemplates.length === 1 ? "tablemaiikdata" : ""}>
-                                                    <td><strong>{template.templateName}</strong></td>
+                                                    <td>{template.templateName} <strong>{template.isDefault && <span className="badge bg-info"> {translate('emailSmsPage.activeDefult')}</span>}</strong></td>
                                                     <td>{template.subject}</td>
                                                     <td>{template.recipientEmail}</td>
-                                                    <td>{new Date(template.createdAt).toLocaleDateString()}</td>
+                                                    <td>{new Date(template.createdAt).toLocaleDateString()} {template.isDefault}</td>
                                                     <td className="actionbtn">
                                                         <div className="dropdown leaddropdown">
                                                             <button type="button" className="btn btn-add dropdown-toggle" data-bs-toggle="dropdown">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
                                                             </button>
                                                             <ul className="dropdown-menu">
-                                                                {/* <li><Link className="dropdown-item" to="#" onClick={() => openViewContentModal(template.body)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{translate('emailSmsPage.viewContent')}</Link></li> */}
+                                                               <li>
+                                                                    {template.isDefault ? (
+                                                                         <Link className="dropdown-item btn btn-send"
+                                                                          onClick={() => BuyDefultEmailActiveNOt(template.id)}
+                                                                         >
+                                                                        {translate('emailSmsPage.activeDefult')}
+                                                                        </Link>
+                                                                    ) : (
+                                                                        <Link
+                                                                            className="dropdown-item"
+                                                                            to="#"
+                                                                            onClick={() => BuyDefultEmailActiveNOt(template.id)}
+                                                                            >
+                                                                        {translate('emailSmsPage.markActive')}
+                                                                        </Link>
+                                                                    )}
+                                                                </li>
+
+
+
                                                                 <li><Link className="dropdown-item" to="#" onClick={() => openEmailModal(template)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{translate('emailSmsPage.edit')}</Link></li>
                                                                 <li className="sletborder"><Link className="dropdown-item" to="#" onClick={() => handleDeleteEmailTemplate(template.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>{translate('emailSmsPage.delete')}</Link></li>
                                                             </ul>
@@ -715,7 +813,7 @@ const EmailSMSPage = () => {
                                         ) : (
                                             smsTemplates.map((template) => (
                                                 <tr key={template.id} className={smsTemplates.length === 1 ? "tablemaiikdata" : ""}>
-                                                    <td><strong>{template.templateName}</strong></td>
+                                                     <td>{template.templateName} <strong>{template.isDefault && <span className="badge bg-info"> {translate('emailSmsPage.activeDefult')}</span>}</strong></td>
                                                     <td>{template.recipientPhone}</td>
                                                     <td>{template.smsContent}</td>
                                                     <td>{new Date(template.createdAt).toLocaleDateString()}</td>
@@ -725,7 +823,23 @@ const EmailSMSPage = () => {
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
                                                             </button>
                                                             <ul className="dropdown-menu">
-                                                                {/* <li><Link className="dropdown-item" to="#" onClick={() => openViewContentModal(template.smsContent)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{translate('emailSmsPage.viewContent')}</Link></li> */}
+                                                                 <li>
+                                                                    {template.isDefault ? (
+                                                                         <Link className="dropdown-item btn btn-send"
+                                                                          onClick={() => BuyDefultSMSActiveNOt(template.id)}
+                                                                         >
+                                                                        {translate('emailSmsPage.activeDefult')}
+                                                                        </Link>
+                                                                    ) : (
+                                                                        <Link
+                                                                            className="dropdown-item"
+                                                                            to="#"
+                                                                            onClick={() => BuyDefultSMSActiveNOt(template.id)}
+                                                                            >
+                                                                        {translate('emailSmsPage.markActive')}
+                                                                        </Link>
+                                                                    )}
+                                                                </li>
                                                                 <li><Link className="dropdown-item" to="#" onClick={() => openSmsModal(template)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>{translate('emailSmsPage.edit')}</Link></li>
                                                                 <li className="sletborder"><Link className="dropdown-item" to="#" onClick={() => handleDeleteSmsTemplate(template.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 lucide-trash-2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>{translate('emailSmsPage.delete')}</Link></li>
                                                             </ul>

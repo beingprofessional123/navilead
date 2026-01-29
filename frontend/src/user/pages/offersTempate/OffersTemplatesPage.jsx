@@ -209,21 +209,42 @@ const OffersTemplatesPage = () => {
 
 
 
-    const handleMarkAsDefault = async (templateId) => {
-        try {
-            await api.patch(`/offers-templates/${templateId}/mark-default`, {}, {
-                headers: { Authorization: `Bearer ${authToken}` },
+     const handleMarkAsDefault = async (templateId) => {
+
+           const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: 'This template will be set as Active and others will be deactivated.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, make it Active',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                },
             });
 
-            toast.success('Template marked as Active successfully!');
+            // ❌ Agar user cancel kare
+            if (!result.isConfirmed) {
+                return;
+            }
 
-            // Refresh templates
-            fetchUserTemplate();
-        } catch (error) {
-            console.error('Error marking template as default:', error);
-            toast.error('Failed to mark template as default.');
-        }
+            try {
+                await api.patch(`/offers-templates/${templateId}/mark-default`, {}, {
+                    headers: { Authorization: `Bearer ${authToken}` },
+                });
+
+                toast.success('Template marked as Active successfully!');
+
+                // Refresh templates
+                fetchUserTemplate();
+            } catch (error) {
+                console.error('Error marking template as default:', error);
+                toast.error('Failed to mark template as default.');
+            }
     };
+
 
     return (
         <>

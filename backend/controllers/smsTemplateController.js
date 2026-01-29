@@ -105,3 +105,55 @@ exports.deleteTemplate = async (req, res) => {
     res.status(500).json({ error: 'api.smsTemplates.deleteError' });
   }
 };
+
+exports.makeDefaultTemplate = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  try {
+    // 🔍 Find current default (if any)
+    const existingDefault = await SmsTemplate.findOne({
+      where: {
+        userId,
+        isDefault: true,
+      },
+    });
+
+    // 🟢 CASE 1: Same template already default
+    if (existingDefault && existingDefault.id === Number(id)) {
+      return res.json({
+        message: 'This sms template is already the default',
+      });
+    }
+
+    // 🟡 CASE 2: Another template is default → remove it
+    if (existingDefault && existingDefault.id !== Number(id)) {
+      await SmsTemplate.update(
+        { isDefault: false },
+        { where: { id: existingDefault.id, userId } }
+      );
+    }
+
+    // 🟢 CASE 3: Make selected template default
+    const updated = await SmsTemplate.update(
+      { isDefault: true },
+      { where: { id, userId } }
+    );
+
+    if (updated[0] === 0) {
+      return res.status(404).json({
+        message: 'Template not found',
+      });
+    }
+
+    return res.json({
+      message: 'Template marked as default successfully',
+    });
+
+  } catch (error) {
+    console.error('makeDefaultTemplate error:', error);
+    return res.status(500).json({
+      message: 'Failed to set default template',
+    });
+  }
+};
