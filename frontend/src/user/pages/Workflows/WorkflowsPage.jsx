@@ -159,6 +159,7 @@ const WorkflowsPage = () => {
                 id: template.id,
                 templateName: template.templateName,
                 subject: template.subject,
+                isDefault: template.isDefault,
             })));
         } catch (error) {
             console.error("Error fetching email templates:", error);
@@ -180,6 +181,7 @@ const WorkflowsPage = () => {
                 id: template.id,
                 templateName: template.templateName,
                 smsContent: template.smsContent,
+                isDefault: template.isDefault,
             })));
         } catch (error) {
             console.error("Error fetching SMS templates:", error);
@@ -325,7 +327,8 @@ const WorkflowsPage = () => {
 
 
     const renderStep = (step, index) => {
-        const selectedEmailTemplate = emailTemplates.find(t => t.id === step.config?.emailTemplateId) || null;
+        const selectedEmailTemplate = emailTemplates.find( t => t.id === step.config?.emailTemplateId) || emailTemplates.find(t => t.isDefault) || null; 
+
 
         const handleEmailTemplateSelect = (templateId) => {
             setSteps(prevSteps =>
@@ -336,7 +339,7 @@ const WorkflowsPage = () => {
                 )
             );
         };
-        const selectedSmsTemplate = smsTemplates.find(t => t.id === step.config?.smsTemplateId) || null;
+        const selectedSmsTemplate = smsTemplates.find(t => t.id === step.config?.smsTemplateId)  || smsTemplates.find(t => t.isDefault) || null; 
 
 
         const handleSmsTemplateSelect = (templateId) => {
@@ -429,11 +432,12 @@ const WorkflowsPage = () => {
                                                     {selectedEmailTemplate
                                                         ? selectedEmailTemplate.templateName
                                                         : t('workflows.selectEmailTemplate')}
+                                                        {selectedEmailTemplate.isDefault && <strong> (Default)</strong>}
                                                 </span>
                                             </button>
                                             <ul className="dropdown-menu" >
                                                 {emailTemplates.map(template => (
-                                                    <li key={template.id}><Link className="dropdown-item" to="#" onClick={() => handleEmailTemplateSelect(template.id)}>{template.templateName} <span>{template.subject.length > 40 ? template.subject.substring(0, 40) + "..." : template.subject}</span></Link></li>
+                                                    <li key={template.id}><Link className="dropdown-item" to="#" onClick={() => handleEmailTemplateSelect(template.id)}>{template.templateName} <span>{template.subject.length > 40 ? template.subject.substring(0, 40) + "..." : template.subject} {template.isDefault && <strong> (Default)</strong>}</span></Link></li>
                                                 ))}
                                             </ul>
                                         </div>
@@ -479,11 +483,12 @@ const WorkflowsPage = () => {
                                                     {selectedSmsTemplate
                                                         ? selectedSmsTemplate.templateName
                                                         : t('workflows.selectSmsTemplate')}
+                                                    {selectedSmsTemplate.isDefault && <strong> (Default)</strong>}
                                                 </span>
                                             </button>
                                             <ul className="dropdown-menu" >
                                                 {smsTemplates.map(template => (
-                                                    <li key={template.id}><Link className="dropdown-item" to="#" onClick={() => handleSmsTemplateSelect(template.id)}>{template.templateName} <span> {template.smsContent.length > 40 ? template.smsContent.substring(0, 40) + "..." : template.smsContent}</span></Link></li>
+                                                    <li key={template.id}><Link className="dropdown-item" to="#" onClick={() => handleSmsTemplateSelect(template.id)}>{template.templateName} <span> {template.smsContent.length > 40 ? template.smsContent.substring(0, 40) + "..." : template.smsContent} {template.isDefault && <strong> (Default)</strong>}</span></Link></li>
                                                 ))}
                                             </ul>
 

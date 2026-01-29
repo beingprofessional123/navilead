@@ -110,8 +110,10 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
         cc: template.ccEmails || '',
         createdAt: template.createdAt,
         updatedAt: template.updatedAt,
+        isDefault: template.isDefault,
         attachments: template.attachments || [],
       })));
+
     } catch (error) {
       console.error("Error fetching email templates:", error);
       toast.error(translate('api.emailTemplates.fetchError'));
@@ -139,7 +141,9 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
         fromName: template.fromName,
         createdAt: template.createdAt,
         updatedAt: template.updatedAt,
+        isDefault: template.isDefault,
       })));
+
     } catch (error) {
       console.error("Error fetching SMS templates:", error);
       toast.error(translate('api.smsTemplates.fetchError'));
@@ -244,8 +248,15 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
       );
       return;
     }
-
     setSendSmsChecked(checked);
+
+    // ✅ Select default template automatically
+    const defaultTemplate = smsTemplates.find(t => t.isDefault);
+    if (defaultTemplate) {
+      setSelectedSmsTemplateId(defaultTemplate.id);
+      setSmsMessage(defaultTemplate.smsContent);
+      setSmsFromName(defaultTemplate.fromName || user.name);
+    }
   };
 
 
@@ -255,6 +266,16 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
     if (!canProceedEmail) {
       toast.warning("Email limit reached!");
       return;
+    }
+
+      // ✅ Select default template automatically
+    const defaultTemplate = emailTemplates.find(t => t.isDefault);
+    if (defaultTemplate) {
+      setSelectedEmailTemplateId(defaultTemplate.id);
+      setEmailSubject(defaultTemplate.subject || "");
+      setEmailContent(defaultTemplate.body || "");
+      setEmailFromName(defaultTemplate.fromName || user.name);
+      setEmailFromEmail(defaultTemplate.fromEmail || user.email);
     }
     setSendEmailChecked(checked);
   };
@@ -493,7 +514,7 @@ const showStatusSaveButton =
                           <select className="form-select" value={selectedSmsTemplateId} onChange={handleSmsTemplateChange} disabled={loadingSMS}>
                             <option value="">{translate('sendQuoteModal.selectATemplate')}</option>
                             {smsTemplates.map(template => (
-                              <option key={template.id} value={template.id}>{template.templateName}</option>
+                              <option key={template.id} value={template.id}>{template.templateName} {template.isDefault ? '(Default)' : ''}</option>
                             ))}
                           </select>
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
@@ -575,7 +596,7 @@ const showStatusSaveButton =
                           <select className="form-select" value={selectedEmailTemplateId} onChange={handleEmailTemplateChange} disabled={loadingEmails}>
                             <option value="">{translate('sendQuoteModal.selectATemplate')}</option>
                             {emailTemplates.map(template => (
-                              <option key={template.id} value={template.id}>{template.templateName}</option>
+                              <option key={template.id} value={template.id}>{template.templateName} {template.isDefault ? '(Default)' : ''}</option>
                             ))}
                           </select>
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>

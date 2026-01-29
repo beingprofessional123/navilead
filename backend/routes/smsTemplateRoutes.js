@@ -23,5 +23,9 @@ router.put('/:id', smsTemplateController.updateTemplate);
 // Delete a SMS template by ID
 router.delete('/:id', smsTemplateController.deleteTemplate);
 
+// ✅ NEW: Make template default (ONLY if no default exists)
+router.patch('/:id/make-default', smsTemplateController.makeDefaultTemplate);
+
+
 module.exports = router;
 

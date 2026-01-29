@@ -25,4 +25,8 @@ router.put('/:id', emailTemplateController.upload.array('attachments'), emailTem
 // Delete an email template by id
 router.delete('/:id', emailTemplateController.deleteEmailTemplate);
 
+// ✅ NEW: Make template default (ONLY if no default exists)
+router.patch('/:id/make-default', emailTemplateController.makeDefaultTemplate);
+
+
 module.exports = router;

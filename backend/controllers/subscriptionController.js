@@ -12,9 +12,7 @@ exports.checkout = async (req, res) => {
 
     // Fetch plan from DB
     const plan = await Plan.findByPk(planId);
-    const PaymentMethods = await PaymentMethod.findOne({ where: { userId: userId } });
     if (!plan) return res.status(404).json({ message: 'Plan not found' });
-    if (!PaymentMethods) return res.status(404).json({ message: 'Billing details not found' });
 
     // For paid plans, first check if user already exists in Stripe
     let stripeCustomerId = req.user.stripeCustomerId; // From User model

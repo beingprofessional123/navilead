@@ -518,7 +518,9 @@
     "uploadFilesClick": "Click to upload files",
     "uploadFilesMessage": "or drag and drop here",
     "newFilesTitle": "New Files:",
-    "existingAttachmentsTitle": "Existing Attachments:"
+    "existingAttachmentsTitle": "Existing Attachments:",
+    "activeDefult": "Active (Default)",
+    "markActive": "Mark as Default"
   },
   "variableSelector": {
     "availableVariablesTitle": "Available Variables",
