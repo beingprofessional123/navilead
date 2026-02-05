@@ -289,6 +289,8 @@
     "createQuoteTab": "Opret Tilbud",
     "quoteHistoryTab": "Tilbudshistorik",
     "newQuoteTitle": "Nyt Tilbud",
+    "EditQuoteTitle": "Rediger Tilbud",
+    "ViewQuoteTitle": "Vis Tilbud",
     "startWithTemplateOptional": "Start med Skabelon (Valgfrit)",
     "selectQuoteTemplate": "Vælg en tilbudsskabelon",
     "quoteTitleLabel": "Tilbudstitel",
@@ -318,7 +320,7 @@
     "totalLabel": "Total:",
     "termsAndConditionsLabel": "Vilkår og Betingelser",
     "termsAndConditionsPlaceholder": "Vilkår, forbehold eller særlige betingelser for dette tilbud...",
-    "saveQuoteButton": "Gem Tilbud",
+    "saveQuoteButton": "Gem Tilbud Kun",
     "saveAndSendQuoteButton": "Gem og send tilbud",
     "savingButton": "Gemmer...",
     "previewButton": "Forhåndsvis",
@@ -342,7 +344,12 @@
     "quoteSaveError": "Kunne ikke gemme tilbud.",
     "noQuoteDataActions": "Ingen tilbudsdata tilgængelig for handlinger.",
     "quoteActionsError": "Kunne ikke udføre tilbudshandlinger.",
-    "qualifiedStatusNotFound": "Kvalificeret status ikke fundet"
+    "qualifiedStatusNotFound": "Kvalificeret status ikke fundet",
+    "addressRequired":"Adresse er påkrævet.",
+    "addressNotFound":"Adresse ikke fundet.",
+    "updateandpreviewQuoteButton":"Opdater og forhåndsvis Tilbud",
+    "updateandsendQuoteButton":"Opdater og send Tilbud",
+    "sendQuoteButton":"Send Tilbud"
   },
   "sendQuoteModal": {
     "actionsFor": "Handlinger for: {{quoteTitle}}",
@@ -519,7 +526,18 @@
     "newFilesTitle": "Nye Filer:",
     "existingAttachmentsTitle": "Eksisterende Vedhæftninger:",
     "activeDefult": "Aktiv (Default)",
-    "markActive": "Marker som skabelon"
+    "markActive": "Marker som skabelon",
+  "activeEmailTemplatesTitle": "Aktiv e-mail-skabelon",
+  "activeEmailTemplatesSubtitle": "Vælg hvilke e-mail-skabeloner der skal bruges som standard",
+  "emailtemplatePageLabel": "E-mail-skabeloner",
+  "activeSmsTemplatesTitle": "Aktiv SMS-skabelon",
+  "activeSmsTemplatesSubtitle": "Vælg hvilke SMS-skabeloner der skal bruges som standard",
+  "SmstemplatePageLabel": "SMS-skabeloner",
+  "defaultEmailTemplateName": "Ingen e-mail-skabelon valgt",
+  "defaultSmsTemplateName": "Ingen SMS-skabelon valgt",
+
+  "defaultTag": "Standard",
+  "templatePageNote": "Denne e-mail-skabelon bruges, når kunder modtager tilbud via e-mail"
   },
   "variableSelector": {
     "availableVariablesTitle": "Tilgængelige Variabler",

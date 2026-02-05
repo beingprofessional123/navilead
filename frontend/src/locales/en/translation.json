@@ -290,6 +290,8 @@
     "createQuoteTab": "Create Quote",
     "quoteHistoryTab": "Quote History",
     "newQuoteTitle": "New Quote",
+    "EditQuoteTitle": "Edit Quote",
+    "ViewQuoteTitle": "View Quote",
     "startWithTemplateOptional": "Start with Template (Optional)",
     "selectQuoteTemplate": "Select a quote template",
     "quoteTitleLabel": "Quote Title",
@@ -319,7 +321,7 @@
     "totalLabel": "Total:",
     "termsAndConditionsLabel": "Terms and Conditions",
     "termsAndConditionsPlaceholder": "Terms, reservations, or special conditions for this offer...",
-    "saveQuoteButton": "Save Quote",
+    "saveQuoteButton": "Save Quote Only",
     "saveAndSendQuoteButton": "Save and Send Offer",
     "savingButton": "Saving...",
     "previewButton": "Preview",
@@ -343,7 +345,12 @@
     "quoteSaveError": "Failed to save quote.",
     "noQuoteDataActions": "No quote data available to perform actions.",
     "quoteActionsError": "Failed to perform quote actions.",
-    "qualifiedStatusNotFound": "Qualified status not found"
+    "qualifiedStatusNotFound": "Qualified status not found",
+    "addressRequired":"Address is required.",
+    "addressNotFound":"Address not found.",
+    "updateandpreviewQuoteButton":"Update and Preview Quote",
+    "updateandsendQuoteButton":"Update and Send Quote",
+    "sendQuoteButton":"Send Quote"
   },
   "sendQuoteModal": {
     "actionsFor": "Actions for: {{quoteTitle}}",
@@ -520,7 +527,17 @@
     "newFilesTitle": "New Files:",
     "existingAttachmentsTitle": "Existing Attachments:",
     "activeDefult": "Active (Default)",
-    "markActive": "Mark as Default"
+    "markActive": "Mark as Default",
+    "activeEmailTemplatesTitle": "Active Email Template",
+    "activeEmailTemplatesSubtitle": "Select which email templates to use as default",
+    "emailtemplatePageLabel": "Email Templates",
+    "activeSmsTemplatesTitle": "Active SMS Template",
+    "activeSmsTemplatesSubtitle": "Select which SMS templates to use as default",
+    "SmstemplatePageLabel": "SMS Templates",
+    "defaultEmailTemplateName": "No Email Templates Selected",
+    "defaultSmsTemplateName": "No SMS Templates Selected",
+    "defaultTag": "Default",
+    "templatePageNote": "This email template is used when customers receive offers via email"
   },
   "variableSelector": {
     "availableVariablesTitle": "Available Variables",

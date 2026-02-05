@@ -49,7 +49,7 @@ const SideBar = () => {
                 // --- 🔔 ADVANCED CHANGE DETECTION ---
 
                 // Pichla data snapshot uthayein
-                const lastSnapshot = JSON.parse(localStorage.getItem('ticketSnapshot') || '[]');
+                const lastSnapshot = JSON.parse(localStorage.getItem('userticketSnapshot') || '[]');
 
                 // Current data ka simplified snapshot banayein (sirf ID aur Status)
                 const currentSnapshot = tickets.map(t => ({ id: t.id, status: t.status, unread: t.unreadCount }));
@@ -92,8 +92,8 @@ const SideBar = () => {
                 }
 
                 // Memory update karein (Snapshot save karein)
-                localStorage.setItem('ticketSnapshot', JSON.stringify(currentSnapshot));
-                localStorage.setItem('prevUnreadCount', currentUnread); // Backward compatibility ke liye
+                localStorage.setItem('userticketSnapshot', JSON.stringify(currentSnapshot));
+                localStorage.setItem('userprevUnreadCount', currentUnread); // Backward compatibility ke liye
 
             } catch (err) {
                 console.error("Global Polling Error:", err);

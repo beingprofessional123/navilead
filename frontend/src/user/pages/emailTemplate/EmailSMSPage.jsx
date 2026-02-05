@@ -50,12 +50,12 @@ const EmailSMSPage = () => {
     });
 
     // Validate phone with country code (e.g. +91, +44, +1)
-   const validatePhoneWithCountryCode = (phone) => {
+    const validatePhoneWithCountryCode = (phone) => {
         if (phone.trim() === '{{contact_phone}}') {
             return true;
         }
 
-        const regex = /^\+\d{1,3}\d{7,14}$/; 
+        const regex = /^\+\d{1,3}\d{7,14}$/;
         return regex.test(phone.trim());
     };
 
@@ -182,7 +182,7 @@ const EmailSMSPage = () => {
 
             response.data.forEach(variable => {
                 const varName = variable.variableName;
-                
+
                 // Check karein ki variable 'lead' se start ho raha hai ya nahi
                 const categoryType = varName.startsWith('lead_') ? 'lead' : 'contact';
 
@@ -190,9 +190,9 @@ const EmailSMSPage = () => {
                     // Name ko sundar banane ke liye: "lead_first_name" -> "First Name"
                     name: varName
                         .replace(/^lead_/, '') // 'lead_' prefix hatao (optional)
-                        .replace(/_/g, ' ') 
+                        .replace(/_/g, ' ')
                         .replace(/\b\w/g, l => l.toUpperCase()), // Capitalize first letter
-                    
+
                     description: `${variable.variableValue}`,
                     variable: `{{${varName}}}`,
                 });
@@ -568,78 +568,80 @@ const EmailSMSPage = () => {
     };
 
     const BuyDefultEmailActiveNOt = async (templateId) => {
-    const template = emailTemplates.find(t => t.id === templateId);
-    if (!template) return;
+        const template = emailTemplates.find(t => t.id === templateId);
+        if (!template) return;
 
-    // If already default → nothing to do
-    if (template.isDefault) {
-        toast.info('This email template is already active');
-        return;
-    }
+        // If already default → nothing to do
+        if (template.isDefault) {
+            toast.info('This email template is already active');
+            return;
+        }
 
-    const result = await Swal.fire({
-        title: 'Set as Active?',
-        text: 'This will deactivate the current active email template and activate this one.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Activate',
-        cancelButtonText: 'Cancel',
-        customClass: { popup: 'custom-swal-popup' },
-    });
+        const result = await Swal.fire({
+            title: 'Set as Active?',
+            text: 'This will deactivate the current active email template and activate this one.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Activate',
+            cancelButtonText: 'Cancel',
+            customClass: { popup: 'custom-swal-popup' },
+        });
 
-    if (!result.isConfirmed) return;
+        if (!result.isConfirmed) return;
 
-    try {
-        await api.patch(
-        `/email-templates/${templateId}/make-default`,
-        {},
-        { headers: { Authorization: `Bearer ${authToken}` } }
-        );
+        try {
+            await api.patch(
+                `/email-templates/${templateId}/make-default`,
+                {},
+                { headers: { Authorization: `Bearer ${authToken}` } }
+            );
 
-        toast.success('Email Template activated successfully');
-        fetchEmailTemplates(); // refresh list
-    } catch (err) {
-        toast.error(err?.response?.data?.message || 'Failed to activate email template');
-    }
+            toast.success('Email Template activated successfully');
+            fetchEmailTemplates(); // refresh list
+        } catch (err) {
+            toast.error(err?.response?.data?.message || 'Failed to activate email template');
+        }
     };
 
-     const BuyDefultSMSActiveNOt = async (templateId) => {
-    const template = smsTemplates.find(t => t.id === templateId);
-    if (!template) return;
+    const BuyDefultSMSActiveNOt = async (templateId) => {
+        const template = smsTemplates.find(t => t.id === templateId);
+        if (!template) return;
 
-    // If already default → nothing to do
-    if (template.isDefault) {
-        toast.info('This sms template is already active');
-        return;
-    }
+        // If already default → nothing to do
+        if (template.isDefault) {
+            toast.info('This sms template is already active');
+            return;
+        }
 
-    const result = await Swal.fire({
-        title: 'Set as Active?',
-        text: 'This will deactivate the current active sms template and activate this one.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Activate',
-        cancelButtonText: 'Cancel',
-        customClass: { popup: 'custom-swal-popup' },
-    });
+        const result = await Swal.fire({
+            title: 'Set as Active?',
+            text: 'This will deactivate the current active sms template and activate this one.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Activate',
+            cancelButtonText: 'Cancel',
+            customClass: { popup: 'custom-swal-popup' },
+        });
 
-    if (!result.isConfirmed) return;
+        if (!result.isConfirmed) return;
 
-    try {
-        await api.patch(
-        `/sms-templates/${templateId}/make-default`,
-        {},
-        { headers: { Authorization: `Bearer ${authToken}` } }
-        );
+        try {
+            await api.patch(
+                `/sms-templates/${templateId}/make-default`,
+                {},
+                { headers: { Authorization: `Bearer ${authToken}` } }
+            );
 
-        toast.success('SMS Template activated successfully');
-        fetchSmsTemplates(); // refresh list
-    } catch (err) {
-        toast.error(err?.response?.data?.message || 'Failed to activate sms template');
-    }
+            toast.success('SMS Template activated successfully');
+            fetchSmsTemplates(); // refresh list
+        } catch (err) {
+            toast.error(err?.response?.data?.message || 'Failed to activate sms template');
+        }
     };
 
 
+    const defaultEmailTemplate = emailTemplates?.find(t => t.isDefault) || null;
+    const defaultSMSTemplate = smsTemplates?.find(t => t.isDefault) || null;
 
 
 
@@ -715,6 +717,177 @@ const EmailSMSPage = () => {
                         </div>
                     </div>
 
+                    <div className='row'>
+                        <div className='col-md-6'>
+                            <div className="carddesign activetemplate-form">
+                                <div className="activetemplate">
+                                    <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
+                                    <h4>{translate('emailSmsPage.activeEmailTemplatesTitle')}</h4>
+                                    <h5>{translate('emailSmsPage.activeEmailTemplatesSubtitle')}</h5>
+                                </div>
+                                <div className="formdesign">
+                                    <div className="row">
+                                        <div className="col-md-12">
+                                            <div className="form-group mb-1">
+                                                <label><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-receipt" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg>{translate('emailSmsPage.emailtemplatePageLabel')}</label>
+                                                <div className="inputselect">
+                                                    <div className="dropdown leaddropdown sendemaidropdown">
+                                                        <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check w-4 h-4 text-primary" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>{defaultEmailTemplate ? defaultEmailTemplate.templateName || defaultEmailTemplate.templateName : translate("emailSmsPage.defaultEmailTemplateName")}</span>
+                                                        </button>
+                                                        <ul className="dropdown-menu">
+                                                            {emailTemplates && emailTemplates.length > 0 ? (
+                                                                emailTemplates.map((tmpl) => (
+                                                                    <li key={tmpl.id}>
+                                                                        <Link className="dropdown-item" to="#" onClick={() => BuyDefultEmailActiveNOt(tmpl.id)}>
+
+                                                                            {/* Icon based on template type or status */}
+                                                                            {tmpl.isDefault === true ? (
+                                                                                <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    width="24"
+                                                                                    height="24"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    strokeWidth="2"
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    className="lucide lucide-lock"
+                                                                                    aria-hidden="true"
+                                                                                >
+                                                                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                                                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                                                                </svg>
+                                                                            ) : (
+                                                                                <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    width="24"
+                                                                                    height="24"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    strokeWidth="2"
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    className="lucide lucide-code"
+                                                                                    aria-hidden="true"
+                                                                                >
+                                                                                    <path d="m16 18 6-6-6-6" />
+                                                                                    <path d="m8 6-6 6 6 6" />
+                                                                                </svg>
+                                                                            )}
+
+                                                                            {tmpl.templateName}
+
+                                                                            {tmpl.isDefault === true && (
+                                                                                <div className="status status7 me-2">{translate('emailSmsPage.defaultTag')}</div>
+                                                                            )}
+                                                                        </Link>
+                                                                    </li>
+                                                                ))
+                                                            ) : (
+                                                                <li>
+                                                                    <span className="dropdown-item text-muted">No templates available</span>
+                                                                </li>
+                                                            )}
+                                                        </ul>
+
+                                                    </div>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                                                </div>
+                                                <span className="inputnote">{translate('emailSmsPage.templatePageNote')}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className='col-md-6'>
+                            <div className="carddesign activetemplate-form">
+                                <div className="activetemplate">
+                                    <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
+                                    <h4>{translate('emailSmsPage.activeSmsTemplatesTitle')}</h4>
+                                    <h5>{translate('emailSmsPage.activeSmsTemplatesSubtitle')}</h5>
+                                </div>
+                                <div className="formdesign">
+                                    <div className="row">
+                                        <div className="col-md-12">
+                                            <div className="form-group mb-1">
+                                                <label><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-receipt" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg>{translate('emailSmsPage.SmstemplatePageLabel')}</label>
+                                                <div className="inputselect">
+                                                    <div className="dropdown leaddropdown sendemaidropdown">
+                                                        <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check w-4 h-4 text-primary" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>{defaultSMSTemplate ? defaultSMSTemplate.templateName || defaultSMSTemplate.templateName : translate("emailSmsPage.defaultSMSTemplateName")}</span>
+                                                        </button>
+                                                        <ul className="dropdown-menu">
+                                                            {smsTemplates && smsTemplates.length > 0 ? (
+                                                                smsTemplates.map((tmpl) => (
+                                                                    <li key={tmpl.id}>
+                                                                        <Link className="dropdown-item" to="#" onClick={() => BuyDefultSMSActiveNOt(tmpl.id)}>
+
+                                                                            {tmpl.isDefault === true ? (
+                                                                                <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    width="24"
+                                                                                    height="24"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    strokeWidth="2"
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    className="lucide lucide-lock"
+                                                                                    aria-hidden="true"
+                                                                                >
+                                                                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                                                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                                                                </svg>
+                                                                            ) : (
+                                                                                <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    width="24"
+                                                                                    height="24"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    strokeWidth="2"
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    className="lucide lucide-code"
+                                                                                    aria-hidden="true"
+                                                                                >
+                                                                                    <path d="m16 18 6-6-6-6" />
+                                                                                    <path d="m8 6-6 6 6 6" />
+                                                                                </svg>
+                                                                            )}
+                                                                            {tmpl.templateName}
+
+                                                                            {tmpl.isDefault === true && (
+                                                                                <div className="status status7">{translate('offerTemplate.standardTag')}</div>
+                                                                            )}
+                                                                        </Link>
+                                                                    </li>
+                                                                ))
+                                                            ) : (
+                                                                <li>
+                                                                    <span className="dropdown-item text-muted">No templates available</span>
+                                                                </li>
+                                                            )}
+                                                        </ul>
+
+                                                    </div>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                                                </div>
+                                                <span className="inputnote">{translate('emailSmsPage.templatePageNote')}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Email Templates Table */}
                     <div className="carddesign leadstable">
                         <h2 className="card-title">{translate('emailSmsPage.allEmailTemplates')}</h2>
@@ -752,20 +925,20 @@ const EmailSMSPage = () => {
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
                                                             </button>
                                                             <ul className="dropdown-menu">
-                                                               <li>
+                                                                <li>
                                                                     {template.isDefault ? (
-                                                                         <Link className="dropdown-item btn btn-send"
-                                                                          onClick={() => BuyDefultEmailActiveNOt(template.id)}
-                                                                         >
-                                                                        {translate('emailSmsPage.activeDefult')}
+                                                                        <Link className="dropdown-item btn btn-send"
+                                                                            onClick={() => BuyDefultEmailActiveNOt(template.id)}
+                                                                        >
+                                                                            {translate('emailSmsPage.activeDefult')}
                                                                         </Link>
                                                                     ) : (
                                                                         <Link
                                                                             className="dropdown-item"
                                                                             to="#"
                                                                             onClick={() => BuyDefultEmailActiveNOt(template.id)}
-                                                                            >
-                                                                        {translate('emailSmsPage.markActive')}
+                                                                        >
+                                                                            {translate('emailSmsPage.markActive')}
                                                                         </Link>
                                                                     )}
                                                                 </li>
@@ -813,7 +986,7 @@ const EmailSMSPage = () => {
                                         ) : (
                                             smsTemplates.map((template) => (
                                                 <tr key={template.id} className={smsTemplates.length === 1 ? "tablemaiikdata" : ""}>
-                                                     <td>{template.templateName} <strong>{template.isDefault && <span className="badge bg-info"> {translate('emailSmsPage.activeDefult')}</span>}</strong></td>
+                                                    <td>{template.templateName} <strong>{template.isDefault && <span className="badge bg-info"> {translate('emailSmsPage.activeDefult')}</span>}</strong></td>
                                                     <td>{template.recipientPhone}</td>
                                                     <td>{template.smsContent}</td>
                                                     <td>{new Date(template.createdAt).toLocaleDateString()}</td>
@@ -823,20 +996,20 @@ const EmailSMSPage = () => {
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis m-0" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
                                                             </button>
                                                             <ul className="dropdown-menu">
-                                                                 <li>
+                                                                <li>
                                                                     {template.isDefault ? (
-                                                                         <Link className="dropdown-item btn btn-send"
-                                                                          onClick={() => BuyDefultSMSActiveNOt(template.id)}
-                                                                         >
-                                                                        {translate('emailSmsPage.activeDefult')}
+                                                                        <Link className="dropdown-item btn btn-send"
+                                                                            onClick={() => BuyDefultSMSActiveNOt(template.id)}
+                                                                        >
+                                                                            {translate('emailSmsPage.activeDefult')}
                                                                         </Link>
                                                                     ) : (
                                                                         <Link
                                                                             className="dropdown-item"
                                                                             to="#"
                                                                             onClick={() => BuyDefultSMSActiveNOt(template.id)}
-                                                                            >
-                                                                        {translate('emailSmsPage.markActive')}
+                                                                        >
+                                                                            {translate('emailSmsPage.markActive')}
                                                                         </Link>
                                                                     )}
                                                                 </li>
@@ -948,26 +1121,27 @@ const EmailSMSPage = () => {
                                                                     });
                                                                 }}
                                                                 onFocus={() => setFocusedRef(emailBodyRef)}
-                                                                 config={{
-                                                                placeholder: translate('emailSmsPage.emailContentPlaceholder'),
-                                                                toolbar: [
-                                                                    'heading',
-                                                                    '|',
-                                                                    'bold',
-                                                                    'italic',
-                                                                    'underline',
-                                                                    'bulletedList',
-                                                                    'numberedList',
-                                                                    '|',
-                                                                    'insertTable',
-                                                                    '|',
-                                                                    'undo',
-                                                                    'redo'
-                                                                ],
-                                                                mediaEmbed: {
-                                                                    previewsInData: true
-                                                                }
-                                                            }}
+                                                                config={{
+                                                                    placeholder: translate('emailSmsPage.emailContentPlaceholder'),
+                                                                    toolbar: [
+                                                                        'heading',
+                                                                        '|',
+                                                                        'bold',
+                                                                        'italic',
+                                                                        'underline',
+                                                                        'bulletedList',
+                                                                        'numberedList',
+                                                                        '|',
+                                                                        'insertTable',
+                                                                        '|',
+                                                                        'undo',
+                                                                        'redo',
+                                                                        'link',
+                                                                    ],
+                                                                    mediaEmbed: {
+                                                                        previewsInData: true
+                                                                    }
+                                                                }}
                                                             />
                                                             {/* <textarea className="form-control" rows="5" name="body" ref={emailBodyRef} value={currentTemplate.body} onChange={handleInputChange} onFocus={() => setFocusedRef(emailBodyRef)} placeholder={translate('emailSmsPage.emailContentPlaceholder')}></textarea> */}
                                                         </div>
@@ -1155,7 +1329,7 @@ const EmailSMSPage = () => {
                                                             <div className="texttypelimit">
                                                                 <span className="inputnote">
                                                                     {translate('emailSmsPage.smsLength')}
-                                                                     {smsCharCount} {translate('emailSmsPage.characters')}
+                                                                    {smsCharCount} {translate('emailSmsPage.characters')}
                                                                 </span>
                                                             </div>
                                                         </div>

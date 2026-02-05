@@ -9,7 +9,7 @@ import LimitModal from '../../components/LimitModal';
 import { useLimit } from "../../context/LimitContext";
 
 
-const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, totalSmsSend, totalEmailsSend, fetchAllQuotesHistory }) => {
+const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, totalSmsSend, totalEmailsSend, fetchAllQuotesHistory, }) => {
   const { authToken, user } = useContext(AuthContext);
   const { t: translate } = useTranslation();
   const { checkLimit, isLimitModalOpen, currentLimit, closeLimitModal, refreshPlan, userPlan, smsBalance } = useLimit();
@@ -42,7 +42,7 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
   useEffect(() => {
     if (quoteData) {
       setInitialStatusId(quoteData.statusId);
-      setCurrentStatusId(quoteData.statusId || quoteStatuses.find(s => s.name === 'Not sent')?.id || '');
+      setCurrentStatusId(quoteData.statusId || quoteStatuses.find(s => s.name === 'Sent to customer')?.id || '');
     }
     if (lead) {
       // Update default SMS/Email messages with lead's name if available
@@ -51,6 +51,8 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
       setEmailSubject("");
     }
   }, [quoteData, lead, quoteStatuses]);
+
+  
 
   const fetchVariables = async () => {
     if (!authToken) {
@@ -72,6 +74,36 @@ const SendQuoteModal = ({ show, onHide, lead, quoteData, quoteStatuses, onSend, 
       setLoadingVariables(false);
     }
   };
+
+  useEffect(() => {
+  if (!show) return;
+  if (smsTemplates.length === 0) return;
+
+  const defaultSms = smsTemplates.find(t => t.isDefault);
+  if (!defaultSms) return;
+
+  setSendSmsChecked(true);
+  setSelectedSmsTemplateId(defaultSms.id);
+  setSmsMessage(defaultSms.smsContent || "");
+  setSmsFromName(defaultSms.fromName || user.name);
+
+}, [show, smsTemplates]);
+
+useEffect(() => {
+  if (!show) return;
+  if (emailTemplates.length === 0) return;
+
+  const defaultEmail = emailTemplates.find(t => t.isDefault);
+  if (!defaultEmail) return;
+
+  setSendEmailChecked(true);
+  setSelectedEmailTemplateId(defaultEmail.id);
+  setEmailSubject(defaultEmail.subject || "");
+  setEmailContent(defaultEmail.body || "");
+  setEmailFromName(defaultEmail.fromName || user.name);
+  setEmailFromEmail(defaultEmail.fromEmail || user.email);
+
+}, [show, emailTemplates]);
 
 
   useEffect(() => {
@@ -654,7 +686,8 @@ const showStatusSaveButton =
                               'insertTable',
                               '|',
                               'undo',
-                              'redo'
+                              'redo',
+                              'link',          
                             ],
                             mediaEmbed: {
                               previewsInData: true
