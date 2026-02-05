@@ -116,7 +116,7 @@ exports.createLead = async (req, res) => {
       statusId: statusId,
     });
     await runWorkflows("newLeadCreated", { lead, user: req.user });
-   
+
     // 🔥 EMAIL BACKGROUND MEIN SEND HOGA (NON-BLOCKING)
     if (lead.email) {
       setImmediate(async () => {
@@ -299,7 +299,7 @@ exports.getLeadById = async (req, res) => {
     const lead = await Lead.findOne({
       where: { id: req.params.id, userId: req.user.id },
       include: [
-         {
+        {
           model: User,
           as: "user",
           attributes: ["id", "name", "email"], // ✅ include only useful fields
@@ -415,8 +415,9 @@ exports.getLeadById = async (req, res) => {
       }
     }
 
-    // Sort timeline by time ascending
-    timeline.sort((a, b) => new Date(a.time) - new Date(b.time));
+    // Sort timeline by time DESC (latest first)
+    timeline.sort((a, b) => new Date(b.time) - new Date(a.time));
+
 
     // Send final response
     res.json({
@@ -720,29 +721,29 @@ exports.createPublicLead = async (req, res) => {
       await runWorkflows("leadCreatedViaFacebook", { lead, user });
     }
 
-     // 🔥 EMAIL BACKGROUND MEIN SEND HOGA (NON-BLOCKING)
+    // 🔥 EMAIL BACKGROUND MEIN SEND HOGA (NON-BLOCKING)
     if (lead.email) {
-        try {
-          const html = NewLeadEmailTemplate({
-            fullName: lead.fullName,
-            email: lead.email,
-            phone: lead.phone,
-            address: lead.address,
-            companyName: lead.companyName,
-            cvrNumber: lead.cvrNumber,
-            value: lead.value,
-            attachments: lead.attachments,
-          });
+      try {
+        const html = NewLeadEmailTemplate({
+          fullName: lead.fullName,
+          email: lead.email,
+          phone: lead.phone,
+          address: lead.address,
+          companyName: lead.companyName,
+          cvrNumber: lead.cvrNumber,
+          value: lead.value,
+          attachments: lead.attachments,
+        });
 
-          await sendMail(req.user.id, {
-            to: lead.email,
-            subject: "Your Lead Has Been Created",
-            text: `Hello ${lead.fullName}, your lead has been created successfully.`,
-            html,
-          });
-        } catch (emailErr) {
-          console.error("Background email failed:", emailErr);
-        }
+        await sendMail(req.user.id, {
+          to: lead.email,
+          subject: "Your Lead Has Been Created",
+          text: `Hello ${lead.fullName}, your lead has been created successfully.`,
+          html,
+        });
+      } catch (emailErr) {
+        console.error("Background email failed:", emailErr);
+      }
     }
 
 

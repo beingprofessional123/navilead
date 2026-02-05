@@ -77,7 +77,7 @@ const TicketPage = () => {
                 setTickets(tickets);
 
                 // 2. Change Detection Logic
-                const lastSnapshot = JSON.parse(localStorage.getItem('ticketSnapshot') || '[]');
+                const lastSnapshot = JSON.parse(localStorage.getItem('userticketSnapshot') || '[]');
 
                 // 💡 ticket_id ko snapshot mein add kiya gaya hai
                 const currentSnapshot = tickets.map(t => ({
@@ -139,9 +139,9 @@ const TicketPage = () => {
                 }
 
                 // 4. Update Memory
-                localStorage.setItem('ticketSnapshot', JSON.stringify(currentSnapshot));
+                localStorage.setItem('userticketSnapshot', JSON.stringify(currentSnapshot));
                 const currentTotalUnread = tickets.reduce((sum, t) => sum + (t.unreadCount || 0), 0);
-                localStorage.setItem('prevUnreadCount', currentTotalUnread);
+                localStorage.setItem('userprevUnreadCount', currentTotalUnread);
 
             } catch (error) {
                 console.error("Polling error:", error);

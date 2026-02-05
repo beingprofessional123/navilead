@@ -159,7 +159,7 @@ const WorkflowsPage = () => {
                 id: template.id,
                 templateName: template.templateName,
                 subject: template.subject,
-                isDefault: template.isDefault,
+                isDefault: !!template.isDefault,
             })));
         } catch (error) {
             console.error("Error fetching email templates:", error);
@@ -181,7 +181,7 @@ const WorkflowsPage = () => {
                 id: template.id,
                 templateName: template.templateName,
                 smsContent: template.smsContent,
-                isDefault: template.isDefault,
+                isDefault: !!template.isDefault,
             })));
         } catch (error) {
             console.error("Error fetching SMS templates:", error);
@@ -327,7 +327,7 @@ const WorkflowsPage = () => {
 
 
     const renderStep = (step, index) => {
-        const selectedEmailTemplate = emailTemplates.find( t => t.id === step.config?.emailTemplateId) || emailTemplates.find(t => t.isDefault) || null; 
+        const selectedEmailTemplate = emailTemplates.find(t => t.id === step.config?.emailTemplateId) || emailTemplates.find(t => t.isDefault) || null;
 
 
         const handleEmailTemplateSelect = (templateId) => {
@@ -339,7 +339,7 @@ const WorkflowsPage = () => {
                 )
             );
         };
-        const selectedSmsTemplate = smsTemplates.find(t => t.id === step.config?.smsTemplateId)  || smsTemplates.find(t => t.isDefault) || null; 
+        const selectedSmsTemplate = smsTemplates.find(t => t.id === step.config?.smsTemplateId) || smsTemplates.find(t => t.isDefault) || null;
 
 
         const handleSmsTemplateSelect = (templateId) => {
@@ -432,7 +432,7 @@ const WorkflowsPage = () => {
                                                     {selectedEmailTemplate
                                                         ? selectedEmailTemplate.templateName
                                                         : t('workflows.selectEmailTemplate')}
-                                                        {selectedEmailTemplate.isDefault && <strong> (Default)</strong>}
+                                                    {selectedEmailTemplate?.isDefault && <strong> (Default)</strong>}
                                                 </span>
                                             </button>
                                             <ul className="dropdown-menu" >
@@ -483,8 +483,9 @@ const WorkflowsPage = () => {
                                                     {selectedSmsTemplate
                                                         ? selectedSmsTemplate.templateName
                                                         : t('workflows.selectSmsTemplate')}
-                                                    {selectedSmsTemplate.isDefault && <strong> (Default)</strong>}
+                                                    {selectedSmsTemplate?.isDefault && <strong> (Default)</strong>}
                                                 </span>
+
                                             </button>
                                             <ul className="dropdown-menu" >
                                                 {smsTemplates.map(template => (

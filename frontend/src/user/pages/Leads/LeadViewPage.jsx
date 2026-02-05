@@ -29,7 +29,9 @@ const LeadViewPage = () => {
   const [quoteStatuses, setQuoteStatuses] = useState([]);
   const [pricingTemplates, setPricingTemplates] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState(null);
-  
+  const [quoteMode, setQuoteMode] = useState("create"); // "create" | "preview" | "edit"
+  const [savedQuote, setSavedQuote] = useState(null);
+
   const [isEditing, setIsEditing] = useState({
     fullName: false,
     email: false,
@@ -91,6 +93,13 @@ const LeadViewPage = () => {
 
   // 🔎 Helper: Geocode address into lat/lon
   const geocodeAddress = async (address) => {
+
+    if (!address || !address.trim()) {
+      toast.error(translate('leadViewPage.addressRequired'));
+      return;
+    }
+
+
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
@@ -106,6 +115,7 @@ const LeadViewPage = () => {
       if (data.length > 0) {
         setCoords({ lat: data[0].lat, lon: data[0].lon });
       }
+
 
     } catch (err) {
       console.error("Error fetching coordinates:", err);
@@ -139,6 +149,12 @@ const LeadViewPage = () => {
           headers: { Authorization: `Bearer ${authToken}` },
         }
       );
+
+      // ✅ ONLY ADD THIS (reuse existing function)
+      if (field === "address") {
+        await geocodeAddress(editedData.address);
+      }
+
       toast.success(translate('leadViewPage.fieldUpdateSuccess', { field: field })); // Translated success message
       fetchLeadDetails();
       refreshPlan();
@@ -532,47 +548,27 @@ const LeadViewPage = () => {
   const handleSaveQuote = async (e) => {
     e.preventDefault();
 
-    // 🗓️ Ensure plan start date exists
     if (!userPlan?.startDate) {
       toast.error("Plan start date not found");
       return;
     }
-
-    const planStartDate = new Date(userPlan.startDate);
-
-    // ✅ Count only quotes created on or after plan start date
-    const filteredQuotes = allquotesHistory.filter((quote) => {
-      const createdAt = new Date(quote.createdAt);
-      return createdAt >= planStartDate;
-    });
-
-    const currentOfferCount = filteredQuotes.length;
-
-    // ✅ Enforce offer (quote) plan limit
-    const canProceed = checkLimit(currentOfferCount, "Offers");
-    if (!canProceed) return;
 
     const action = e.nativeEvent.submitter?.value;
     setLoading(true);
 
     try {
       const notSentStatus = quoteStatuses.find(s => s.name === 'Not sent');
-      if (!notSentStatus) {
-        toast.error(translate('api.quotes.statusLoadError'));
-        setLoading(false);
-        return;
-      }
 
-      // ✅ Include currentQuoteService if user has typed something
       const servicesToSave = [...newQuoteFormData.services];
       if (currentQuoteService.name && currentQuoteService.pricePerUnit >= 0) {
         servicesToSave.push({ ...currentQuoteService });
       }
 
-      // Recalculate total including current service
-      const total = calculateQuoteTotal(servicesToSave, newQuoteFormData.overallDiscount);
+      const total = calculateQuoteTotal(
+        servicesToSave,
+        newQuoteFormData.overallDiscount
+      );
 
-      // ✅ Use servicesToSave in payload, not newQuoteFormData.services
       const payload = {
         userId: lead.userId,
         leadId: lead.id,
@@ -582,7 +578,7 @@ const LeadViewPage = () => {
         validDays: newQuoteFormData.validDays,
         overallDiscount: newQuoteFormData.overallDiscount,
         terms: newQuoteFormData.terms,
-        total, // use recalculated total
+        total,
         currencyId: newQuoteFormData.currency?.id || CurrencySave?.id || null,
         services: servicesToSave.map(service => ({
           name: service.name,
@@ -590,43 +586,107 @@ const LeadViewPage = () => {
           quantity: service.quantity,
           unit: service.unit,
           discount: service.discountPercent,
-          price: service.pricePerUnit, // <- fix here
+          price: service.pricePerUnit,
         })),
-        statusId: notSentStatus.id,
+        statusId: notSentStatus?.id || null,
       };
 
-      const response = await api.post('/quotes', payload, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      toast.success(translate(response.data.message || 'leadViewPage.quoteSaveSuccess'));
+      let response;
+
+      /* =======================
+         CREATE QUOTE
+      ======================= */
+      if (quoteMode === "create") {
+        response = await api.post('/quotes', payload, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+      }
+
+      /* =======================
+         UPDATE QUOTE
+      ======================= */
+      if (quoteMode === "edit" && savedQuote?.id) {
+        response = await api.put(`/quotes/${savedQuote.id}`, payload, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+      }
+
+      let quote;
+
+      if (quoteMode === "create") {
+        quote = response.data.quotes; // ✅ extract first item
+      }
+
+      if (quoteMode === "edit") {
+        quote = response.data.updatedQuote; // ✅ correct key
+      }
+
+      /* =======================
+         POST ACTION HANDLING
+      ======================= */
+      console.log("action:", action);
+      setSavedQuote(quote);
+
+      if (
+        action === "saveOnly" ||
+        action === "updateOnlypreview"
+      ) {
+        setQuoteMode("preview");
+      }
+
+      if (
+        action === "saveAndSend" ||
+        action === "updateOnlySend"
+      ) {
+        setQuoteToActOn(quote);
+        setShowSendQuoteModal(true);
+      }
+
+      console.log("setSavedQuote:", quote);
+
+      toast.success(translate(response.data.message));
+
       fetchAllQuotesHistory();
       fetchQuotesHistory();
       refreshPlan();
-      setQuoteToActOn(response.data.quotes);
-      if (action === "saveAndSend") setShowSendQuoteModal(true);
 
-      // Reset form
-      setNewQuoteFormData({
-        title: '',
-        description: '',
-        validDays: 7,
-        overallDiscount: 0,
-        terms: '',
-        services: [],
-        pricingTemplateId: '',
-        total: 0,
-        currency: { id: '', code: '', name: '', symbol: '' }
-      });
-      setCurrentQuoteService({ name: '', description: '', quantity: 1, unit: '', pricePerUnit: 0, discountPercent: 0, total: 0 });
+      /* =======================
+         RESET ONLY AFTER CREATE
+      ======================= */
+      if (quoteMode === "create") {
+        setNewQuoteFormData({
+          title: '',
+          description: '',
+          validDays: 7,
+          overallDiscount: 0,
+          terms: '',
+          services: [],
+          pricingTemplateId: '',
+          total: 0,
+          currency: { id: '', code: '', name: '', symbol: '' }
+        });
+
+        setCurrentQuoteService({
+          name: '',
+          description: '',
+          quantity: 1,
+          unit: '',
+          pricePerUnit: 0,
+          discountPercent: 0,
+          total: 0,
+        });
+      }
 
     } catch (err) {
-      console.error('Error saving quote:', err);
-      const errorMessage = err.response?.data?.message || 'leadViewPage.quoteSaveError';
-      toast.error(translate(errorMessage));
+      console.error(err);
+      toast.error(
+        translate(err.response?.data?.message || 'leadViewPage.quoteSaveError')
+      );
     } finally {
       setLoading(false);
     }
   };
+
 
 
   const handleSendQuoteActions = async (actions) => {
@@ -684,6 +744,7 @@ const LeadViewPage = () => {
       await fetchQuotesHistory();
       await fetchLeadDetails();
       await refreshPlan();
+      setQuoteMode("create");
     } catch (err) {
       console.error('Error performing quote actions:', err);
       const errorMessage = err.response?.data?.message || 'leadViewPage.quoteActionsError';
@@ -696,6 +757,7 @@ const LeadViewPage = () => {
       if (success) {
         setShowSendQuoteModal(false);
         setQuoteToActOn(null);
+        setQuoteMode("create");
       } else {
         console.warn("Keeping modal open due to error.");
       }
@@ -710,6 +772,9 @@ const LeadViewPage = () => {
       setSelectedStatus(Number(lead.statusId));
     }
   }, [lead]);
+
+  const selectedStatusObj =
+    statuses?.find(s => s.id === selectedStatus) || null;
 
 
 
@@ -749,6 +814,26 @@ const LeadViewPage = () => {
   const liveTotal = calculateQuoteTotal(allServicesForLiveCalculation, newQuoteFormData.overallDiscount);
   // --- End of Live Calculation for Overall Totals ---
 
+  const getStatusBadgeClass = (statusName) => {
+    switch (statusName) {
+      case 'Offer Sent':
+        return 'badge badge1';
+      case 'Sent':
+      case 'New':
+        return 'badge badge2';
+      case 'In Dialogue':
+        return 'badge badge3';
+      case 'Qualified':
+        return 'badge badge4';
+      case 'Won':
+        return 'badge badge5';
+      case 'Lost':
+        return 'badge badge6';
+      default:
+        return 'badge badge-default';
+    }
+  };
+
 
   return (
     <>
@@ -763,6 +848,7 @@ const LeadViewPage = () => {
             <h4>{lead.fullName} <span>{lead.companyName} {lead.leadNumber && `(${lead.leadNumber})`}</span></h4>
           </div>
           <div className="status">{lead.status?.name || translate('leadViewPage.na')}</div>
+
         </div>
       </div>
 
@@ -864,29 +950,27 @@ const LeadViewPage = () => {
               <h3 className="leads-subheading">{translate('leadViewPage.Status')}</h3>
               <div className="leads-view-action">
                 <div className="sendoffer-status">
-                  <div className="inputselect">
-               <select
-  className="form-select"
-  value={Number(selectedStatus)}
-  onChange={(e) => {
-    const newStatusId = Number(e.target.value);
-    setSelectedStatus(newStatusId);
-    handleStatusChange(newStatusId);
-  }}
->
-  {quoteStatuses.map(status => (
-    <option key={status.id} value={status.id}>
-      {status.name}
-    </option>
-  ))}
-</select>
-
-
-
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true">
-                      <path d="m6 9 6 6 6-6"></path>
-                    </svg>
+                  <div className="dropdown leaddropdown">
+                    <button type="button" className="btn btn-primary dropdown-toggle" style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between' }} data-bs-toggle="dropdown">
+                      <span className={getStatusBadgeClass(selectedStatusObj?.name)}>
+                        {selectedStatusObj?.name || lead?.status?.name || 'Select Status'}
+                      </span>
+                    </button>
+                    <ul className="dropdown-menu" style={{ width: '100%' }}>
+                      {/* Dynamically render status options */}
+                      {statuses.map(status => (
+                        <li key={status.id}>
+                          <Link className="dropdown-item" to="#" onClick={() => {
+                            setSelectedStatus(status.id);
+                            handleStatusChange(status.id);
+                          }}>
+                            {status.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -1141,7 +1225,7 @@ const LeadViewPage = () => {
                     );
                   })
                 ) : (
-                  <li><div className="text-muted">No timeline events found</div></li>
+                  <li><div className="">No timeline events found</div></li>
                 )}
 
               </ul>
@@ -1222,11 +1306,37 @@ const LeadViewPage = () => {
             <div className="formdesign location-map">
               <div className="form-group ">
                 <div className="input-group">
-                  <input type="text" className="form-control" value={lead.address || translate('leadViewPage.addressPlaceholder')} />
-                  <button className="btn btn-send" type="button" onClick={() => geocodeAddress(lead.address)}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search h-4 w-4" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="address"
+                    value={editedData.address}
+                    onChange={handleEditLead}
+                  />
+
+                  <button
+                    className="btn btn-send"
+                    type="button"
+                    onClick={() => handleSave("address")}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="lucide lucide-search h-4 w-4"
+                    >
+                      <path d="m21 21-4.34-4.34"></path>
+                      <circle cx="11" cy="11" r="8"></circle>
+                    </svg>
                     {translate('leadViewPage.findObliquePhoto')}
                   </button>
+
                 </div>
               </div>
               <div className="location-mapview">
@@ -1267,7 +1377,7 @@ const LeadViewPage = () => {
           <div className="emailmodaltab">
             <ul className="nav nav-tabs" role="tablist">
               <li className="nav-item" role="presentation">
-                <Link className={`nav-link ${activeTab === "create" ? "active" : ""}`} onClick={() => setActiveTab("create")} data-bs-toggle="tab" href="#create-quote-tab" aria-selected="true" role="tab">{translate('leadViewPage.createQuoteTab')}</Link>
+                <Link className={`nav-link ${activeTab === "create" ? "active" : ""}`} onClick={() => { setActiveTab("create"); setQuoteMode("create"); }} data-bs-toggle="tab" href="#create-quote-tab" aria-selected="true" role="tab">{translate('leadViewPage.createQuoteTab')}</Link>
               </li>
               <li className="nav-item" role="presentation">
                 <Link className={`nav-link ${activeTab === "history" ? "active" : ""}`} onClick={() => setActiveTab("history")} data-bs-toggle="tab" href="#quote-history-tab" aria-selected="false" tabIndex="-1" role="tab">{translate('leadViewPage.quoteHistoryTab')}</Link>
@@ -1277,267 +1387,713 @@ const LeadViewPage = () => {
           <div className="tab-content">
             {/* Create Quote Tab Content */}
             <div id="create-quote-tab" className={`tab-pane ${activeTab === "create" ? "active" : ""}`}>
-              <div className="carddesign">
-                <h2 className="card-title">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text w-4 h-4" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
-                  {translate('leadViewPage.newQuoteTitle')}
-                </h2>
-                <form onSubmit={handleSaveQuote}>
-                  <div className="leads-infocol">
-                    <div className="formdesign">
-                      <div className="form-group mb-2">
-                        <label>{translate('leadViewPage.startWithTemplateOptional')}</label>
-                        <div className="inputselect">
-                          <div className="dropdown leaddropdown">
-                            <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
-                              <span>{newQuoteFormData.pricingTemplateId ? pricingTemplates.find(t => t.id === newQuoteFormData.pricingTemplateId)?.name : translate('leadViewPage.selectQuoteTemplate')}</span>
-                            </button>
-                            <ul className="dropdown-menu">
-                              {pricingTemplates.map(template => (
-                                <li key={template.id}>
-                                  <Link className="dropdown-item" to="#" onClick={(e) => {
-                                    e.preventDefault();
-                                    const selectedTemplate = pricingTemplates.find(t => t.id === template.id);
-                                    if (selectedTemplate) {
-                                      const servicesToLoad = selectedTemplate.services.map(s => ({
-                                        ...s,
-                                        pricePerUnit: Number(s.pricePerUnit) || 0,
-                                        quantity: Number(s.quantity) || 1,
-                                        discountPercent: Number(s.discountPercent) || 0,
-                                        total: (Number(s.pricePerUnit) || 0) * (Number(s.quantity) || 1) * (1 - (Number(s.discountPercent) || 0) / 100),
-                                        currency: selectedTemplate.currency
-                                      }));
-                                      setNewQuoteFormData(prev => {
-                                        const newTotal = calculateQuoteTotal(servicesToLoad, prev.overallDiscount);
-                                        return {
-                                          ...prev,
-                                          pricingTemplateId: selectedTemplate.id,
-                                          title: selectedTemplate.title || selectedTemplate.name,
-                                          description: selectedTemplate.description,
-                                          terms: selectedTemplate.terms,
-                                          services: servicesToLoad,
-                                          total: newTotal,
+
+              {quoteMode === "create" && (
+                <div className="carddesign">
+                  <h2 className="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text w-4 h-4" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+                    {translate('leadViewPage.newQuoteTitle')}
+                  </h2>
+                  <form onSubmit={handleSaveQuote} >
+                    <div className="leads-infocol">
+                      <div className="formdesign">
+                        <div className="form-group mb-2">
+                          <label>{translate('leadViewPage.startWithTemplateOptional')}</label>
+                          <div className="inputselect">
+                            <div className="dropdown leaddropdown">
+                              <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                <span>{newQuoteFormData.pricingTemplateId ? pricingTemplates.find(t => t.id === newQuoteFormData.pricingTemplateId)?.name : translate('leadViewPage.selectQuoteTemplate')}</span>
+                              </button>
+                              <ul className="dropdown-menu">
+                                {pricingTemplates.map(template => (
+                                  <li key={template.id}>
+                                    <Link className="dropdown-item" to="#" onClick={(e) => {
+                                      e.preventDefault();
+                                      const selectedTemplate = pricingTemplates.find(t => t.id === template.id);
+                                      if (selectedTemplate) {
+                                        const servicesToLoad = selectedTemplate.services.map(s => ({
+                                          ...s,
+                                          pricePerUnit: Number(s.pricePerUnit) || 0,
+                                          quantity: Number(s.quantity) || 1,
+                                          discountPercent: Number(s.discountPercent) || 0,
+                                          total: (Number(s.pricePerUnit) || 0) * (Number(s.quantity) || 1) * (1 - (Number(s.discountPercent) || 0) / 100),
                                           currency: selectedTemplate.currency
-                                        };
-                                      });
-                                    }
-                                  }}>
-                                    {template.name} <span>
-                                      {formatCurrency(
-                                        calculateServicesSubtotal(template.services), // numeric value
-                                        template.currency?.code            // currency code dynamically
-                                      )}
-                                    </span>
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
+                                        }));
+                                        setNewQuoteFormData(prev => {
+                                          const newTotal = calculateQuoteTotal(servicesToLoad, prev.overallDiscount);
+                                          return {
+                                            ...prev,
+                                            pricingTemplateId: selectedTemplate.id,
+                                            title: selectedTemplate.title || selectedTemplate.name,
+                                            description: selectedTemplate.description,
+                                            terms: selectedTemplate.terms,
+                                            services: servicesToLoad,
+                                            total: newTotal,
+                                            currency: selectedTemplate.currency
+                                          };
+                                        });
+                                      }
+                                    }}>
+                                      {template.name} <span>
+                                        {formatCurrency(
+                                          calculateServicesSubtotal(template.services), // numeric value
+                                          template.currency?.code            // currency code dynamically
+                                        )}
+                                      </span>
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                           </div>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="leads-infocol">
-                    <div className="formdesign">
-                      <div className="form-group">
-                        <label>{translate('leadViewPage.quoteTitleLabel')}</label>
-                        <input type="text" className="form-control" name="title" value={newQuoteFormData.title} onChange={handleNewQuoteChange} placeholder={translate('leadViewPage.quoteTitlePlaceholder')} required />
-                      </div>
-                      <div className="form-group">
-                        <label>{translate('leadViewPage.descriptionLabel')}</label>
-                        <textarea className="form-control" rows="3" name="description" value={newQuoteFormData.description} onChange={handleNewQuoteChange} placeholder={translate('leadViewPage.descriptionPlaceholder')}></textarea>
-                      </div>
-                      <div className="form-group mb-2">
-                        <label>{translate('leadViewPage.validityPeriodLabel')}</label>
-                        <div className="inputselect">
-                          <select className="form-select" name="validDays" value={newQuoteFormData.validDays} onChange={handleNewQuoteChange}>
-                            <option value={7}>{translate('leadViewPage.days7')}</option>
-                            <option value={14}>{translate('leadViewPage.days14')}</option>
-                            <option value={30}>{translate('leadViewPage.days30')}</option>
-                            <option value={60}>{translate('leadViewPage.days60')}</option>
-                            <option value={90}>{translate('leadViewPage.days90')}</option>
-                          </select>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                    <div className="leads-infocol">
+                      <div className="formdesign">
+                        <div className="form-group">
+                          <label>{translate('leadViewPage.quoteTitleLabel')}</label>
+                          <input type="text" className="form-control" name="title" value={newQuoteFormData.title} onChange={handleNewQuoteChange} placeholder={translate('leadViewPage.quoteTitlePlaceholder')} required />
                         </div>
-                      </div>
-
-                      {/* Services Section */}
-                      <div className="leads-infocol">
-                        <div className="formdesign">
-                          <div className="workflowsadd displayadd">
-                            <h2 className="card-title">{translate('leadViewPage.servicesTitle')}</h2>
-                            <button type="button" className="btn btn-add" onClick={handleAddQuoteService}>
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-                              {translate('leadViewPage.addService')}
-                            </button>
+                        <div className="form-group">
+                          <label>{translate('leadViewPage.descriptionLabel')}</label>
+                          <textarea className="form-control" rows="3" name="description" value={newQuoteFormData.description} onChange={handleNewQuoteChange} placeholder={translate('leadViewPage.descriptionPlaceholder')}></textarea>
+                        </div>
+                        <div className="form-group mb-2">
+                          <label>{translate('leadViewPage.validityPeriodLabel')}</label>
+                          <div className="inputselect">
+                            <select className="form-select" name="validDays" value={newQuoteFormData.validDays} onChange={handleNewQuoteChange}>
+                              <option value={7}>{translate('leadViewPage.days7')}</option>
+                              <option value={14}>{translate('leadViewPage.days14')}</option>
+                              <option value={30}>{translate('leadViewPage.days30')}</option>
+                              <option value={60}>{translate('leadViewPage.days60')}</option>
+                              <option value={90}>{translate('leadViewPage.days90')}</option>
+                            </select>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                           </div>
+                        </div>
 
-                          {newQuoteFormData.services.map((service, index) => (
-                            <div className="displayadbox" key={index}>
+                        {/* Services Section */}
+                        <div className="leads-infocol">
+                          <div className="formdesign">
+                            <div className="workflowsadd displayadd">
+                              <h2 className="card-title">{translate('leadViewPage.servicesTitle')}</h2>
+                              <button type="button" className="btn btn-add" onClick={handleAddQuoteService}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                                {translate('leadViewPage.addService')}
+                              </button>
+                            </div>
+
+                            {newQuoteFormData.services.map((service, index) => (
+                              <div className="displayadbox mt-2" key={index}>
+                                <div className="displayadbox-icon">
+                                  <div className="form-group mb-1">
+                                    <input type="text" className="form-control" value={service.name} onChange={(e) => {
+                                      const newServices = [...newQuoteFormData.services];
+                                      newServices[index].name = e.target.value;
+                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
+                                    }} placeholder={translate('leadViewPage.serviceNamePlaceholder')} />
+                                  </div>
+                                  <div className="form-group mb-2">
+                                    <textarea className="form-control" rows="3" value={service.description || ''} onChange={(e) => {
+                                      const newServices = [...newQuoteFormData.services];
+                                      newServices[index].description = e.target.value;
+                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices }));
+                                    }} placeholder={translate('leadViewPage.serviceDescriptionPlaceholder')}></textarea>
+                                  </div>
+                                  <button type="button" className="btn btn-add" style={{ color: '#ef4444 !important' }} onClick={(e) => { e.preventDefault(); handleRemoveQuoteService(index); }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x m-0" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                                  </button>
+                                </div>
+                                <div className="displayadbox-group">
+                                  <div className="form-group mb-1">
+                                    <label>{translate('leadViewPage.priceLabel')}</label>
+                                    <input type="number" className="form-control" value={service.pricePerUnit} onChange={(e) => {
+                                      const newServices = [...newQuoteFormData.services];
+                                      newServices[index].pricePerUnit = Number(e.target.value);
+                                      const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
+                                      newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
+                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
+                                    }} placeholder="0" min="0" />
+                                  </div>
+                                  <div className="form-group mb-1">
+                                    <label>{translate('leadViewPage.quantityLabel')}</label>
+                                    <input type="number" className="form-control" value={service.quantity} onChange={(e) => {
+                                      const newServices = [...newQuoteFormData.services];
+                                      newServices[index].quantity = Number(e.target.value);
+                                      const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
+                                      newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
+                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
+                                    }} placeholder="1" min="1" />
+                                  </div>
+                                  <div className="form-group mb-1">
+                                    <label>{translate('leadViewPage.unitLabel')}</label>
+                                    <input type="text" className="form-control" value={service.unit} onChange={(e) => {
+                                      const newServices = [...newQuoteFormData.services];
+                                      newServices[index].unit = e.target.value;
+                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices }));
+                                    }} placeholder={translate('leadViewPage.unitPlaceholder')} />
+                                  </div>
+                                  <div className="form-group mb-1">
+                                    <label>{translate('leadViewPage.discountLabel')}</label>
+                                    <input type="number" className="form-control" value={service.discountPercent} onChange={(e) => {
+                                      const newServices = [...newQuoteFormData.services];
+                                      newServices[index].discountPercent = Number(e.target.value);
+                                      const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
+                                      newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
+                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
+                                    }} placeholder="0" min="0" max="100" />
+                                  </div>
+                                </div>
+                                <div className="displayadbox-result">
+                                  <div className="displayadbox-resultleft">
+                                    <h6>{service.quantity} × {formatCurrency(service.pricePerUnit)}</h6>
+                                    {service.discountPercent > 0 && <span>{translate('leadViewPage.discountText', { discount: service.discountPercent })}</span>}
+                                  </div>
+                                  <div className="displayadbox-resultright">
+                                    {formatCurrency(service.total, newQuoteFormData.currency?.code)}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+
+                            <div className="displayadbox mt-2">
                               <div className="displayadbox-icon">
                                 <div className="form-group mb-1">
-                                  <input type="text" className="form-control" value={service.name} onChange={(e) => {
-                                    const newServices = [...newQuoteFormData.services];
-                                    newServices[index].name = e.target.value;
-                                    setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
-                                  }} placeholder={translate('leadViewPage.serviceNamePlaceholder')} />
+                                  <input type="text" className="form-control" name="name" value={currentQuoteService.name} onChange={handleCurrentQuoteServiceChange} placeholder={translate('leadViewPage.newServicePlaceholder')} />
                                 </div>
                                 <div className="form-group mb-2">
-                                  <textarea className="form-control" rows="3" value={service.description || ''} onChange={(e) => {
-                                    const newServices = [...newQuoteFormData.services];
-                                    newServices[index].description = e.target.value;
-                                    setNewQuoteFormData(prev => ({ ...prev, services: newServices }));
-                                  }} placeholder={translate('leadViewPage.serviceDescriptionPlaceholder')}></textarea>
+                                  <textarea className="form-control" rows="3" name="description" value={currentQuoteService.description} onChange={handleCurrentQuoteServiceChange} placeholder={translate('leadViewPage.serviceDescriptionPlaceholder')}></textarea>
                                 </div>
-                                <button type="button" className="btn btn-add" style={{ color: '#ef4444 !important' }} onClick={(e) => { e.preventDefault(); handleRemoveQuoteService(index); }}>
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x m-0" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
-                                </button>
                               </div>
                               <div className="displayadbox-group">
                                 <div className="form-group mb-1">
                                   <label>{translate('leadViewPage.priceLabel')}</label>
-                                  <input type="number" className="form-control" value={service.pricePerUnit} onChange={(e) => {
-                                    const newServices = [...newQuoteFormData.services];
-                                    newServices[index].pricePerUnit = Number(e.target.value);
-                                    const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
-                                    newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
-                                    setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
-                                  }} placeholder="0" min="0" />
+                                  <input type="number" className="form-control" name="pricePerUnit" value={currentQuoteService.pricePerUnit} onChange={handleCurrentQuoteServiceChange} placeholder="0" min="0" />
                                 </div>
                                 <div className="form-group mb-1">
                                   <label>{translate('leadViewPage.quantityLabel')}</label>
-                                  <input type="number" className="form-control" value={service.quantity} onChange={(e) => {
-                                    const newServices = [...newQuoteFormData.services];
-                                    newServices[index].quantity = Number(e.target.value);
-                                    const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
-                                    newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
-                                    setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
-                                  }} placeholder="1" min="1" />
+                                  <input type="number" className="form-control" name="quantity" value={currentQuoteService.quantity} onChange={handleCurrentQuoteServiceChange} placeholder="1" min="1" />
                                 </div>
                                 <div className="form-group mb-1">
                                   <label>{translate('leadViewPage.unitLabel')}</label>
-                                  <input type="text" className="form-control" value={service.unit} onChange={(e) => {
-                                    const newServices = [...newQuoteFormData.services];
-                                    newServices[index].unit = e.target.value;
-                                    setNewQuoteFormData(prev => ({ ...prev, services: newServices }));
-                                  }} placeholder={translate('leadViewPage.unitPlaceholder')} />
+                                  <input type="text" className="form-control" name="unit" value={currentQuoteService.unit} onChange={handleCurrentQuoteServiceChange} placeholder={translate('leadViewPage.unitPlaceholder')} />
                                 </div>
                                 <div className="form-group mb-1">
                                   <label>{translate('leadViewPage.discountLabel')}</label>
-                                  <input type="number" className="form-control" value={service.discountPercent} onChange={(e) => {
-                                    const newServices = [...newQuoteFormData.services];
-                                    newServices[index].discountPercent = Number(e.target.value);
-                                    const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
-                                    newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
-                                    setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
-                                  }} placeholder="0" min="0" max="100" />
+                                  <input type="number" className="form-control" name="discountPercent" value={currentQuoteService.discountPercent} onChange={handleCurrentQuoteServiceChange} placeholder="0" min="0" max="100" />
                                 </div>
                               </div>
                               <div className="displayadbox-result">
                                 <div className="displayadbox-resultleft">
-                                  <h6>{service.quantity} × {formatCurrency(service.pricePerUnit)}</h6>
-                                  {service.discountPercent > 0 && <span>{translate('leadViewPage.discountText', { discount: service.discountPercent })}</span>}
+                                  <h6>{currentQuoteService.quantity} × {formatCurrency(currentQuoteService.pricePerUnit)}</h6>
+                                  {currentQuoteService.discountPercent > 0 && <span>{translate('leadViewPage.discountText', { discount: currentQuoteService.discountPercent })}</span>}
                                 </div>
                                 <div className="displayadbox-resultright">
-                                  {formatCurrency(service.total, newQuoteFormData.currency?.code)}
+                                  {formatCurrency(currentQuoteService.total, newQuoteFormData.currency?.code)}
                                 </div>
                               </div>
                             </div>
-                          ))}
+                          </div>
+                        </div>
 
-                          <div className="displayadbox">
-                            <div className="displayadbox-icon">
-                              <div className="form-group mb-1">
-                                <input type="text" className="form-control" name="name" value={currentQuoteService.name} onChange={handleCurrentQuoteServiceChange} placeholder={translate('leadViewPage.newServicePlaceholder')} />
-                              </div>
-                              <div className="form-group mb-2">
-                                <textarea className="form-control" rows="3" name="description" value={currentQuoteService.description} onChange={handleCurrentQuoteServiceChange} placeholder={translate('leadViewPage.serviceDescriptionPlaceholder')}></textarea>
-                              </div>
+                        {/* Overall Discount and Total Calculation */}
+                        <div className="leads-infocol">
+                          <div className="formdesign">
+                            <div className="form-group">
+                              <label>{translate('leadViewPage.overallDiscountLabel')}</label>
+                              <input type="number" className="form-control" name="overallDiscount" value={newQuoteFormData.overallDiscount} onChange={handleNewQuoteChange} placeholder="0" style={{ width: '95px' }} min="0" max="100" />
                             </div>
-                            <div className="displayadbox-group">
-                              <div className="form-group mb-1">
-                                <label>{translate('leadViewPage.priceLabel')}</label>
-                                <input type="number" className="form-control" name="pricePerUnit" value={currentQuoteService.pricePerUnit} onChange={handleCurrentQuoteServiceChange} placeholder="0" min="0" />
+                            <div className="result-calculat">
+                              <div className="result-calculattop">
+                                <h5><span className="result-calculatlabel">{translate('leadViewPage.subtotalLabel')}</span><span className="result-calculatresult">{formatCurrency(liveSubtotal, newQuoteFormData.currency?.code)}</span></h5>
+                                {newQuoteFormData.overallDiscount > 0 && (
+                                  <h5 className="resultrabat">
+                                    <span className="result-calculatlabel">{translate('leadViewPage.discountAmountLabel', { discount: newQuoteFormData.overallDiscount })}</span>
+                                    <span className="result-calculatresult">- {formatCurrency(liveSubtotal * (newQuoteFormData.overallDiscount / 100))}</span>
+                                  </h5>
+                                )}
                               </div>
-                              <div className="form-group mb-1">
-                                <label>{translate('leadViewPage.quantityLabel')}</label>
-                                <input type="number" className="form-control" name="quantity" value={currentQuoteService.quantity} onChange={handleCurrentQuoteServiceChange} placeholder="1" min="1" />
-                              </div>
-                              <div className="form-group mb-1">
-                                <label>{translate('leadViewPage.unitLabel')}</label>
-                                <input type="text" className="form-control" name="unit" value={currentQuoteService.unit} onChange={handleCurrentQuoteServiceChange} placeholder={translate('leadViewPage.unitPlaceholder')} />
-                              </div>
-                              <div className="form-group mb-1">
-                                <label>{translate('leadViewPage.discountLabel')}</label>
-                                <input type="number" className="form-control" name="discountPercent" value={currentQuoteService.discountPercent} onChange={handleCurrentQuoteServiceChange} placeholder="0" min="0" max="100" />
-                              </div>
-                            </div>
-                            <div className="displayadbox-result">
-                              <div className="displayadbox-resultleft">
-                                <h6>{currentQuoteService.quantity} × {formatCurrency(currentQuoteService.pricePerUnit)}</h6>
-                                {currentQuoteService.discountPercent > 0 && <span>{translate('leadViewPage.discountText', { discount: currentQuoteService.discountPercent })}</span>}
-                              </div>
-                              <div className="displayadbox-resultright">
-                                {formatCurrency(currentQuoteService.total, newQuoteFormData.currency?.code)}
+                              <div className="result-calculatbottom">
+                                <h5><span className="result-calculat-total">{translate('leadViewPage.totalLabel')}</span><span className="result-calculatfinal">{formatCurrency(liveTotal, newQuoteFormData.currency?.code)}</span></h5>
                               </div>
                             </div>
                           </div>
                         </div>
+
+                        {/* Terms and Conditions */}
+                        <div className="leads-infocol">
+                          <div className="formdesign">
+                            <div className="form-group mb-1">
+                              <label>{translate('leadViewPage.termsAndConditionsLabel')}</label>
+                              <textarea className="form-control" rows="3" name="terms" value={newQuoteFormData.terms} onChange={handleNewQuoteChange} placeholder={translate('leadViewPage.termsAndConditionsPlaceholder')}></textarea>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons for Quote Creation */}
+                        <button type="submit" className="btn btn-send w-100 mb-2" disabled={loading} name="action" value="saveOnly" >
+                          {loading ? translate('leadViewPage.savingButton') : translate('leadViewPage.saveQuoteButton')}
+                        </button>
+
+                        <button type="submit" className="btn btn-send w-100 mb-2" disabled={loading} name="action" value="saveAndSend" >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
+                          {loading ? translate('leadViewPage.savingButton') : translate('leadViewPage.saveAndSendQuoteButton')}
+                        </button>
+                        <Link to={`/leads/quote-preview?leadId=${id}`} state={{ quoteData: { ...newQuoteFormData, services: [...newQuoteFormData.services, { ...currentQuoteService, currency: newQuoteFormData.currency }], pricingTemplateId: newQuoteFormData.pricingTemplateId, allquotesHistory, quoteStatuses } }} className="btn btn-add w-100">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                          {translate('leadViewPage.previewButton')}
+                        </Link>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+
+              {quoteMode === "preview" && (
+                <div className="carddesign" style={{ fontSize: '14px', border: '1px solid var(--border)' }}>
+                  <h2 className="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text w-4 h-4" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+                    {translate('leadViewPage.ViewQuoteTitle')}
+                  </h2>
+                  <div className="leads-infocol">
+                    <div className="formdesign">
+
+                      {/* Header */}
+                      <div className="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                          <h5 className="mb-1">{savedQuote.title}</h5>
+                          <p className=" mb-0">{savedQuote.description}</p>
+                        </div>
+                        <span className="badge bg-secondary">
+                          Not Sent
+                        </span>
                       </div>
 
-                      {/* Overall Discount and Total Calculation */}
-                      <div className="leads-infocol">
-                        <div className="formdesign">
-                          <div className="form-group">
-                            <label>{translate('leadViewPage.overallDiscountLabel')}</label>
-                            <input type="number" className="form-control" name="overallDiscount" value={newQuoteFormData.overallDiscount} onChange={handleNewQuoteChange} placeholder="0" style={{ width: '95px' }} min="0" max="100" />
+                      <hr />
+
+                      {/* Services Table */}
+                      <div className="table-responsive mb-3" >
+                        <table
+                          className="table table-sm"
+                          style={{
+                            '--bs-table-bg': '#161f26',
+                            '--bs-table-color': '#ccfffe',
+                            'border': '1px solid var(--border)'
+                          }}
+                        >
+
+                          <thead
+                            className="table-light"
+                            style={{
+                              '--bs-table-bg': '#161f26',
+                              '--bs-table-color': '#ccfffe',
+                              'border': '1px solid var(--border)'
+                            }}
+                          >
+
+
+                            <tr>
+                              <th>Service</th>
+                              <th>Description</th>
+                              <th className="text-end">Qty</th>
+                              <th className="text-end">Price</th>
+                              <th className="text-end">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {savedQuote.services.map((service) => {
+                              const serviceTotal =
+                                service.price * service.quantity -
+                                (service.price * service.quantity * service.discount) / 100;
+
+                              return (
+                                <tr key={service.id}>
+                                  <td className="fw-medium">{service.name}</td>
+                                  <td className="">{service.description}</td>
+                                  <td className="text-end">{service.quantity}</td>
+                                  <td className="text-end">{formatCurrency(service.price)}</td>
+                                  <td className="text-end fw-medium">
+                                    {formatCurrency(serviceTotal)}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Totals */}
+                      <div className="row justify-content-end mb-3">
+                        <div className="col-md-5">
+                          <div className="d-flex justify-content-between mb-1">
+                            <span className="">Subtotal</span>
+                            <span>{formatCurrency(savedQuote.total)}</span>
                           </div>
-                          <div className="result-calculat">
-                            <div className="result-calculattop">
-                              <h5><span className="result-calculatlabel">{translate('leadViewPage.subtotalLabel')}</span><span className="result-calculatresult">{formatCurrency(liveSubtotal, newQuoteFormData.currency?.code)}</span></h5>
-                              {newQuoteFormData.overallDiscount > 0 && (
-                                <h5 className="resultrabat">
-                                  <span className="result-calculatlabel">{translate('leadViewPage.discountAmountLabel', { discount: newQuoteFormData.overallDiscount })}</span>
-                                  <span className="result-calculatresult">- {formatCurrency(liveSubtotal * (newQuoteFormData.overallDiscount / 100))}</span>
-                                </h5>
-                              )}
+
+                          {savedQuote.overallDiscount > 0 && (
+                            <div className="d-flex justify-content-between mb-1">
+                              <span className="">Discount</span>
+                              <span>-{savedQuote.overallDiscount}%</span>
                             </div>
-                            <div className="result-calculatbottom">
-                              <h5><span className="result-calculat-total">{translate('leadViewPage.totalLabel')}</span><span className="result-calculatfinal">{formatCurrency(liveTotal, newQuoteFormData.currency?.code)}</span></h5>
-                            </div>
+                          )}
+
+                          <div className="d-flex justify-content-between fw-bold">
+                            <span>Total</span>
+                            <span>{formatCurrency(savedQuote.total)}</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Terms and Conditions */}
-                      <div className="leads-infocol">
-                        <div className="formdesign">
-                          <div className="form-group mb-1">
-                            <label>{translate('leadViewPage.termsAndConditionsLabel')}</label>
-                            <textarea className="form-control" rows="3" name="terms" value={newQuoteFormData.terms} onChange={handleNewQuoteChange} placeholder={translate('leadViewPage.termsAndConditionsPlaceholder')}></textarea>
+                      <hr />
+
+                      {/* Terms */}
+                      {savedQuote.terms && (
+                        <div className="mb-3">
+                          <h6 className="mb-2">Terms & Conditions</h6>
+                          <p className=" white-space-pre-line">
+                            {savedQuote.terms}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Meta */}
+                      <div className="row  small mb-4">
+                        <div className="col-md-6">
+                          <div>Valid for: {savedQuote.validDays} days</div>
+                          <div>
+                            Created: {new Date(savedQuote.createdAt).toLocaleDateString('en-GB', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
                           </div>
+
                         </div>
                       </div>
 
-                      {/* Action Buttons for Quote Creation */}
-                      <button type="submit" className="btn btn-send w-100 mb-2" disabled={loading} name="action" value="saveOnly" >
-                        {loading ? translate('leadViewPage.savingButton') : translate('leadViewPage.saveQuoteButton')}
-                      </button>
+                      {/* Actions */}
+                      <div className="d-flex gap-2">
+                        <button
+                          className="btn btn-add w-100"
+                          onClick={() => {
+                            // 1️⃣ Fill form with saved quote data
+                            setNewQuoteFormData({
+                              title: savedQuote.title || '',
+                              description: savedQuote.description || '',
+                              validDays: savedQuote.validDays || 7,
+                              overallDiscount: savedQuote.overallDiscount || 0,
+                              terms: savedQuote.terms || '',
+                              pricingTemplateId: savedQuote.pricingTemplateId || '',
+                              currency: { id: savedQuote.currencyId },
+                              services: savedQuote.services.map(service => ({
+                                name: service.name,
+                                description: service.description,
+                                quantity: service.quantity,
+                                unit: service.unit || '',
+                                pricePerUnit: service.price,
+                                discountPercent: service.discount,
+                                total:
+                                  service.price * service.quantity -
+                                  (service.price * service.quantity * service.discount) / 100,
+                              })),
+                            });
 
-                      <button type="submit" className="btn btn-send w-100 mb-2" disabled={loading} name="action" value="saveAndSend" >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
-                        {loading ? translate('leadViewPage.savingButton') : translate('leadViewPage.saveAndSendQuoteButton')}
-                      </button>
-                      <Link to={`/leads/quote-preview?leadId=${id}`} state={{ quoteData: { ...newQuoteFormData, services: [...newQuoteFormData.services, { ...currentQuoteService, currency: newQuoteFormData.currency }], pricingTemplateId: newQuoteFormData.pricingTemplateId, allquotesHistory, quoteStatuses } }} className="btn btn-add w-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        {translate('leadViewPage.previewButton')}
-                      </Link>
+                            // 2️⃣ Clear draft service
+                            setCurrentQuoteService({
+                              name: '',
+                              description: '',
+                              quantity: 1,
+                              unit: '',
+                              pricePerUnit: 0,
+                              discountPercent: 0,
+                              total: 0,
+                            });
+
+                            // 3️⃣ Switch to edit mode
+                            setQuoteMode("edit");
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button type="button" className="btn btn-add w-100" disabled={loading} o onClick={() => {
+                          setSavedQuote(savedQuote);
+                          setQuoteToActOn(savedQuote);
+                          setShowSendQuoteModal(true);
+                        }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
+                          {loading ? translate('leadViewPage.savingButton') : translate('leadViewPage.sendQuoteButton')}
+                        </button>
+
+                      </div>
+
                     </div>
                   </div>
-                </form>
-              </div>
+                </div>
+
+              )}
+
+              {quoteMode === "edit" && (
+                <div className="carddesign">
+                  <h2 className="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text w-4 h-4" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+                    {translate('leadViewPage.EditQuoteTitle')}
+                  </h2>
+                  <form onSubmit={handleSaveQuote} >
+                    <div className="leads-infocol">
+                      <div className="formdesign">
+                        <div className="form-group mb-2">
+                          <label>{translate('leadViewPage.startWithTemplateOptional')}</label>
+                          <div className="inputselect">
+                            <div className="dropdown leaddropdown">
+                              <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                <span>{newQuoteFormData.pricingTemplateId ? pricingTemplates.find(t => t.id === newQuoteFormData.pricingTemplateId)?.name : translate('leadViewPage.selectQuoteTemplate')}</span>
+                              </button>
+                              <ul className="dropdown-menu">
+                                {pricingTemplates.map(template => (
+                                  <li key={template.id}>
+                                    <Link className="dropdown-item" to="#" onClick={(e) => {
+                                      e.preventDefault();
+                                      const selectedTemplate = pricingTemplates.find(t => t.id === template.id);
+                                      if (selectedTemplate) {
+                                        const servicesToLoad = selectedTemplate.services.map(s => ({
+                                          ...s,
+                                          pricePerUnit: Number(s.pricePerUnit) || 0,
+                                          quantity: Number(s.quantity) || 1,
+                                          discountPercent: Number(s.discountPercent) || 0,
+                                          total: (Number(s.pricePerUnit) || 0) * (Number(s.quantity) || 1) * (1 - (Number(s.discountPercent) || 0) / 100),
+                                          currency: selectedTemplate.currency
+                                        }));
+                                        setNewQuoteFormData(prev => {
+                                          const newTotal = calculateQuoteTotal(servicesToLoad, prev.overallDiscount);
+                                          return {
+                                            ...prev,
+                                            pricingTemplateId: selectedTemplate.id,
+                                            title: selectedTemplate.title || selectedTemplate.name,
+                                            description: selectedTemplate.description,
+                                            terms: selectedTemplate.terms,
+                                            services: servicesToLoad,
+                                            total: newTotal,
+                                            currency: selectedTemplate.currency
+                                          };
+                                        });
+                                      }
+                                    }}>
+                                      {template.name} <span>
+                                        {formatCurrency(
+                                          calculateServicesSubtotal(template.services), // numeric value
+                                          template.currency?.code            // currency code dynamically
+                                        )}
+                                      </span>
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="leads-infocol">
+                      <div className="formdesign">
+                        <div className="form-group">
+                          <label>{translate('leadViewPage.quoteTitleLabel')}</label>
+                          <input type="text" className="form-control" name="title" value={newQuoteFormData.title} onChange={handleNewQuoteChange} placeholder={translate('leadViewPage.quoteTitlePlaceholder')} required />
+                        </div>
+                        <div className="form-group">
+                          <label>{translate('leadViewPage.descriptionLabel')}</label>
+                          <textarea className="form-control" rows="3" name="description" value={newQuoteFormData.description} onChange={handleNewQuoteChange} placeholder={translate('leadViewPage.descriptionPlaceholder')}></textarea>
+                        </div>
+                        <div className="form-group mb-2">
+                          <label>{translate('leadViewPage.validityPeriodLabel')}</label>
+                          <div className="inputselect">
+                            <select className="form-select" name="validDays" value={newQuoteFormData.validDays} onChange={handleNewQuoteChange}>
+                              <option value={7}>{translate('leadViewPage.days7')}</option>
+                              <option value={14}>{translate('leadViewPage.days14')}</option>
+                              <option value={30}>{translate('leadViewPage.days30')}</option>
+                              <option value={60}>{translate('leadViewPage.days60')}</option>
+                              <option value={90}>{translate('leadViewPage.days90')}</option>
+                            </select>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                          </div>
+                        </div>
+
+                        {/* Services Section */}
+                        <div className="leads-infocol">
+                          <div className="formdesign">
+                            <div className="workflowsadd displayadd">
+                              <h2 className="card-title">{translate('leadViewPage.servicesTitle')}</h2>
+                              <button type="button" className="btn btn-add" onClick={handleAddQuoteService}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                                {translate('leadViewPage.addService')}
+                              </button>
+                            </div>
+
+                            {newQuoteFormData.services.map((service, index) => (
+                              <div className="displayadbox mt-2" key={index}>
+                                <div className="displayadbox-icon">
+                                  <div className="form-group mb-1">
+                                    <input type="text" className="form-control" value={service.name} onChange={(e) => {
+                                      const newServices = [...newQuoteFormData.services];
+                                      newServices[index].name = e.target.value;
+                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
+                                    }} placeholder={translate('leadViewPage.serviceNamePlaceholder')} />
+                                  </div>
+                                  <div className="form-group mb-2">
+                                    <textarea className="form-control" rows="3" value={service.description || ''} onChange={(e) => {
+                                      const newServices = [...newQuoteFormData.services];
+                                      newServices[index].description = e.target.value;
+                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices }));
+                                    }} placeholder={translate('leadViewPage.serviceDescriptionPlaceholder')}></textarea>
+                                  </div>
+                                  <button type="button" className="btn btn-add" style={{ color: '#ef4444 !important' }} onClick={(e) => { e.preventDefault(); handleRemoveQuoteService(index); }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x m-0" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                                  </button>
+                                </div>
+                                <div className="displayadbox-group">
+                                  <div className="form-group mb-1">
+                                    <label>{translate('leadViewPage.priceLabel')}</label>
+                                    <input type="number" className="form-control" value={service.pricePerUnit} onChange={(e) => {
+                                      const newServices = [...newQuoteFormData.services];
+                                      newServices[index].pricePerUnit = Number(e.target.value);
+                                      const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
+                                      newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
+                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
+                                    }} placeholder="0" min="0" />
+                                  </div>
+                                  <div className="form-group mb-1">
+                                    <label>{translate('leadViewPage.quantityLabel')}</label>
+                                    <input type="number" className="form-control" value={service.quantity} onChange={(e) => {
+                                      const newServices = [...newQuoteFormData.services];
+                                      newServices[index].quantity = Number(e.target.value);
+                                      const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
+                                      newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
+                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
+                                    }} placeholder="1" min="1" />
+                                  </div>
+                                  <div className="form-group mb-1">
+                                    <label>{translate('leadViewPage.unitLabel')}</label>
+                                    <input type="text" className="form-control" value={service.unit} onChange={(e) => {
+                                      const newServices = [...newQuoteFormData.services];
+                                      newServices[index].unit = e.target.value;
+                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices }));
+                                    }} placeholder={translate('leadViewPage.unitPlaceholder')} />
+                                  </div>
+                                  <div className="form-group mb-1">
+                                    <label>{translate('leadViewPage.discountLabel')}</label>
+                                    <input type="number" className="form-control" value={service.discountPercent} onChange={(e) => {
+                                      const newServices = [...newQuoteFormData.services];
+                                      newServices[index].discountPercent = Number(e.target.value);
+                                      const discountedPricePerUnit = newServices[index].pricePerUnit * (1 - (newServices[index].discountPercent || 0) / 100);
+                                      newServices[index].total = newServices[index].quantity * discountedPricePerUnit;
+                                      setNewQuoteFormData(prev => ({ ...prev, services: newServices, total: calculateQuoteTotal(newServices, prev.overallDiscount) }));
+                                    }} placeholder="0" min="0" max="100" />
+                                  </div>
+                                </div>
+                                <div className="displayadbox-result">
+                                  <div className="displayadbox-resultleft">
+                                    <h6>{service.quantity} × {formatCurrency(service.pricePerUnit)}</h6>
+                                    {service.discountPercent > 0 && <span>{translate('leadViewPage.discountText', { discount: service.discountPercent })}</span>}
+                                  </div>
+                                  <div className="displayadbox-resultright">
+                                    {formatCurrency(service.total, newQuoteFormData.currency?.code)}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+
+                            <div className="displayadbox mt-2">
+                              <div className="displayadbox-icon">
+                                <div className="form-group mb-1">
+                                  <input type="text" className="form-control" name="name" value={currentQuoteService.name} onChange={handleCurrentQuoteServiceChange} placeholder={translate('leadViewPage.newServicePlaceholder')} />
+                                </div>
+                                <div className="form-group mb-2">
+                                  <textarea className="form-control" rows="3" name="description" value={currentQuoteService.description} onChange={handleCurrentQuoteServiceChange} placeholder={translate('leadViewPage.serviceDescriptionPlaceholder')}></textarea>
+                                </div>
+                              </div>
+                              <div className="displayadbox-group">
+                                <div className="form-group mb-1">
+                                  <label>{translate('leadViewPage.priceLabel')}</label>
+                                  <input type="number" className="form-control" name="pricePerUnit" value={currentQuoteService.pricePerUnit} onChange={handleCurrentQuoteServiceChange} placeholder="0" min="0" />
+                                </div>
+                                <div className="form-group mb-1">
+                                  <label>{translate('leadViewPage.quantityLabel')}</label>
+                                  <input type="number" className="form-control" name="quantity" value={currentQuoteService.quantity} onChange={handleCurrentQuoteServiceChange} placeholder="1" min="1" />
+                                </div>
+                                <div className="form-group mb-1">
+                                  <label>{translate('leadViewPage.unitLabel')}</label>
+                                  <input type="text" className="form-control" name="unit" value={currentQuoteService.unit} onChange={handleCurrentQuoteServiceChange} placeholder={translate('leadViewPage.unitPlaceholder')} />
+                                </div>
+                                <div className="form-group mb-1">
+                                  <label>{translate('leadViewPage.discountLabel')}</label>
+                                  <input type="number" className="form-control" name="discountPercent" value={currentQuoteService.discountPercent} onChange={handleCurrentQuoteServiceChange} placeholder="0" min="0" max="100" />
+                                </div>
+                              </div>
+                              <div className="displayadbox-result">
+                                <div className="displayadbox-resultleft">
+                                  <h6>{currentQuoteService.quantity} × {formatCurrency(currentQuoteService.pricePerUnit)}</h6>
+                                  {currentQuoteService.discountPercent > 0 && <span>{translate('leadViewPage.discountText', { discount: currentQuoteService.discountPercent })}</span>}
+                                </div>
+                                <div className="displayadbox-resultright">
+                                  {formatCurrency(currentQuoteService.total, newQuoteFormData.currency?.code)}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Overall Discount and Total Calculation */}
+                        <div className="leads-infocol">
+                          <div className="formdesign">
+                            <div className="form-group">
+                              <label>{translate('leadViewPage.overallDiscountLabel')}</label>
+                              <input type="number" className="form-control" name="overallDiscount" value={newQuoteFormData.overallDiscount} onChange={handleNewQuoteChange} placeholder="0" style={{ width: '95px' }} min="0" max="100" />
+                            </div>
+                            <div className="result-calculat">
+                              <div className="result-calculattop">
+                                <h5><span className="result-calculatlabel">{translate('leadViewPage.subtotalLabel')}</span><span className="result-calculatresult">{formatCurrency(liveSubtotal, newQuoteFormData.currency?.code)}</span></h5>
+                                {newQuoteFormData.overallDiscount > 0 && (
+                                  <h5 className="resultrabat">
+                                    <span className="result-calculatlabel">{translate('leadViewPage.discountAmountLabel', { discount: newQuoteFormData.overallDiscount })}</span>
+                                    <span className="result-calculatresult">- {formatCurrency(liveSubtotal * (newQuoteFormData.overallDiscount / 100))}</span>
+                                  </h5>
+                                )}
+                              </div>
+                              <div className="result-calculatbottom">
+                                <h5><span className="result-calculat-total">{translate('leadViewPage.totalLabel')}</span><span className="result-calculatfinal">{formatCurrency(liveTotal, newQuoteFormData.currency?.code)}</span></h5>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Terms and Conditions */}
+                        <div className="leads-infocol">
+                          <div className="formdesign">
+                            <div className="form-group mb-1">
+                              <label>{translate('leadViewPage.termsAndConditionsLabel')}</label>
+                              <textarea className="form-control" rows="3" name="terms" value={newQuoteFormData.terms} onChange={handleNewQuoteChange} placeholder={translate('leadViewPage.termsAndConditionsPlaceholder')}></textarea>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons for Quote Creation */}
+                        <button type="submit" className="btn btn-send w-100 mb-2" disabled={loading} name="action" value="updateOnlypreview" >
+                          {loading ? translate('leadViewPage.savingButton') : translate('leadViewPage.updateandpreviewQuoteButton')}
+                        </button>
+                        <button type="submit" className="btn btn-send w-100 mb-2" disabled={loading} name="action" value="updateOnlySend" >
+                          {loading ? translate('leadViewPage.savingButton') : translate('leadViewPage.updateandsendQuoteButton')}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              )}
+
             </div>
+
 
             {/* Quote History Tab Content */}
             <div
@@ -1610,6 +2166,30 @@ const LeadViewPage = () => {
                           <div className="leads-previousoffers-btn">
                             {isCurrentLead ? (
                               <>
+                                <Link
+                                  type="button"
+                                  className="btn btn-add"
+                                  to={`/offer/${quote.id}`}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    style={{ marginRight: '0px' }}
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="lucide lucide-eye"
+                                    aria-hidden="true"
+                                  >
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                  </svg>
+
+                                </Link>
                                 {/* 👁 View Button */}
                                 <button
                                   type="button"
@@ -1697,29 +2277,55 @@ const LeadViewPage = () => {
                                 </button>
                               </>
                             ) : (
-                              /* 📋 Only Copy Button for Previous Quotes */
-                              <button
-                                type="button"
-                                className="btn btn-add"
-                                onClick={() => handleCopyQuote(quote)}
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  className="lucide lucide-copy m-0"
-                                  aria-hidden="true"
+                              <>
+
+                                <Link
+                                  type="button"
+                                  className="btn btn-add"
+                                  to={`/offer/${quote.id}`}
                                 >
-                                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                              </button>
+                                  <svg
+                                    style={{ marginRight: '0px' }}
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="lucide lucide-eye"
+                                    aria-hidden="true"
+                                  >
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                  </svg>
+
+                                </Link>
+                                <button
+                                  type="button"
+                                  className="btn btn-add"
+                                  onClick={() => handleCopyQuote(quote)}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="lucide lucide-copy m-0"
+                                    aria-hidden="true"
+                                  >
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                  </svg>
+                                </button>
+                              </>
                             )}
                           </div>
                         </h3>
