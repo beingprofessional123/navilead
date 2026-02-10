@@ -1,10 +1,32 @@
 const fetch = require('node-fetch');
 
+// Normalize phone number: default country code +45
+function normalizeMsisdn(number, defaultCountryCode = '+45') {
+  if (!number) return number;
+
+  // Remove spaces, brackets, dashes etc
+  let cleaned = number.replace(/[^\d+]/g, '');
+
+  // If starts with 00 -> convert to +
+  if (cleaned.startsWith('00')) {
+    cleaned = '+' + cleaned.slice(2);
+  }
+
+  // If no country code, add default
+  if (!cleaned.startsWith('+')) {
+    cleaned = defaultCountryCode + cleaned;
+  }
+
+  return cleaned;
+}
+
 async function sendSms({ to, message, from }) {
   try {
     // Convert single number to array of objects
     const recipients = Array.isArray(to) ? to : [to];
-    const formattedRecipients = recipients.map(msisdn => ({ msisdn }));
+    const formattedRecipients = recipients.map(msisdn => ({
+      msisdn: normalizeMsisdn(msisdn),
+    }));
 
     const payload = {
       sender: from,

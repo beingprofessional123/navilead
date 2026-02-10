@@ -40,206 +40,329 @@ const OffersTemplatesEditPage = () => {
     });
     const defaultHTML = `<!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <title>Navilead</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Navilead - Quote</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style type="text/css">
+
+        #offer-html-renderer-root {
+            background-color: #101418;
+            color: #8cd9d9;
+            font-weight: 400;
+        }
+
+
+        .templatebody {
+            font-family: 'Poppins', sans-serif;
+            font-style: normal;
+        }
+
+
+        .templatebody {
+            font-family: 'Poppins', sans-serif;
+            background-color: #101418;
+            color: #8cd9d9;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .templatelogo {
+            padding: 20px 0px;
+        }
+
+        .templatelogo a {
+            width: 200px;
+            display: inline-block;
+        }
+
+        .template-leftcol {
+            background-color: #171f26;
+            border: 1px solid #202e3c;
+            border-radius: 8.7px;
+            padding: 20px;
+            margin-bottom: 23px;
+        }
+
+        .template-title h1 {
+            font-size: 21px;
+            margin-bottom: 13px;
+            color: #cff;
+        }
+
+        .template-title p {
+            font-size: 12px;
+            margin-bottom: 13px;
+            font-weight: 400;
+        }
+
+        .service-item {
+            gap: 12px;
+            align-items: start;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            padding: 12px 10px;
+            border-radius: 10px;
+            border: 1px solid #202e3c;
+            margin-bottom: 15px;
+        }
+
+        .service-title h3 {
+            font-size: 14px;
+            font-weight: 400;
+            margin-bottom: 3px;
+            color: #cff;
+        }
+
+        .service-title p {
+            font-size: 12px;
+            margin-bottom: 0px;
+            font-weight: 400;
+        }
+
+        .service-price {
+            color: #00d4f0;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .servicelist {
+            border-top: 1px dashed #202e3c;
+            padding: 15px 0px;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #202e3c;
+        }
+
+        .servicelist ul {
+            margin: 0px;
+            padding: 0px;
+            list-style: none;
+        }
+
+        .servicelist ul li {
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 7px;
+        }
+
+        .servicelist ul li:last-child {
+            margin: 0px;
+        }
+
+        .servicelist ul li span {
+            color: #cff;
+        }
+
+        .servicelist ul li strong {
+            color: #00d4f0;
+            font-weight: 700;
+        }
+
+        .servicelist ul li span.totaltext {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .servicelist ul li strong.totalprice {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .publicbottom {
+            margin-bottom: 15px;
+        }
+
+        .publicbottom h2 {
+            color: #cff;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .publicbottom p {
+            font-size: 12px;
+            margin-bottom: 0px;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+
+        .publicbottom .form-check-label {
+            font-size: 14px;
+            margin-bottom: 0px;
+            color: #cff;
+        }
+
+        .publicbottom .form-check-label a {
+            color: #00d4f0;
+        }
+        .template-comment {
+          display: grid;
+        }
+        .template-comment label.form-label {
+            color: #cff;
+            font-size: 14px;
+        }
+
+        .template-comment textarea#customerNotestextarea {
+            padding: 8px 5px;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #cff;
+            background-color: #1b2632;
+            border: 1px solid #171f26;
+            border-radius: 8.7px;
+            outline: none;
+            box-shadow: none;
+        }
+
+        .template-btn {
+            display: flex;
+            gap: 0px 9px;
+            justify-content: space-between;
+            border-top: 1px solid #202e3c;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .template-btn .btn.acceptquote {
+            background-color: #00d4f0;
+            color: #101418 !important;
+        }
+
+        .template-btn .btn {
+            padding: 7px 14px;
+            color: #cff !important;
+            background-color: #101418;
+            font-size: 12.25px;
+            border: 1px solid #202e3c !important;
+            border-radius: 8.7px;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        .template-rightcol {
+            background-color: #171f26;
+            border: 1px solid #202e3c;
+            border-radius: 8.7px;
+            padding: 20px;
+            margin-bottom: 23px;
+        }
+
+        .template-rightcol-img img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .template-rightcol-desc h4 {
+            color: #cff;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .template-rightcol-desc p {
+            font-size: 13px;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+
+        .template-rightcol-desc p strong {
+            font-weight: 500;
+            color: #cff;
+        }
+    </style>
 </head>
-<style type="text/css">
-*, ::after, ::before {
-  box-sizing: border-box;
-}
-body {
-    margin: 0px;
-}
-.container {
-    max-width: 1140px;
-    margin: 0px auto;
-    background-color: #101418;
-}
-.sectiontop1 {
-    padding: 0px !important;
-}
-@media all and (min-width:320px) and (max-width: 767px) {
-.sectiontop {
-  padding-top: 20px !important;
-}
-.coldiv {
-    flex-wrap: wrap;
-}
-.coldivleft {
-    max-width: 100% !important;
-    flex: 0 0 100%!important;
-}
-.coldivright {
-    max-width: 100% !important;
-    flex: 0 0 100%!important;
-}
-.service-item {
-    display: flex !important;
-    flex-wrap: wrap !important;
-}
-.service-item div {
-    font-size: 12px !important;
-}
-.coldivleft div {
-    font-size: 12px !important;
-}
-.coldivleft div span{
-    font-size: 12px !important;
-}
-.coldivleft div strong{
-    font-size: 12px !important;
-}
-.coldivleft div label{
-    font-size: 12px !important;
-}
-.sectiontop1 {
-    padding: 0px !important;
-}
-.offer-title h1 {
-    font-size: 15px !important;
-}
 
-}
-@media all and (min-width:768px) and (max-width: 1024px) {
-.sectiontop {
-  padding-top: 20px !important;
-}
-.coldiv {
-    flex-wrap: wrap;
-} 
-}
-@media all and (min-width:768px) and (max-width: 991px) {
-.container {
-    max-width: 720px;
-}
-}
-@media all and (min-width:992px) and (max-width: 1024px) {
-.container {
-    max-width: 960px;
-}
-}
-@media all and (min-width:1025px) and (max-width: 1199px) {
-.container {
-    max-width: 960px;
-}
-}
-</style>
-<body style="font-family: 'Poppins', sans-serif; background-color: #101418; color: #cff; font-weight: 400; font-style: normal;">
+<body class="templatebody" id="offer-html-renderer-root">
 
-
-<div class="container" style="background-color: #101418;">
-
-<section class="sectiontop" style="padding: 50px 0px;">
-  <div class="sectiontop1" style="width: 100%; padding-right: 15px; padding-left: 15px; margin-right: auto; margin-left: auto;">
-    <div style="display: flex; flex-wrap: wrap;">
-      <div style="position: relative; width: 100%; padding-right: 15px; padding-left: 15px;">
-        <div style="width: 220px; margin: 0px auto 30px;">
-          <a href="#"><img src="/assets/images/logo.svg" style="max-width: 100%; height: auto; display: block;" alt=""></a>
-        </div>
-      </div>
+    <div class="templatelogo text-center">
+        <a href="#"><img src="/assets/images/logo.svg" class="img-fluid" alt="Navilead"></a>
     </div>
-    <div class="coldiv" style="display: flex;">
-      <div class="coldivleft" style="position: relative; width: 100%; padding-right: 15px; padding-left: 15px; flex: 0 0 58.333333%; max-width: 58.333333%;">
-        <div style="background-color: #171f26; border: 1px solid #202e3c; border-radius: 8.7px; padding: 21px; margin-bottom: 23px; position: relative;">
-           <div> 
-          <div class="offer-title">
-           <h1 style="font-size: 21px; margin-bottom: 10px;" id="QuotesTitle">{quotestitle}</h1>
-          </div>
-          <div style="font-size: 14px; color: #8cd9d9; margin-bottom: 3px; font-weight: 400;">
-             <p style="font-size: 14px; color: #8cd9d9; margin-bottom: 3px; font-weight: 400;" id="QuotesDescription">{quotesdescription}</p>
-            <p style="font-size: 12px; color: #8cd9d9; margin-bottom: 3px; font-weight: 400;">Please review the details below and approve the quote if satisfactory. Contact us with any questions.</p>
-          </div>
-          <div style="margin: 10px 0 2px;" class="service-container" id="mulipleserverdivmain">
-            <div class="service-item" id="mulipleserverdivrepated" style="display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; padding: 12px 10px; border-radius: 10px; border: 1px solid #202e3c; margin-bottom: 10px;">
-              <input type="checkbox" style="background-color: #1b2632; border: 1px solid #202e3c;" class="service-checkbox" id="mulipleservercheckbox">
-              <div id="mulipleservercheckboxinnerdiv">
-              <div style="font-size: 14px; font-weight: 400; margin-bottom: 1px;" class="service-title" id="mulipleserverdivtitle">{servicetitle}</div>
-              <div style="font-size: 13px; color: #8cd9d9; margin-bottom: 0px; font-weight: 400;" class="service-description" id="mulipleserverdivdiscription">{servicedescription}</div>
-              </div>
-              <div id="mulipleservercheckboxinnerdiv">
-              <div style="color: #00d4f0; font-weight: 500; font-size: 15px;" class="service-price" id="mulipleserverdivPrice">{serviceprice}</div>
-              <div class="service-discount" style="font-size: 12px; color: #ff6b6b; margin-top: 2px;display:none;" id="mulipleserverdivDiscount">Discount: {servicediscount}%</div>
-                <div class="service-finalprice" style="color: #00d4f0; font-weight: 500; font-size: 15px; display:none;" id="mulipleserverdivFinalPrice">Final: {servicefinalprice}</div>
-              </div>
-            </div>
-          </div>
-          <div style="border-top: 1px dashed #202e3c; margin-top: 15px; padding: 15px 0px; display: grid; gap: 6px; margin-bottom: 15px; border-bottom: 1px dashed #202e3c;">
-            <div style="display: flex; align-items: baseline; justify-content: space-between;">
-                <span style="font-size: 14px; font-weight: 500;" id="Subtotaltext">{Subtotaltext}</span>
-                <strong style="font-size: 14px; font-weight: 700; color: #00d4f0;" id="Subtotalprice">{Subtotalprice}</strong>
-            </div>
-             <div style="display: flex; align-items: baseline; justify-content: space-between;">
-                <span style="font-size: 14px; font-weight: 500;" id="overalldiscounttext">{overalldiscounttext}</span>
-                <strong style="font-size: 14px; font-weight: 700; color: #00d4f0;" id="Subtotalprice">{overalldiscountprice}</strong>
-            </div>
-            <div style="display: flex; align-items: baseline; justify-content: space-between;">
-                <span style="font-size: 14px; font-weight: 500;" id="vattext">{vattext}</span>
-                <strong style="font-size: 14px; font-weight: 700; color: #00d4f0;" id="vatprice">{vatprice}</strong>
-            </div>
-            <div style="display: flex; align-items: baseline; justify-content: space-between;">
-                <span style="font-weight: 700; font-size: 14px;" id="totaltext">{totaltext}</span>
-                <strong style="font-size: 16px; font-weight: 700; color: #00d4f0;" id="totalprice">{totalprice}</strong>
-            </div>
-          </div>
 
-          <div class="publicbottom">
-            <div style="font-size: 13px; color: #8cd9d9; margin-bottom: 10px; font-weight: 400;">
-                <h2 style="color: #cff; font-size: 16px; font-weight: 500; margin-bottom: 5px;" id="termstext">{termstext}</h2>
-                <p style="font-size: 13px; color: #8cd9d9; margin-bottom: 10px; font-weight: 400;" id="termsDescription">{termsDescription}</p>
-            </div>
-         <div style="font-size: 14px; margin-bottom: 20px;">
-              <input id="acceptTermsCheckbox" type="checkbox" style="background-color: #1b2632; border: 1px solid #202e3c; margin-right: 10px;">
-              <label for="acceptTermsCheckbox" id="acceptTermsLabel">
-                I accept the <a href="#" target="_blank" rel="noopener" style="color: #00d4f0;" id="acceptTermsText">Terms & Conditions</a>.
-              </label>
-            </div>
-          </div>
-          <div style="margin-bottom: 1.5rem;" id="customerNotesContainer">
-            <label 
-              for="customerNotes" 
-              style="display: inline-block; margin-bottom: 0.5rem; font-weight: 400; font-size: 1rem; line-height: 1.5; color: #cff;"
-             id="customerNoteslabel">
-              Notes for us (optional):
-            </label>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <div class="template-leftcol">
+                    <div class="template-title">
+                        <h1 id="QuotesTitle">{quotestitle}</h1>
+                        <p id="QuotesDescription">{quotesdescription}</p>
+                        <p>Please review the details below and approve the quote if satisfactory. Contact us with any questions.</p>
+                    </div>
 
-            <textarea
-              id="customerNotestextarea"
-              rows="3"
-              style="display: block; width: 100%; padding: 8px 5px; font-size: 12px; font-weight: 400; line-height: 1.5; color: #cff; background-color: #1b2632; border: 1px solid #171f26; border-radius: 8.7px; outline: none; box-shadow: none; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-clip: padding-box; transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out; min-height: calc(1.5em + .75rem + 2px); resize: vertical;"
-            ></textarea>
-          </div>
+                    <div class="service-container" id="mulipleserverdivmain">
+                        <div class="service-item" id="mulipleserverdivrepated">
+                            <input type="checkbox" class="service-checkbox" id="mulipleservercheckbox">
+                            <div class="service-title" id="mulipleservercheckboxinnerdiv">
+                                <h3 id="mulipleserverdivtitle">{servicetitle}</h3>
+                                <p class="service-description" id="mulipleserverdivdiscription">{servicedescription}</p>
+                            </div>
+                            <div class="text-end">
+                                <div class="service-price" id="mulipleserverdivPrice">{serviceprice}</div>
+                                <div class="service-discount" id="mulipleserverdivDiscount" style="font-size: 12px; color: #ff6b6b; display:none;">Discount: {servicediscount}%</div>
+                                <div class="service-finalprice" id="mulipleserverdivFinalPrice" style="color: #00d4f0; font-weight: 500; font-size: 15px; display:none;">Final: {servicefinalprice}</div>
+                            </div>
+                        </div>
+                    </div>
 
-          <div style="display: flex; gap: 0px 9px; justify-content: space-between; border-top: 1px solid #202e3c; padding-top: 20px; margin-top: 20px;">
-            <button style="padding: 7px 14px; color: #cff !important; background-color: #101418; font-size: 12.25px; border: 1px solid #202e3c !important; border-radius: 8.7px; outline: none !important; box-shadow: none !important;" id="askQuestionBtn">Ask a Question</button> 
-            <button style="padding: 7px 14px; color: #101418 !important; background-color: #00d4f0; font-size: 12.25px; border: 1px solid #202e3c !important; border-radius: 8.7px; outline: none !important; box-shadow: none !important;" id="acceptQuoteBtn">Accept Quote</button>
-          </div></div>
+                    <div class="servicelist">
+                        <ul>
+                            <li><span id="Subtotaltext">{Subtotaltext}</span><strong id="Subtotalprice">{Subtotalprice}</strong></li>
+                            <li><span id="overalldiscounttext">{overalldiscounttext}</span><strong id="overalldiscountprice">{overalldiscountprice}</strong></li>
+                            <li><span id="vattext">{vattext}</span><strong id="vatprice">{vatprice}</strong></li>
+                            <li><span class="totaltext" id="totaltext">{totaltext}</span><strong class="totalprice" id="totalprice">{totalprice}</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="publicbottom">
+                        <h2 id="termstext">{termstext}</h2>
+                        <p id="termsDescription">{termsDescription}</p>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="acceptTermsCheckbox">
+                            <label class="form-check-label" for="acceptTermsCheckbox" id="acceptTermsLabel">
+                                I accept the <a href="#" target="_blank" rel="noopener" id="acceptTermsText">Terms & Conditions</a>.
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="template-comment" id="customerNotesContainer">
+                        <label for="customerNotestextarea" class="form-label" id="customerNoteslabel">Notes for us (optional):</label>
+                        <textarea class="form-control" rows="3" id="customerNotestextarea" name="text"></textarea>
+                    </div>
+
+                    <div class="template-btn">
+                        <button class="btn" id="askQuestionBtn">Ask a Question</button>
+                        <button class="btn acceptquote" id="acceptQuoteBtn">Accept Quote</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="template-rightcol">
+                    <div class="template-rightcol-img">
+                        <img src="/assets/images/blog3.jpg" class="img-fluid" alt="About Us">
+                    </div>
+                    <div class="template-rightcol-desc">
+                        <h4>About Us</h4>
+                        <p><strong>About Our Company:</strong> We are a dedicated service provider focused on delivering top-quality results and exceptional customer experiences.</p>
+                        <p><strong>Our Commitment:</strong> We take pride in our attention to detail and reliability. Whether we are working at your home or business, we treat every project with care.</p>
+                        <p><strong>Experienced Team:</strong> Our skilled team members are carefully selected and trained to uphold our high standards.</p>
+                        <p><strong>Value You Can Trust:</strong> We offer competitive rates without compromising on quality.</p>
+                        <p><strong>Clear Communication:</strong> We believe in open and honest communication, so you always know what to expect.</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="coldivright" style="position: relative; width: 100%; padding-right: 15px; padding-left: 15px; flex: 0 0 41.666667%; max-width: 41.666667%;">
-        <div style="background-color: #171f26; border: 1px solid #202e3c; border-radius: 8.7px; padding: 21px; margin-bottom: 23px; position: relative;">
-          <div style="margin-bottom: 15px;">
-            <a href="#"><img src="/assets/images/blog3.jpg" style="width: 100%; height: auto; border-radius: 12px; display: block;" alt=""></a>
-          </div>
-          <div style="font-size: 13px; color: #8cd9d9; margin-bottom: 10px; font-weight: 400;">
-            <h2 style="color: #cff; font-size: 16px; font-weight: 500; margin-bottom: 5px;">About Us</h2>
-            <p style="font-size: 13px; color: #8cd9d9; margin-bottom: 10px; font-weight: 400;"><strong style="font-weight: 500; color: #cff;">About Our Company:</strong> We are a dedicated service provider focused on delivering top-quality results and exceptional customer experiences. Our mission is to make every interaction with us professional, friendly, and hassle-free.</p>
-            <p style="font-size: 13px; color: #8cd9d9; margin-bottom: 10px; font-weight: 400;"><strong style="font-weight: 500; color: #cff;">Our Commitment:</strong> We take pride in our attention to detail and reliability. Whether we are working at your home or business, we treat every project with care and respect.</p>
-            <p style="font-size: 13px; color: #8cd9d9; margin-bottom: 10px; font-weight: 400;"><strong style="font-weight: 500; color: #cff;">Experienced Team:</strong> Our skilled team members are carefully selected and trained to uphold our high standards, ensuring consistent results for all our clients.</p>
-            <p style="font-size: 13px; color: #8cd9d9; margin-bottom: 10px; font-weight: 400;"><strong style="font-weight: 500; color: #cff;">Value You Can Trust:</strong> We offer competitive rates without compromising on quality. Our clients trust us for dependable service that exceeds expectations.</p>
-            <p style="font-size: 13px; color: #8cd9d9; margin-bottom: 10px; font-weight: 400;"><strong style="font-weight: 500; color: #cff;">Clear Communication:</strong> We believe in open and honest communication, so you always know what to expect when working with us.</p>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
-</section>
-</div>
 
-<script>
-
-</script>
 </body>
 </html>`; // Example
 
@@ -449,7 +572,7 @@ body {
             });
 
             toast.success('Template Updated successfully!');
-            navigate('/templatesoffers');
+            // navigate('/templatesoffers');
         } catch (error) {
             console.error(error);
             toast.error('Failed to create template.');
