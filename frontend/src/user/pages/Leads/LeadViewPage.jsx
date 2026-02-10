@@ -2166,7 +2166,7 @@ const LeadViewPage = () => {
                           <div className="leads-previousoffers-btn">
                             {isCurrentLead ? (
                               <>
-                                <Link
+                                {/* <Link
                                   type="button"
                                   className="btn btn-add"
                                   to={`/offer/${quote.id}`}
@@ -2189,7 +2189,7 @@ const LeadViewPage = () => {
                                     <circle cx="12" cy="12" r="3" />
                                   </svg>
 
-                                </Link>
+                                </Link> */}
                                 {/* 👁 View Button */}
                                 <button
                                   type="button"
@@ -2279,7 +2279,7 @@ const LeadViewPage = () => {
                             ) : (
                               <>
 
-                                <Link
+                                {/* <Link
                                   type="button"
                                   className="btn btn-add"
                                   to={`/offer/${quote.id}`}
@@ -2302,7 +2302,7 @@ const LeadViewPage = () => {
                                     <circle cx="12" cy="12" r="3" />
                                   </svg>
 
-                                </Link>
+                                </Link> */}
                                 <button
                                   type="button"
                                   className="btn btn-add"
