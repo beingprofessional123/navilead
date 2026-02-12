@@ -713,7 +713,8 @@
       "leadStatusChanged": "Lead status changed",
       "leadMarkedAsWon": "Lead marked as won",
       "leadMarkedAsLost": "Lead marked as lost",
-      "leadInactive": "Lead inactive for X days"
+      "leadInactive": "Lead inactive for X days",
+      "followup": "Follow Up"
     },
     "description": "Description",
     "descriptionPlaceholder": "Automatically send a welcome email to new leads",

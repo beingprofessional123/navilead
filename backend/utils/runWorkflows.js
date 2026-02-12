@@ -5,6 +5,7 @@ const { htmlToText } = require("html-to-text");
 const UserVariable = db.UserVariable;
 const User = db.User;
 const cronLog = db.cronLog;
+const Status = db.Status;
 const StatusUpdateLog = db.StatusUpdateLog;
 const Settings = db.Settings;
 const SendSms = db.SendSms;
@@ -431,6 +432,91 @@ async function runWorkflows(triggerEvent, contextData = {}) {
  *
  * Call this from your router (GET or POST), or run from cron.
  */
+const getOfferSentStatusId = async () => {
+  try {
+    const offerSentStatus = await Status.findOne({
+      where: {
+        name: "Offer Sent",
+        statusFor: "Lead",
+      },
+      attributes: ["id"],
+    });
+
+    if (!offerSentStatus) {
+      console.warn("⚠️ 'Offer Sent' status not found in Status table");
+      return null;
+    }
+
+    return offerSentStatus.id;
+  } catch (error) {
+    console.error("❌ Error fetching Offer Sent status:", error);
+    return null;
+  }
+};
+
+
+async function initializeFollowupWorkflows(offerSentStatusId) {
+  const leads = await db.Lead.findAll({
+    where: { statusId: offerSentStatusId },
+  });
+
+  const workflows = await db.Workflow.findAll({
+    where: { triggerEvent: "followup", isActive: true },
+  });
+
+  for (const lead of leads) {
+    for (const workflow of workflows) {
+
+      // ✅ Check ONLY if workflow is currently running (pending steps exist)
+      const existingPendingLog = await db.WorkflowLog.findOne({
+        where: {
+          leadId: lead.id,
+          workflowId: workflow.id,
+          status: "pending",
+        },
+      });
+
+      // If still running → skip
+      if (existingPendingLog) {
+        console.log(
+          `⏳ Workflow ${workflow.id} already running for lead ${lead.id}`
+        );
+        continue;
+      }
+
+      // ✅ Optional: Clean old logs (recommended for clean history)
+      await db.WorkflowLog.destroy({
+        where: {
+          leadId: lead.id,
+          workflowId: workflow.id,
+        },
+      });
+
+      const steps = await db.WorkflowStep.findAll({
+        where: { workflowId: workflow.id },
+        order: [["order", "ASC"]],
+      });
+
+      for (const step of steps) {
+        await db.WorkflowLog.create({
+          workflowId: workflow.id,
+          stepId: step.id,
+          leadId: lead.id,
+          userId: lead.userId,
+          orderNo: step.order,
+          status: "pending",
+        });
+      }
+
+      console.log(
+        `🚀 Followup workflow ${workflow.id} RE-initialized for lead ${lead.id}`
+      );
+    }
+  }
+}
+
+
+
 async function executeWorkflowCron(req, res) {
   let cronLog = null;
   let processedLeadsCount = 0;
@@ -443,6 +529,23 @@ async function executeWorkflowCron(req, res) {
       status: "started",
     });
 
+
+     // ✅ Get Offer Sent Status ID once
+    const offerSentStatusId = await getOfferSentStatusId();
+    // 🔥 AUTO INITIALIZE FOLLOWUP WORKFLOWS
+    if (offerSentStatusId) {
+      await initializeFollowupWorkflows(offerSentStatusId);
+    }
+
+    // Preload workflow trigger type for faster checks
+    const workflowMap = {};
+    const workflows = await db.Workflow.findAll({
+      attributes: ["id", "triggerEvent"],
+    });
+
+    workflows.forEach(wf => {
+      workflowMap[wf.id] = wf.triggerEvent;
+    });
 
     const pendingLogs = await db.WorkflowLog.findAll({
       where: { status: "pending" },
@@ -484,6 +587,36 @@ async function executeWorkflowCron(req, res) {
         const log = allLogs[i];
 
         if (log.status !== "pending") continue; // skip already executed
+
+        // ===============================
+        // 🔒 FOLLOW-UP STATUS GUARD
+        // ===============================
+        const triggerType = workflowMap[log.workflowId];
+
+        if (triggerType === "followup") {
+          const currentLead = await db.Lead.findByPk(log.leadId);
+
+          if (!currentLead || currentLead.statusId !== offerSentStatusId) {
+            console.log(
+              `🛑 Lead ${log.leadId} status changed. Stopping follow-up workflow.`
+            );
+
+            await db.WorkflowLog.update(
+              { status: "done", executedAt: new Date() },
+              {
+                where: {
+                  leadId: log.leadId,
+                  workflowId: log.workflowId,
+                  status: "pending",
+                },
+              }
+            );
+
+            break;
+          }
+        }
+
+
 
         leadTouched = true; // we have at least one step processed/attempted
         processedStepsCount++;
@@ -600,7 +733,7 @@ async function executeWorkflowCron(req, res) {
                 cc,
                 attachments: formattedAttachments
               });
-              console.log(`📩 Step ${log.orderNo} sendEmail executed for lead ${lead.leadId}`);
+              console.log(`📩 Step ${log.orderNo} sendEmail executed for lead ${lead.id}`);
             } else {
               console.log(`📵 Email notifications are disabled for user ${lead.userId}. Skipping email.`);
             }
