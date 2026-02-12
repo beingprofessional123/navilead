@@ -257,13 +257,37 @@ const WorkflowsPage = () => {
         e.preventDefault();
 
         try {
+
+            const payloadSteps = steps.map(step => {
+                let newConfig = { ...step.config };
+
+                if (step.type === "sendEmail") {
+                    // If no template selected, pick default
+                    if (!newConfig.emailTemplateId) {
+                        const defaultEmail = emailTemplates.find(t => t.isDefault);
+                        if (defaultEmail) newConfig.emailTemplateId = defaultEmail.id;
+                    }
+                }
+
+                if (step.type === "sendSms") {
+                    // If no template selected, pick default
+                    if (!newConfig.smsTemplateId) {
+                        const defaultSms = smsTemplates.find(t => t.isDefault);
+                        if (defaultSms) newConfig.smsTemplateId = defaultSms.id;
+                    }
+                }
+
+                return {
+                    type: step.type,
+                    config: newConfig,
+                };
+            });
+
             const payload = {
                 ...formData,
-                steps: steps.map(step => ({
-                    type: step.type,
-                    config: step.config
-                }))
+                steps: payloadSteps
             };
+
 
             const config = {
                 headers: { Authorization: `Bearer ${authToken}` } // pass token here
