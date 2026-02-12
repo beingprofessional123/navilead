@@ -1144,7 +1144,7 @@ const WorkflowsPage = () => {
                                                                     <option value="leadStatusChanged">{t('workflows.triggerOptions.leadStatusChanged')}</option>
                                                                     <option value="leadMarkedAsWon">{t('workflows.triggerOptions.leadMarkedAsWon')}</option>
                                                                     <option value="leadMarkedAsLost">{t('workflows.triggerOptions.leadMarkedAsLost')}</option>
-                                                                    {/* <option value="leadInactive">{t('workflows.triggerOptions.leadInactive')}</option> */}
+                                                                    <option value="followup">{t('workflows.triggerOptions.followup')}</option>
                                                                 </select>
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                                                             </div>
