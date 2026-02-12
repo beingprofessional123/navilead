@@ -180,7 +180,6 @@ exports.updateQuote = async (req, res) => {
     const cleanOverallDiscount = overallDiscount && overallDiscount < 0 ? 0 : overallDiscount;
     const cleanSendSection = ['sms', 'email', 'both'].includes(sendSection) ? sendSection : 'both';
 
-    // updateData object banayenge
     const updateData = {
       title,
       description,
@@ -192,13 +191,25 @@ exports.updateQuote = async (req, res) => {
       sendSection: cleanSendSection,
     };
 
-    // 👇 Sirf tab add kare jab pricingTemplateId bheja gaya ho
-    if (pricingTemplateId !== undefined && pricingTemplateId !== '') {
-      updateData.pricingTemplateId = Number(pricingTemplateId);
+    // ✅ PricingTemplateId validation & allow null
+    if (pricingTemplateId !== undefined) {
+      if (pricingTemplateId === null || pricingTemplateId === '') {
+        updateData.pricingTemplateId = null; // allow clearing
+      } else {
+        // check if pricing template exists
+        const pricingTemplate = await db.PricingTemplate.findByPk(pricingTemplateId);
+        if (!pricingTemplate) {
+          return res.status(400).json({
+            message: 'Invalid pricingTemplateId: does not exist',
+          });
+        }
+        updateData.pricingTemplateId = Number(pricingTemplateId);
+      }
     }
 
     await quote.update(updateData);
 
+    // Update services if provided
     if (Array.isArray(services)) {
       await QuoteService.destroy({ where: { quoteId } });
       const servicesWithQuoteId = services.map(({ id, quoteId: qId, ...service }) => ({
@@ -211,12 +222,14 @@ exports.updateQuote = async (req, res) => {
     const updatedQuote = await Quote.findByPk(quoteId, {
       include: [
         { model: QuoteService, as: 'services' },
-        { model: Status, as: "status" }
+        { model: Status, as: "status" },
+        { model: Currency, as: 'currency', attributes: ['id','name','code','symbol'] },
       ],
     });
 
     res.status(200).json({ message: 'api.quotes.updateSuccess', updatedQuote });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Error updating quote', error: err.message });
   }
 };
