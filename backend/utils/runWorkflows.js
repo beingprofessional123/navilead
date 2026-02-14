@@ -456,15 +456,22 @@ const getOfferSentStatusId = async () => {
 
 
 async function initializeFollowupWorkflows(offerSentStatusId) {
-  const leads = await db.Lead.findAll({
-    where: { statusId: offerSentStatusId },
-  });
-
-  const workflows = await db.Workflow.findAll({
-    where: { triggerEvent: "followup", isActive: true },
+   const leads = await db.Lead.findAll({
+    where: {
+      statusId: offerSentStatusId,
+    },
   });
 
   for (const lead of leads) {
+    
+     const workflows = await db.Workflow.findAll({
+      where: { 
+          triggerEvent: "followup", 
+          isActive: true,
+          userId: lead.userId   // ✅ critical filter
+        },
+      });
+
     for (const workflow of workflows) {
 
       // ✅ Check ONLY if workflow is currently running (pending steps exist)
@@ -479,7 +486,7 @@ async function initializeFollowupWorkflows(offerSentStatusId) {
       // If still running → skip
       if (existingPendingLog) {
         console.log(
-          `⏳ Workflow ${workflow.id} already running for lead ${lead.id}`
+          `⏳ Workflow ${workflow.id} already running for lead ${lead.id} and user ${lead.userId}`
         );
         continue;
       }
@@ -509,7 +516,7 @@ async function initializeFollowupWorkflows(offerSentStatusId) {
       }
 
       console.log(
-        `🚀 Followup workflow ${workflow.id} RE-initialized for lead ${lead.id}`
+        `🚀 Followup workflow ${workflow.id} RE-initialized for lead ${lead.id} and user ${lead.userId}`
       );
     }
   }
@@ -534,6 +541,7 @@ async function executeWorkflowCron(req, res) {
     const offerSentStatusId = await getOfferSentStatusId();
     // 🔥 AUTO INITIALIZE FOLLOWUP WORKFLOWS
     if (offerSentStatusId) {
+      console.log("🔥 initializeFollowupWorkflows called");
       await initializeFollowupWorkflows(offerSentStatusId);
     }
 
