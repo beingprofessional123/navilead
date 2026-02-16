@@ -2,6 +2,8 @@ const stripe = require('../utils/stripe');
 const { User, Plan, UserPlan, Transaction, PaymentMethod, Settings } = require('../models');
 const { sendMail } = require('../utils/mail');
 const InvoiceUpcomingTemplate = require('../EmailTemplate/InvoiceUpcomingTemplate');
+const { logSubscriptionRenewal } = require('../utils/renewalLogger');
+const logger = require('../utils/webhookLogger');
 
 
 // Checkout / Create Subscription
@@ -306,12 +308,13 @@ exports.subscriptionRenewWebhook = async (req, res) => {
         sig,
         process.env.STRIPE_WEBHOOK_SECRET
       );
-      console.log(`✅ Stripe event received: ${event.type}`);
+      logger.info(event.type, 'Stripe event received');
     } catch (err) {
-      console.error("⚠️ Webhook signature verification failed:", err.message);
+      logger.error('SIGNATURE_VERIFICATION_FAILED', err.message, { errorStack: err.stack });
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
+    logger.info(event.type, 'Stripe webhook received');
     switch (event.type) {
       /**
        * 🔄 Handle subscription updated
@@ -322,16 +325,15 @@ exports.subscriptionRenewWebhook = async (req, res) => {
         const user = await User.findOne({
           where: { stripeCustomerId: subscription.customer }
         });
-
-        const PaymentMethods = await PaymentMethod.findOne({ where: { userId: user.id } });
-
         if (!user) {
-          console.error(`❌ No user found for customer ${subscription.customer}`);
+          logger.error(event.type, 'User not found', {
+            subscriptionId: subscription.id
+          });
           break;
         }
 
+        const PaymentMethods = await PaymentMethod.findOne({ where: { userId: user.id } });
         let userPlan = await UserPlan.findOne({ where: { userId: user.id } });
-
         let startDate = new Date(subscription.current_period_start * 1000);
         let renewalDate = new Date(subscription.current_period_end * 1000);
 
@@ -357,7 +359,7 @@ exports.subscriptionRenewWebhook = async (req, res) => {
 
         if (userPlan) {
           await userPlan.update(updateData);
-          console.log(`🔄 UserPlan updated for user ${user.id}`);
+          logger.info(`🔄 UserPlan updated for user ${user.id}`);
         } else {
           const plan = await Plan.findOne({
             where: { stripe_price_id: subscription.items.data[0].price.id }
@@ -369,16 +371,14 @@ exports.subscriptionRenewWebhook = async (req, res) => {
               planId: plan.id,
               ...updateData,
             });
-            console.log(`✅ New UserPlan created for user ${user.id}`);
+            logger.info(`✅ New UserPlan created for user ${user.id}`);
           } else {
-            console.error(`❌ Plan not found for price ID: ${subscription.items.data[0].price.id}`);
+            logger.info(`❌ Plan not found for price ID: ${subscription.items.data[0].price.id}`);
           }
         }
 
         break;
       }
-
-
 
       /**
        * 💰 Handle payment succeeded
@@ -391,7 +391,7 @@ exports.subscriptionRenewWebhook = async (req, res) => {
         });
 
         if (!user) {
-          console.error(`❌ User not found for Stripe customer ID: ${invoice.customer}`);
+         logger.info(`❌ User not found for Stripe customer ID: ${invoice.customer}`);
           break;
         }
 
@@ -400,7 +400,7 @@ exports.subscriptionRenewWebhook = async (req, res) => {
         });
 
         if (!plan) {
-          console.error(`❌ Plan not found for price ID: ${invoice.lines.data[0].price.id}`);
+          logger.info(`❌ Plan not found for price ID: ${invoice.lines.data[0].price.id}`);
           break;
         }
 
@@ -420,9 +420,10 @@ exports.subscriptionRenewWebhook = async (req, res) => {
             invoiceUrl: invoice.hosted_invoice_url,
             invoiceNo: invoice.number,
           });
-          console.log(`💰 Transaction saved for user ${user.id}, invoice ${invoice.number}`);
+          logger.info(`💰 Transaction saved for user ${user.id}, invoice ${invoice.number}`);
         }
 
+        logSubscriptionRenewal(user, invoice);
         break;
       }
 
@@ -442,7 +443,7 @@ exports.subscriptionRenewWebhook = async (req, res) => {
 
 
         if (user) {
-          console.log(`⏳ Upcoming invoice for user: ${user.email}`);
+          logger.info(`⏳ Upcoming invoice for user: ${user.email}`);
 
           const htmlTemplate = InvoiceUpcomingTemplate({
             name: user.name,
@@ -457,8 +458,8 @@ exports.subscriptionRenewWebhook = async (req, res) => {
           });
 
 
-          if (emailSetting.value === 'true') {
-            if (PaymentMethods.emailNotifications === true) {
+          if (emailSetting && emailSetting.value === 'true') {
+            if (PaymentMethods && PaymentMethods.emailNotifications === true) {
               await sendMail(
               user.id,
               {
@@ -468,20 +469,13 @@ exports.subscriptionRenewWebhook = async (req, res) => {
                 html: htmlTemplate,
               });
 
-              console.log(`📧 Upcoming invoice email sent to ${user.email}`);
+              logger.info(`📧 Upcoming invoice email sent to ${user.email}`);
             }
           } else {
-            console.log(`📵 Email notifications are disabled for user ${user.id}. Skipping email.`);
+            logger.info(`📵 Email notifications are disabled for user ${user.id}. Skipping email.`);
           }
-
-
-
-
-
-
-
         } else {
-          console.error(`❌ User not found for Stripe customer ID: ${invoice.customer}`);
+          logger.info(`❌ User not found for Stripe customer ID: ${invoice.customer}`);
         }
 
         break;
@@ -492,7 +486,7 @@ exports.subscriptionRenewWebhook = async (req, res) => {
         const user = await User.findOne({ where: { stripeCustomerId: subscription.customer } });
 
         if (!user) {
-          console.error(`❌ No user found for customer ${subscription.customer}`);
+          logger.info(`❌ No user found for customer ${subscription.customer}`);
           break;
         }
 
@@ -502,19 +496,17 @@ exports.subscriptionRenewWebhook = async (req, res) => {
           { where: { userId: user.id } }
         );
 
-        console.log(`🛑 Subscription deleted for user ${user.id}, marked as cancelled`);
+        logger.info(`🛑 Subscription deleted for user ${user.id}, marked as cancelled`);
         break;
       }
 
-
-
       default:
-        console.log(`ℹ️ Unhandled event type: ${event.type}`);
+        logger.info(`ℹ️ Unhandled event type: ${event.type}`);
     }
 
     res.json({ received: true });
   } catch (error) {
-    console.error("Webhook handler error:", error);
+    logger.error('WEBHOOK_HANDLER_ERROR', error.message, { errorStack: error.stack });
     res.status(500).json({ message: "Webhook handler failed", error: error.message });
   }
 };
