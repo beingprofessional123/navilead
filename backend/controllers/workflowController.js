@@ -69,7 +69,8 @@ exports.getWorkflowById = async (req, res) => {
 // Create new workflow
 exports.createWorkflow = async (req, res) => {
   try {
-    const { name, triggerEvent, description, isActive, steps } = req.body;
+    let { name, triggerEvent, description, isActive, steps } = req.body;
+
 
     if (!name || !triggerEvent) {
       return res.status(400).json({ message: "Name and triggerEvent are required" });
@@ -108,13 +109,12 @@ exports.createWorkflow = async (req, res) => {
   }
 };
 
-// Update workflow
-// Update workflow along with steps
 // Update workflow along with steps
 exports.updateWorkflow = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, triggerEvent, description, isActive, steps } = req.body;
+    let { name, triggerEvent, description, isActive, steps } = req.body;
+
 
     // Find existing workflow
     const workflow = await Workflow.findByPk(id, {
@@ -159,7 +159,7 @@ exports.updateWorkflow = async (req, res) => {
 
 // Delete workflow
 exports.deleteWorkflow = async (req, res) => {
-  try {
+  try { 
     const { id } = req.params;
 
     // Find the workflow by ID
