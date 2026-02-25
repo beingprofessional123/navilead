@@ -706,6 +706,8 @@
     "totalMessagesSent": "Samlede beskeder sendt",
     "totalSmsSent": "Samlede SMS'er",
     "totalEmailsSent": "Samlede e-mails",
+    "Status": "Status",
+    "selectStatus": "Vælg status",
     "triggerOptions": {
       "newLeadCreated": "New lead created",
       "leadCreatedViaFacebook": "Lead created via Facebook",
@@ -823,7 +825,7 @@
     "actionOptions": {
       "continueNextStep": "Fortsæt til næste trin",
       "endWorkflow": "Afslut workflow",
-      "jumpToStep": "Spring til specifikt trin"
+      "jumpToStep": "Spring til trin"
     },
     "stepsConfigured": "{{count}} trin konfigureret",
     "cancel": "Annuller",
