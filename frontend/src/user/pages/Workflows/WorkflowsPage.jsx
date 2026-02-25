@@ -241,10 +241,13 @@ const WorkflowsPage = () => {
         const newStep = {
             id: uuidv4(),
             type,
-            config: {}, // later store chosen email template, SMS body, etc.
+            config: {},
+            order: steps.length + 1   // ✅ IMPORTANT
         };
-        setSteps([...steps, newStep]);
+
+        setSteps(prev => [...prev, newStep]);
     };
+
 
 
     // Remove Step
@@ -277,6 +280,62 @@ const WorkflowsPage = () => {
                     }
                 }
 
+                if (step.type === "waitDelay") {
+                    if (!newConfig.unit) {
+                        newConfig.unit = "minutes";
+                    }
+                    if (!newConfig.delay) {
+                        newConfig.delay = "5";
+                    }
+                }
+
+                if (step.type === "condition") {
+
+                    newConfig.field = newConfig.field || null;
+                    newConfig.operator = newConfig.operator || null;
+                    newConfig.value = newConfig.value || null;
+
+                    // -----------------------------
+                    // TRUE ACTION
+                    // -----------------------------
+                    if (newConfig.ifTrueAction === "jump" && newConfig.jumpToTrueStepId) {
+
+                        const targetTrueStep = steps.find(
+                            s => String(s.id) === String(newConfig.jumpToTrueStepId)
+                        );
+
+                        if (targetTrueStep) {
+                            newConfig.jumpToTrueOrder = targetTrueStep.order;
+                        }
+
+                        // remove stepId (not needed in execution)
+                        delete newConfig.jumpToTrueStepId;
+
+                    } else {
+                        delete newConfig.jumpToTrueStepId;
+                        delete newConfig.jumpToTrueOrder;
+                    }
+                    // -----------------------------
+                    // FALSE ACTION
+                    // -----------------------------
+                    if (newConfig.ifFalseAction === "jump" && newConfig.jumpToFalseStepId) {
+
+                        const targetFalseStep = steps.find(
+                            s => String(s.id) === String(newConfig.jumpToFalseStepId)
+                        );
+
+                        if (targetFalseStep) {
+                            newConfig.jumpToFalseOrder = targetFalseStep.order;
+                        }
+
+                        delete newConfig.jumpToFalseStepId;
+
+                    } else {
+                        delete newConfig.jumpToFalseStepId;
+                        delete newConfig.jumpToFalseOrder;
+                    }
+                }
+
                 return {
                     type: step.type,
                     config: newConfig,
@@ -292,6 +351,8 @@ const WorkflowsPage = () => {
             const config = {
                 headers: { Authorization: `Bearer ${authToken}` } // pass token here
             };
+
+            console.log("Payload to save:", payload);
 
             if (formData.id) {
                 // Update existing workflow
@@ -319,23 +380,37 @@ const WorkflowsPage = () => {
 
     // Step ऊपर ले जाना
     const moveStepUp = (index) => {
-        if (index === 0) return; // पहला step ऊपर नहीं जा सकता
-        setSteps(prevSteps => {
-            const updated = [...prevSteps];
-            [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
-            return updated;
+        if (index === 0) return;
+
+        setSteps(prev => {
+            const updated = [...prev];
+            [updated[index - 1], updated[index]] =
+                [updated[index], updated[index - 1]];
+
+            return updated.map((step, i) => ({
+                ...step,
+                order: i + 1   // ✅ recalc order
+            }));
         });
     };
 
+
     // Step नीचे ले जाना
     const moveStepDown = (index) => {
-        if (index === steps.length - 1) return; // आख़िरी step नीचे नहीं जा सकता
-        setSteps(prevSteps => {
-            const updated = [...prevSteps];
-            [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
-            return updated;
+        if (index === steps.length - 1) return;
+
+        setSteps(prev => {
+            const updated = [...prev];
+            [updated[index], updated[index + 1]] =
+                [updated[index + 1], updated[index]];
+
+            return updated.map((step, i) => ({
+                ...step,
+                order: i + 1   // ✅ recalc order
+            }));
         });
     };
+
 
     const updateStepConfig = (stepId, key, value) => {
         setSteps(prevSteps =>
@@ -346,9 +421,6 @@ const WorkflowsPage = () => {
             )
         );
     };
-
-
-
 
     const renderStep = (step, index) => {
         const selectedEmailTemplate = emailTemplates.find(t => t.id === step.config?.emailTemplateId) || emailTemplates.find(t => t.isDefault) || null;
@@ -418,6 +490,52 @@ const WorkflowsPage = () => {
                 return newSteps;
             });
         };
+
+        const formatOperator = (operator) => {
+            switch (operator) {
+                case "equals":
+                    return "is equal to";
+                case "not_equals":
+                    return "is not equal to";
+                case "contains":
+                    return "contains";
+                case "greater_than":
+                    return "is greater than";
+                case "less_than":
+                    return "is less than";
+                default:
+                    return operator || "";
+            }
+        };
+
+        const formatAction = (action) => {
+            switch (action) {
+                case "continue":
+                    return "Continue to next step";
+                case "end":
+                    return "End workflow";
+                case "jump":
+                    return "Jump to step";
+                default:
+                    return action || "";
+            }
+        };
+        const getStepLabel = (stepId) => {
+            const targetStep = steps.find((s) => s.id === stepId);
+            if (!targetStep) return "";
+
+            const index = steps.findIndex((s) => s.id === stepId);
+
+            return `${index + 1} - ${targetStep.name || targetStep.type}`;
+        };
+
+        const getStatusName = (statusId) => {
+            const status = statuses?.find((s) => String(s.id) === String(statusId));
+            return status ? status.name : statusId;
+        };
+
+
+
 
 
         switch (step.type) {
@@ -777,20 +895,24 @@ const WorkflowsPage = () => {
                                         <Link to="#" className="btn btn-add" onClick={() => removeStep(step.id)}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></Link>
                                     </div>
                                 </div>
+                                <h2 className="card-title conditioncard-title2 text-warning">❓If {step.config?.field} {formatOperator(step.config?.operator)} {step.config?.value && `"${step.config?.field === "status" ? getStatusName(step.config.value) : step.config.value}"`}
+                                    <div className="workflows-status text-success">✓ True: {formatAction(step.config?.ifTrueAction)} {step.config?.ifTrueAction === "jump" && step.config?.jumpToTrueStepId && (<> (Step {getStepLabel(step.config.jumpToTrueStepId)})</>)} </div>
+                                    <div className="workflows-status text-danger">✓ False: {formatAction(step.config?.ifFalseAction)} {step.config?.ifFalseAction === "jump" && step.config?.jumpToFalseStepId && (<> (Step {getStepLabel(step.config.jumpToFalseStepId)})</>)} </div>
+                                </h2>
                                 <h2 className="card-title">{t('workflows.conditionConfiguration')}</h2>
                                 <div className="row">
                                     <div className="col-md-4">
                                         <div className="form-group mb-1">
                                             <label>{t('workflows.field')}</label>
                                             <div className="inputselect">
-                                                <select className="form-select" value={step.config?.field || ""} onChange={(e) => updateStepConfig(step.id, "field", e.target.value)}>
+                                                <select className="form-select" value={step.config?.field || ""} onChange={(e) => { const newField = e.target.value; updateStepConfig(step.id, "field", newField); updateStepConfig(step.id, "value", null); updateStepConfig(step.id, "operator", null); }}>
                                                     <option value="">{t('workflows.selectField')}</option>
                                                     <option value="status">{t('workflows.fieldOptions.status')}</option>
                                                     <option value="leadValue">{t('workflows.fieldOptions.leadValue')}</option>
-                                                    <option value="source">{t('workflows.fieldOptions.source')}</option>
+                                                    <option value="leadSource">{t('workflows.fieldOptions.source')}</option>
                                                     <option value="email">{t('workflows.fieldOptions.email')}</option>
                                                     <option value="phone">{t('workflows.fieldOptions.phone')}</option>
-                                                    <option value="company">{t('workflows.fieldOptions.company')}</option>
+                                                    <option value="companyName">{t('workflows.fieldOptions.company')}</option>
                                                     <option value="tags">{t('workflows.fieldOptions.tags')}</option>
                                                 </select>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
@@ -801,13 +923,17 @@ const WorkflowsPage = () => {
                                         <div className="form-group mb-1">
                                             <label>{t('workflows.operator')}</label>
                                             <div className="inputselect">
-                                                <select className="form-select" value={step.config?.operator || ""} onChange={(e) => updateStepConfig(step.id, "operator", e.target.value)}>
-                                                    <option value="">{t('workflows.selectOperator')}</option>
-                                                    <option value="equals">{t('workflows.operatorOptions.equals')}</option>
-                                                    <option value="notEquals">{t('workflows.operatorOptions.notEquals')}</option>
-                                                    <option value="contains">{t('workflows.operatorOptions.contains')}</option>
-                                                    <option value="greaterThan">{t('workflows.operatorOptions.greaterThan')}</option>
-                                                    <option value="lessThan">{t('workflows.operatorOptions.lessThan')}</option>
+                                                <select className="form-select" value={step.config?.operator || ""} onChange={(e) => updateStepConfig(step.id, "operator", e.target.value)} >
+                                                    <option value=""> {t('workflows.selectOperator')} </option>
+                                                    <option value="equals"> {t('workflows.operatorOptions.equals')}</option>
+                                                    <option value="notEquals"> {t('workflows.operatorOptions.notEquals')}</option>
+                                                    {step.config?.field !== "status" && (
+                                                        <>
+                                                            <option value="contains">{t('workflows.operatorOptions.contains')}</option>
+                                                            <option value="greaterThan">{t('workflows.operatorOptions.greaterThan')}</option>
+                                                            <option value="lessThan">{t('workflows.operatorOptions.lessThan')}</option>
+                                                        </>
+                                                    )}
                                                 </select>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                                             </div>
@@ -816,14 +942,65 @@ const WorkflowsPage = () => {
                                     <div className="col-md-4">
                                         <div className="form-group mb-1">
                                             <label>{t('workflows.value')}</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                value={step.config?.value || ""}
-                                                onChange={(e) => updateStepConfig(step.id, "value", e.target.value)}
-                                                placeholder={t('workflows.enterValuePlaceholder')}
-                                            />
+
+                                            {step.config?.field === "status" ? (
+                                                <div className="inputselect">
+                                                    <select
+                                                        className="form-select"
+                                                        value={step.config?.value || ""}
+                                                        onChange={(e) =>
+                                                            updateStepConfig(step.id, "value", e.target.value)
+                                                        }
+                                                    >
+                                                        <option value="">{t('workflows.selectStatus')}</option>
+                                                        {statuses?.map((status) => (
+                                                            <option key={status.id} value={status.id}>
+                                                                {status.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+
+                                            ) : step.config?.field === "leadSource" ? (
+                                                <div className="inputselect">
+                                                    <select
+                                                        className="form-select"
+                                                        value={step.config?.value || ""}
+                                                        onChange={(e) =>
+                                                            updateStepConfig(step.id, "value", e.target.value)
+                                                        }
+                                                    >
+                                                        <option value="">{t('addEditLeadModal.selectLeadSource')}</option>
+                                                        <option value="Facebook Ads">{t('addEditLeadModal.leadSourceFacebookAds')}</option>
+                                                        <option value="Google Ads">{t('addEditLeadModal.leadSourceGoogleAds')}</option>
+                                                        <option value="Website Form">{t('addEditLeadModal.leadSourceWebsiteForm')}</option>
+                                                        <option value="Phone Call">{t('addEditLeadModal.leadSourcePhoneCall')}</option>
+                                                        <option value="Email">{t('addEditLeadModal.leadSourceEmail')}</option>
+                                                        <option value="Referral">{t('addEditLeadModal.leadSourceReferral')}</option>
+                                                        <option value="LinkedIn">{t('addEditLeadModal.leadSourceLinkedIn')}</option>
+                                                        <option value="Trade Show">{t('addEditLeadModal.leadSourceTradeShow')}</option>
+                                                        <option value="Cold Outreach">{t('addEditLeadModal.leadSourceColdOutreach')}</option>
+                                                        <option value="Zapier">{t('addEditLeadModal.leadSourceZapier')}</option>
+                                                        <option value="WordPress">{t('addEditLeadModal.leadSourceWordPress')}</option>
+                                                        <option value="API">{t('addEditLeadModal.leadSourceAPI')}</option>
+                                                        <option value="Other">{t('addEditLeadModal.leadSourceOther')}</option>
+                                                    </select>
+                                                </div>
+
+                                            ) : (
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    value={step.config?.value || ""}
+                                                    onChange={(e) =>
+                                                        updateStepConfig(step.id, "value", e.target.value)
+                                                    }
+                                                    placeholder={t('workflows.enterValuePlaceholder')}
+                                                />
+                                            )}
+
                                         </div>
+
                                     </div>
                                 </div>
                                 <h2 className="card-title conditioncard-title2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-alert" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>{t('workflows.ifThenElse')}</h2>
@@ -834,14 +1011,46 @@ const WorkflowsPage = () => {
                                             <div className="form-group mb-1">
                                                 <label>{t('workflows.action')}</label>
                                                 <div className="inputselect">
-                                                    <select className="form-select">
-                                                        <option>{t('workflows.actionOptions.continueNextStep')}</option>
-                                                        <option>{t('workflows.actionOptions.endWorkflow')}</option>
-                                                        <option>{t('workflows.actionOptions.jumpToStep')}</option>
+                                                    <select className="form-select" value={step.config?.ifTrueAction || ""} onChange={(e) => updateStepConfig(step.id, "ifTrueAction", e.target.value)}>
+                                                        <option value="continue">{t('workflows.actionOptions.continueNextStep')}</option>
+                                                        <option value="end">{t('workflows.actionOptions.endWorkflow')}</option>
+                                                        <option value="jump">{t('workflows.actionOptions.jumpToStep')}</option>
                                                     </select>
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                                                 </div>
                                             </div>
+
+                                            {step.config?.ifTrueAction === "end" && (
+                                                <div className="alert alert-success mt-2">
+                                                    ✅ Workflow completes successfully
+                                                </div>
+                                            )}
+
+                                            {step.config?.ifTrueAction === "jump" && (
+                                                <div className="form-group mt-2">
+                                                    <label>{t('workflows.actionOptions.jumpToStep')}</label>
+                                                    <div className="inputselect">
+                                                        <select
+                                                            className="form-select"
+                                                            value={step.config?.jumpToTrueStepId || ""}
+                                                            onChange={(e) =>
+                                                                updateStepConfig(step.id, "jumpToTrueStepId", e.target.value)
+                                                            }
+                                                        >
+                                                            <option value="">{t('workflows.actionOptions.jumpToStep')}</option>
+
+                                                            {steps
+                                                                .filter((s) => s.id !== step.id) // prevent self jump
+                                                                .map((s, index) => (
+                                                                    <option key={s.id} value={s.id}>
+                                                                        Step {index + 1} - {s.name || s.type}
+                                                                    </option>
+                                                                ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                         </div>
                                     </div>
                                     <div className="col-md-6">
@@ -850,14 +1059,46 @@ const WorkflowsPage = () => {
                                             <div className="form-group mb-1">
                                                 <label>{t('workflows.action')}</label>
                                                 <div className="inputselect">
-                                                    <select className="form-select">
-                                                        <option>{t('workflows.actionOptions.continueNextStep')}</option>
-                                                        <option>{t('workflows.actionOptions.endWorkflow')}</option>
-                                                        <option>{t('workflows.actionOptions.jumpToStep')}</option>
+                                                    <select className="form-select" value={step.config?.ifFalseAction || ""} onChange={(e) => updateStepConfig(step.id, "ifFalseAction", e.target.value)}>
+                                                        <option value="continue">{t('workflows.actionOptions.continueNextStep')}</option>
+                                                        <option value="end">{t('workflows.actionOptions.endWorkflow')}</option>
+                                                        <option value="jump">{t('workflows.actionOptions.jumpToStep')}</option>
                                                     </select>
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                                                 </div>
                                             </div>
+
+                                            {step.config?.ifFalseAction === "end" && (
+                                                <div className="alert alert-danger mt-2">
+
+                                                    ❌ Workflow ends (condition not met)
+                                                </div>
+                                            )}
+
+                                            {step.config?.ifFalseAction === "jump" && (
+                                                <div className="form-group mt-2">
+                                                    <label>{t('workflows.actionOptions.jumpToStep')}</label>
+                                                    <div className="inputselect">
+                                                        <select
+                                                            className="form-select"
+                                                            value={step.config?.jumpToFalseStepId || ""}
+                                                            onChange={(e) =>
+                                                                updateStepConfig(step.id, "jumpToFalseStepId", e.target.value)
+                                                            }
+                                                        >
+                                                            <option value="">{t('workflows.actionOptions.jumpToStep')}</option>
+
+                                                            {steps
+                                                                .filter((s) => s.id !== step.id) // prevent self jump
+                                                                .map((s, index) => (
+                                                                    <option key={s.id} value={s.id}>
+                                                                        Step {index + 1} - {s.name || s.type}
+                                                                    </option>
+                                                                ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -935,16 +1176,44 @@ const WorkflowsPage = () => {
             isActive: workflow.isActive,
         });
 
-        // ✅ Sort steps by order before setting
-        const sortedSteps = [...(workflow.steps || [])].sort((a, b) => a.order - b.order);
+        // ✅ 1. Sort steps by order
+        const sortedSteps = [...(workflow.steps || [])]
+            .sort((a, b) => a.order - b.order);
 
-        // If backend steps don’t have `uuid`, assign one for React rendering
-        const mappedSteps = sortedSteps.map(step => ({
-            id: step.id || uuidv4(),
-            type: step.type,
-            config: step.config || {},
-            order: step.order
-        }));
+        // ✅ 2. Map steps + convert jump order → stepId for UI
+        const mappedSteps = sortedSteps.map((step) => {
+
+            let updatedConfig = { ...(step.config || {}) };
+
+            // 🔁 Convert jumpToTrueOrder → jumpToTrueStepId
+            if (updatedConfig.jumpToTrueOrder) {
+                const targetStep = sortedSteps.find(
+                    s => s.order === updatedConfig.jumpToTrueOrder
+                );
+
+                if (targetStep) {
+                    updatedConfig.jumpToTrueStepId = targetStep.id;
+                }
+            }
+
+            // 🔁 Convert jumpToFalseOrder → jumpToFalseStepId
+            if (updatedConfig.jumpToFalseOrder) {
+                const targetStep = sortedSteps.find(
+                    s => s.order === updatedConfig.jumpToFalseOrder
+                );
+
+                if (targetStep) {
+                    updatedConfig.jumpToFalseStepId = targetStep.id;
+                }
+            }
+
+            return {
+                id: step.id || uuidv4(),   // for React rendering
+                type: step.type,
+                config: updatedConfig,
+                order: step.order
+            };
+        });
 
         setSteps(mappedSteps);
 
@@ -1209,8 +1478,8 @@ const WorkflowsPage = () => {
                                                                     <li><Link className="dropdown-item" to="#" onClick={() => addStep("updateStatus")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-target" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div><label>{t('workflows.stepTypes.updateStatus')} <span>{t('workflows.stepTypes.updateStatusDescription')}</span></label></Link></li>
                                                                     <li><Link className="dropdown-item" to="#" onClick={() => addStep("waitDelay")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock" aria-hidden="true"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg></div><label>{t('workflows.stepTypes.waitDelay')} <span>{t('workflows.stepTypes.waitDelayDescription')}</span></label></Link></li>
                                                                     {/* <li><Link className="dropdown-item" to="#" onClick={() => addStep("assignUser")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-plus" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg></div><label>{t('workflows.stepTypes.assignUser')} <span>{t('workflows.stepTypes.assignUserDescription')}</span></label></Link></li>
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("addTags")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-tag" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg></div><label>{t('workflows.stepTypes.addTags')} <span>{t('workflows.stepTypes.addTagsDescription')}</span></label></Link></li>
-                                                            <li><Link className="dropdown-item" to="#" onClick={() => addStep("condition")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-alert" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg></div><label>{t('workflows.stepTypes.condition')} <span>{t('workflows.stepTypes.conditionDescription')}</span></label></Link></li>*/}
+                                                                        <li><Link className="dropdown-item" to="#" onClick={() => addStep("addTags")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-tag" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg></div><label>{t('workflows.stepTypes.addTags')} <span>{t('workflows.stepTypes.addTagsDescription')}</span></label></Link></li>*/}
+                                                                    <li><Link className="dropdown-item" to="#" onClick={() => addStep("condition")}><div className="addstep-svg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-alert" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg></div><label>{t('workflows.stepTypes.condition')} <span>{t('workflows.stepTypes.conditionDescription')}</span></label></Link></li>
                                                                 </ul>
                                                             </div>
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down size-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
