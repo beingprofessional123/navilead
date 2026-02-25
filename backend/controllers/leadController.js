@@ -215,12 +215,24 @@ exports.updateLead = async (req, res) => {
       notifyOnFollowUp = false;
     }
 
+    // Preserve existing value from DB first
+    let existingValue = lead.value;
+
+    // Handle incoming value
     let value = req.body.value;
-    if (value === "" || value === null || value === undefined) {
-      value = null;
-    } else {
-      value = parseFloat(value);
-      if (isNaN(value)) value = null; // safeguard
+
+    if ("value" in req.body) {
+      if (value === "" || value === null || value === undefined) {
+        // If body is null/empty, keep the existing value
+        value = existingValue;
+      } else {
+        // If body has a number, parse it
+        value = parseFloat(value);
+        if (isNaN(value)) {
+          // If parsing fails, revert to existing value
+          value = existingValue;
+        }
+      }
     }
 
     const updateData = {

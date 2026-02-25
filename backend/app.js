@@ -105,4 +105,7 @@ app.use('/api/public-workflows', publicWorkflowRoutes);
 // Serve files from the uploads directory under /uploads URL path
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// logs folder ko public bana do
+app.use("/logs", express.static(path.join(__dirname, "logs")));
+
 module.exports = app;
