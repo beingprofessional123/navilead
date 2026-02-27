@@ -983,9 +983,9 @@ const OffersTemplatesEditPage = () => {
                                         <h4>{t('OffersTemplatesCreatePage.livePreviewTitle')}</h4><span>{iframeWidth}</span>
                                     </div>
                                     <div className="newoffertemplate-previewmain">
-                                        <div className="newoffertemplate-preview" style={{ overflow: 'scroll' }}>
-                                            <div className="carddesign emailcard p-4" style={{ backgroundColor: formData.mainBgColor,  width: iframeWidth }}>
-                                                <section className="navpublic" >
+                                        <div className="newoffertemplate-preview" style={{ display: 'flex', justifyContent: 'center', overflow: 'scroll' }}>
+                                            <div className="carddesign emailcard cardfixdevice p-4" style={{ backgroundColor: formData.mainBgColor }}>
+                                                <section className={`navpublic ${iframeWidth === "100%" ? "desktopmobile" : ""}`} style={{ width: iframeWidth }}>
 
                                                     <div className="container">
                                                         <div className="row">

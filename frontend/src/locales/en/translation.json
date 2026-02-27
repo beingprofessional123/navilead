@@ -248,6 +248,9 @@
   },
   "leadViewPage": {
     "backToLeads": "Back to Leads",
+    "infoTab": "Info",
+    "mapTab": "Map",
+    "quoteTab": "Offers",
     "leadInformationTitle": "Lead Information",
     "contactSubheading": "Contact",
     "Status": "Status",
@@ -450,6 +453,8 @@
   },
   "emailSmsPage": {
     "title": "Email & SMS",
+    "emailTab": "Email",
+    "smsTab": "SMS",
     "description": "Manage email and SMS templates and campaigns",
     "emailTemplatesTitle": "Email Templates",
     "emailTemplatesDescription": "Create and manage reusable email templates",

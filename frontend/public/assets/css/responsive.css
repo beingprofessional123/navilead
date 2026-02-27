@@ -1,261 +1,313 @@
 .mobileheader {
-    display: none;
-    justify-content: space-between;
-    align-items: center;
-    background-color: var(--card);
-    padding: 10px 10px;
-    position: fixed;
-    width: 100%;
-    left: 0px;
-    top: 0px;
-    z-index: 999;
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--card);
+  padding: 10px 10px;
+  position: fixed;
+  width: 100%;
+  left: 0px;
+  top: 0px;
+  z-index: 999;
 }
 .mobilelogo a {
-    width: 150px;
-    display: block;
+  width: 150px;
+  display: block;
 }
 
-@media all and (min-width:320px) and (max-width: 1199px) {
-.mobileheader {
+@media all and (min-width: 320px) and (max-width: 1199px) {
+  .mobileheader {
     display: flex;
-}
-.sidebar {
+  }
+  .sidebar {
     left: -300px;
-}
-.mainbody {
+  }
+  .mainbody {
     padding: 70px 0px 30px 0px;
-}
-.open .sidebar {
+  }
+  .open .sidebar {
     left: 0px;
     z-index: 99999;
-}
-.sidebar-logo {
+  }
+  .sidebar-logo {
     padding: 10px 10px;
-}
-
+  }
 }
 /*320-1199 End*/
 
-@media all and (min-width:320px) and (max-width: 767px) {
-.iframe-desktop iframe {
+@media all and (min-width: 320px) and (max-width: 767px) {
+  .iframe-desktop iframe {
     width: 1200px !important;
-}
-.dashright {
+  }
+  .dashright {
     text-align: left;
     margin-top: 15px;
-}
-.lead-search .input-group {
+  }
+  .lead-search .input-group {
     flex-wrap: wrap;
-}
-.leads-col {
+  }
+  .leads-col {
     width: 100%;
-}
-.inputsearch .form-control {
+  }
+  .inputsearch .form-control {
     min-width: 100%;
-}
-.lead-search .input-group .inputselect {
+  }
+  .lead-search .input-group .inputselect {
     margin-bottom: 10px;
-}
-.leadsviewrow {
+  }
+  .leadsviewrow {
     flex-wrap: wrap;
-}
-.leadsleft-bar {
+  }
+  .leadsleft-bar {
     width: 100%;
     min-width: 100%;
-}
-.leadsright-bar {
+  }
+  .leadsright-bar {
     width: 100%;
     min-width: 100%;
-}
-.leads-info-text {
+  }
+  .leads-info-text {
     width: 156px;
-}
-.leadscenter-bar {
+  }
+  .leadscenter-bar {
     padding: 0px 15px;
-}
-.leads-headerbox-left h4 {
+  }
+  .leads-headerbox-left h4 {
     font-size: 14px;
-}
-.carddesign.leads-header {
+  }
+  .carddesign.leads-header {
     padding: 10px;
-}
-.leads-headerbox-left .btn.btn-add {
+  }
+  .leads-headerbox-left .btn.btn-add {
     padding: 7px 6px;
-}
-.sendoffer-action {
+  }
+  .sendoffer-action {
     flex-wrap: wrap;
     gap: 10px;
-}
-.leaddropdown ul.dropdown-menu a.dropdown-item {
+  }
+  .leaddropdown ul.dropdown-menu a.dropdown-item {
     white-space: normal;
-}
-.leaddropdown .btn.btn-primary {
+  }
+  .leaddropdown .btn.btn-primary {
     /* white-space: normal; */
-}
-.leadspage .leads-col {
-   width: 50%;
-}
-.sendemaiinfo span {
+  }
+  .leadspage .leads-col {
+    width: 50%;
+  }
+  .sendemaiinfo span {
     word-break: break-all;
-}
-.leadlist-box {
+  }
+  .leadlist-box {
     flex-wrap: wrap;
-}
-.leadlist-info {
+  }
+  .leadlist-info {
     width: 100%;
-}
-.leadlist-action {
+  }
+  .leadlist-action {
     width: 100%;
     margin-top: 10px;
-}
-.addstep-heading {
+  }
+  .addstep-heading {
     flex-wrap: wrap;
     gap: 10px 0px;
-}
-.workflowsadd-headingsec {
+  }
+  .workflowsadd-headingsec {
     gap: 10px 9px;
     flex-wrap: wrap;
-}
-.carddesign.cardhandling1 {
+  }
+  .carddesign.cardhandling1 {
     margin-bottom: 10px;
-}
-.modalfooter.btn-right.opretworkflow {
+  }
+  .modalfooter.btn-right.opretworkflow {
     flex-wrap: wrap;
     gap: 10px;
-}
-.emailmodaltab ul.nav.nav-tabs li.nav-item {
+  }
+  .emailmodaltab ul.nav.nav-tabs li.nav-item {
     width: auto;
     margin-right: 10px;
-}
-.leadsright-bar .emailmodaltab ul.nav.nav-tabs li.nav-item {
+  }
+  .leadsright-bar .emailmodaltab ul.nav.nav-tabs li.nav-item {
     margin: 0px;
-}
-.planactive-details .col-md-4 {
+  }
+  .planactive-details .col-md-4 {
     margin-bottom: 10px;
-}
-.planactive-list ul li {
+  }
+  .planactive-list ul li {
     width: 100%;
-}
-.usersul-card {
-    flex-wrap: wrap;    
+  }
+  .usersul-card {
+    flex-wrap: wrap;
     gap: 10px;
-}
-.status.status3 {
+  }
+  .status.status3 {
     white-space: nowrap;
-}
-.loginmain {
+  }
+  .loginmain {
     padding: 0px 15px;
-}
-.loginmain .carddesign {
+  }
+  .loginmain .carddesign {
     padding: 30px 20px;
-}
-.handler-card {
+  }
+  .handler-card {
     margin-bottom: 10px;
-}
-.webhookslist li {
+  }
+  .webhookslist li {
     flex-wrap: wrap;
     gap: 10px 0px;
-}
-.ratelimits .carddesign {
+  }
+  .ratelimits .carddesign {
     margin: 5px 0px;
-}
-.mainbody.newoffertemplatespage {
+  }
+  .mainbody.newoffertemplatespage {
     padding-top: 70px;
-}
-.newoffertemplate-col-left {
+  }
+  .newoffertemplate-col-left {
     width: 100%;
     height: auto;
     overflow-y: initial;
-}
-.newoffertemplate-col-right {
+  }
+  .newoffertemplate-col-right {
     width: 100% !important;
-}
-.newoffertop-left {
+  }
+  .newoffertop-left {
     flex-wrap: wrap;
     justify-content: center;
-}
-.newoffertop-right {
+  }
+  .newoffertop-right {
     justify-content: center;
     flex-wrap: wrap;
     margin-top: 10px;
-}
-.newoffertemplate-col-leftin .emailmodaltab ul.nav.nav-tabs li.nav-item {
+  }
+  .newoffertemplate-col-leftin .emailmodaltab ul.nav.nav-tabs li.nav-item {
     margin: 0px;
-}
-.newoffertemplate-tab-footer {
+  }
+  .newoffertemplate-tab-footer {
     flex-wrap: wrap;
     gap: 10px;
-}
-.activetemplate-card {
+  }
+  .activetemplate-card {
     padding: 15px;
-}
+  }
+
+  .sendoffer-action .form-group {
+    gap: 10px 30px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .workflowsadd-icondesc .btn.btn-primary {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    padding-right: 22px !important;
+  }
+  .carddesign .workflowsaddcarddesign {
+    overflow-x: scroll;
+  }
+
+  .navpublic.desktopmobile {
+    width: 1200px !important;
+  }
+  .navpublic.desktopmobile .col-md-5 {
+      width: 40%;
+  }
+  .navpublic.desktopmobile .col-md-7 {
+      width: 60% !important;
+  }
+
+  .leadsviewmobile {
+    display: block;
+  }
+
+  .leadsviewrow.tab-content .tab-pane {
+    display: none !important;
+    opacity: 0 !important;
+  }
+  .leadsviewrow.tab-content .tab-pane.active {
+    display: block !important;
+    opacity: 1 !important;
+  }
+
 }
 /*320-767 End*/
 
-@media all and (min-width:768px) and (max-width: 1024px) {
-.leads-col {
+@media all and (min-width: 768px) and (max-width: 1024px) {
+  .leads-col {
     width: 33.33%;
     padding: 0px 10px;
-}
-.leadsviewrow {
+  }
+  .leadsviewrow {
     flex-wrap: wrap;
-}
-.leadsleft-bar {
+  }
+  .leadsleft-bar {
     width: 100%;
     min-width: 100%;
-}
-.leadsright-bar {
+  }
+  .leadsright-bar {
     width: 100%;
     min-width: 100%;
-}
-.leaddropdown ul.dropdown-menu a.dropdown-item {
+  }
+  .leaddropdown ul.dropdown-menu a.dropdown-item {
     white-space: normal;
-}
-.leaddropdown .btn.btn-primary {
+  }
+  .leaddropdown .btn.btn-primary {
     white-space: normal;
-}
-.sendemaiinfo span {
+  }
+  .sendemaiinfo span {
     word-break: break-all;
-}
-.mainbody.newoffertemplatespage {
+  }
+  .mainbody.newoffertemplatespage {
     padding-top: 70px;
-}
-.newoffertemplate-col-left {
+  }
+  .newoffertemplate-col-left {
     width: 100%;
     height: auto;
     overflow-y: initial;
-}
-.newoffertemplate-col-right {
+  }
+  .newoffertemplate-col-right {
     width: 100%;
-}
-.newoffertop-left {
+  }
+  .newoffertop-left {
     flex-wrap: wrap;
     justify-content: center;
-}
-.newoffertop-right {
+  }
+  .newoffertop-right {
     justify-content: center;
     flex-wrap: wrap;
-}
-}
+  }
+  .leadsviewmobile {
+    display: block;
+  }
 
+  .leadsviewrow.tab-content .tab-pane {
+    display: none !important;
+    opacity: 0 !important;
+  }
+  .leadsviewrow.tab-content .tab-pane.active {
+    display: block !important;
+    opacity: 1 !important;
+  }
+}
 
 /*768-1024 End*/
 
-@media all and (min-width:1025px) and (max-width: 1199px) {
-.leadsviewrow {
+@media all and (min-width: 1025px) and (max-width: 1199px) {
+  .leadsviewrow {
     flex-wrap: wrap;
-}
-.leadsleft-bar {
+  }
+  .leadsleft-bar {
     width: 100%;
     min-width: 100%;
-}
-.leadsright-bar {
+  }
+  .leadsright-bar {
     width: 100%;
     min-width: 100%;
-}
-.mainbody.newoffertemplatespage {
+  }
+  .mainbody.newoffertemplatespage {
     padding-top: 70px;
-}
+  }
 }
 /*1025-1199 End*/
-
