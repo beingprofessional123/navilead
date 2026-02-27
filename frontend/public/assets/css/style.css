@@ -2525,6 +2525,7 @@ h5.resultrabat {
   align-items: center;
   font-weight: 400;
   margin-bottom: 15px;
+  word-break: break-all;
 }
 .sendoffer-info svg {
   width: 14px;
@@ -4309,242 +4310,303 @@ ul.newoffertop-system li.active a svg {
 }
 
 .status.status9 {
-    color: var(--primary);
-    background-color: color-mix(in oklab, var(--primary) 10%, transparent);
+  color: var(--primary);
+  background-color: color-mix(in oklab, var(--primary) 10%, transparent);
 }
 
 /*sms-credits*/
 .cardinfo.sms-creditscard h3 {
-    color: var(--foreground);
-    margin-bottom: 18px;
+  color: var(--foreground);
+  margin-bottom: 18px;
 }
 .sms-creditscard h3 span {
-    display: block;
-    font-weight: 300;
-    font-size: 11px;
-    color: var(--muted-foreground);
-    margin-top: 4px;
+  display: block;
+  font-weight: 300;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  margin-top: 4px;
 }
 .sms-creditscard .smsprices {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 17px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 17px;
 }
 .sms-creditscard .smsprices h4 {
-    font-size: 18px;
+  font-size: 18px;
 }
-
-
 
 .admin_tabledesign .MuiPaper-root {
-    background: none;
-    color: var(--card-foreground);
-    font-weight: 500;
+  background: none;
+  color: var(--card-foreground);
+  font-weight: 500;
 }
 .admin_tabledesign .MuiPaper-root tbody tr td {
-    font-weight: 300;
-    background: none;
-    font-size: 13px;
-    color: var(--muted-foreground);
-    border-bottom: 1px solid #202e3c;
+  font-weight: 300;
+  background: none;
+  font-size: 13px;
+  color: var(--muted-foreground);
+  border-bottom: 1px solid #202e3c;
 }
 .admin_tabledesign .MuiPaper-root tbody tr td a.leadlink {
-    color: var(--card-foreground);
-    font-weight: 500;
+  color: var(--card-foreground);
+  font-weight: 500;
 }
 .admin_tabledesign .MuiPaper-root thead tr th {
-    color: var(--card-foreground);
-    font-weight: 500;
-    background: none;
-    font-size: 13px;
-    padding: 12px 14px;
-    border-bottom: 1px solid #202e3c;
+  color: var(--card-foreground);
+  font-weight: 500;
+  background: none;
+  font-size: 13px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #202e3c;
 }
 .admin_tabledesign .MuiPaper-root thead tr th button {
-    padding: 0px;
-    justify-content: flex-start;
-    text-transform: capitalize;
+  padding: 0px;
+  justify-content: flex-start;
+  text-transform: capitalize;
 }
 .admin_tabledesign .MuiPaper-root table.tss-5jmwmz-MUIDataTableFooter-root td {
-    border: none;
+  border: none;
 }
-.admin_tabledesign .MuiPaper-root table.tss-5jmwmz-MUIDataTableFooter-root td .MuiToolbar-root.MuiToolbar-gutters p {
-    margin: 0px;
+.admin_tabledesign
+  .MuiPaper-root
+  table.tss-5jmwmz-MUIDataTableFooter-root
+  td
+  .MuiToolbar-root.MuiToolbar-gutters
+  p {
+  margin: 0px;
 }
-.admin_tabledesign .MuiPaper-root table.tss-5jmwmz-MUIDataTableFooter-root td .MuiToolbar-root.MuiToolbar-gutters {
-    color: var(--card-foreground);
+.admin_tabledesign
+  .MuiPaper-root
+  table.tss-5jmwmz-MUIDataTableFooter-root
+  td
+  .MuiToolbar-root.MuiToolbar-gutters {
+  color: var(--card-foreground);
 }
-.admin_tabledesign .MuiPaper-root table.tss-5jmwmz-MUIDataTableFooter-root td .MuiToolbar-root.MuiToolbar-gutters .MuiTablePagination-actions button {
-    background: #00d4f0;
-    color: #000;
-    margin: 0px 6px;
+.admin_tabledesign
+  .MuiPaper-root
+  table.tss-5jmwmz-MUIDataTableFooter-root
+  td
+  .MuiToolbar-root.MuiToolbar-gutters
+  .MuiTablePagination-actions
+  button {
+  background: #00d4f0;
+  color: #000;
+  margin: 0px 6px;
 }
-.admin_tabledesign .MuiPaper-root table.tss-5jmwmz-MUIDataTableFooter-root td .MuiToolbar-root.MuiToolbar-gutters svg.MuiSelect-icon {
-    fill: #fff;
+.admin_tabledesign
+  .MuiPaper-root
+  table.tss-5jmwmz-MUIDataTableFooter-root
+  td
+  .MuiToolbar-root.MuiToolbar-gutters
+  svg.MuiSelect-icon {
+  fill: #fff;
 }
 .admin_tabledesign .MuiPaper-root h6.MuiTypography-root {
-    font-size: 16px;
+  font-size: 16px;
 }
-.admin_tabledesign .MuiPaper-root .tss-qbo1l6-MUIDataTableToolbar-actions button svg {
-    fill: #ffffff;
+.admin_tabledesign
+  .MuiPaper-root
+  .tss-qbo1l6-MUIDataTableToolbar-actions
+  button
+  svg {
+  fill: #ffffff;
 }
 
 .admin_tabledesign .MuiPaper-root .tss-1ufdzki-MUIDataTableSearch-main svg {
-    fill: #fff;
+  fill: #fff;
 }
 .admin_tabledesign .MuiPaper-root .tss-1ufdzki-MUIDataTableSearch-main input {
-    color: #fff;
-    background: #101418;
-    border-radius: 5px;
-    font-size: 12px;
-    padding: 7px 15px;
-    font-weight: 300;
+  color: #fff;
+  background: #101418;
+  border-radius: 5px;
+  font-size: 12px;
+  padding: 7px 15px;
+  font-weight: 300;
 }
-.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded fieldset.MuiFormControl-root {
-    padding: 10px 20px;
+.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded
+  fieldset.MuiFormControl-root {
+  padding: 10px 20px;
 }
-.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded fieldset.MuiFormControl-root label {
-    margin: 0px;
+.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded
+  fieldset.MuiFormControl-root
+  label {
+  margin: 0px;
 }
-.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded fieldset.MuiFormControl-root label span.MuiCheckbox-colorPrimary {
-    padding-left: 0px;
+.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded
+  fieldset.MuiFormControl-root
+  label
+  span.MuiCheckbox-colorPrimary {
+  padding-left: 0px;
 }
-
 
 .view-user-details p {
-    font-size: 13px;
-    margin-bottom: 10px;
-    font-weight: 400;
-    color: var(--muted-foreground);
-    display: flex;
-    justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 10px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+  display: flex;
+  justify-content: space-between;
 }
 
 .view-user-details ul li {
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-foreground);
 }
 
 .view-user-details p strong {
-    font-weight: 500;
-    color: var(--card-foreground);
-    margin-right: 10px;
+  font-weight: 500;
+  color: var(--card-foreground);
+  margin-right: 10px;
 }
 .view-user-details p .badge4 {
-    color: var(--foreground);
-    border: 1px solid var(--border);
-    font-size: 11px;
-    font-weight: 400;
-    padding: 5px 9px;
-    text-transform: capitalize;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 400;
+  padding: 5px 9px;
+  text-transform: capitalize;
 }
 .formdesign .form-group a.btn.btn-link.text-decoration-none {
-    padding: 7px 14px;
-    color: var(--primary-foreground) !important;
-    background-color: var(--primary);
-    font-size: 12.25px;
-    border: 1px solid var(--border) !important;
-    border-radius: 8.7px;
-    outline: none !important;
-    box-shadow: none !important;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+  padding: 7px 14px;
+  color: var(--primary-foreground) !important;
+  background-color: var(--primary);
+  font-size: 12.25px;
+  border: 1px solid var(--border) !important;
+  border-radius: 8.7px;
+  outline: none !important;
+  box-shadow: none !important;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 .formdesign .form-group p.text-blue {
-    color: var(--muted-foreground);
-    font-size: 12px;
-    margin: 4px 0px 0px 0px;
-    font-weight: 400;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  margin: 4px 0px 0px 0px;
+  font-weight: 400;
 }
 
 .tablemaiikdata ul.dropdown-menu {
-    transform: none !important;
-    top: -2px !important;
-    left: -161px !important;
+  transform: none !important;
+  top: -2px !important;
+  left: -161px !important;
 }
 
 .MuiChip-labelMedium {
-   color: #cff;
+  color: #cff;
 }
 
 .css-38raov-MuiButtonBase-root-MuiChip-root .MuiChip-deleteIcon {
-    color: rgb(2 212 240) !important;
+  color: rgb(2 212 240) !important;
 }
 
-
- .textareanew {
-    overflow-y: scroll;
+.textareanew {
+  overflow-y: scroll;
 }
 .textareanew::-webkit-scrollbar {
   width: 5px;
 }
 .textareanew::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px #101418; 
+  box-shadow: inset 0 0 5px #101418;
   border-radius: 10px;
 }
 .textareanew::-webkit-scrollbar-thumb {
-  background: #202e3c; 
+  background: #202e3c;
   border-radius: 10px;
 }
 .textareanew::-webkit-scrollbar-thumb:hover {
-  background: #8cd0d9; 
+  background: #8cd0d9;
 }
-
 
 #chatModal .mb-2 select.form-select {
-    background-color: #1b2632 !important;
-    outline: none !important;
-    box-shadow: none !important;
-    border: 1px solid rgb(23 31 38) !important;
-    color: #cff !important;
-    font-size: 12px;
-    padding: 8px 15px;
-    min-width: 180px;
-    background-image: none;
+  background-color: #1b2632 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border: 1px solid rgb(23 31 38) !important;
+  color: #cff !important;
+  font-size: 12px;
+  padding: 8px 15px;
+  min-width: 180px;
+  background-image: none;
 }
 #chatModal label.mb-0 {
-    font-size: 14px;
+  font-size: 14px;
 }
 #chatModal .mb-2 .small {
-    font-size: 12px;
-    color: var(--muted-foreground);
+  font-size: 12px;
+  color: var(--muted-foreground);
 }
 .chat-box-wrapper small.text-start {
-    color: var(--muted-foreground) !important;
+  color: var(--muted-foreground) !important;
 }
 .chat-box-wrapper .rounded.border {
-    background-color: #171f26;
-    border: none !important;
-    font-size: 12px !important;
-    font-weight: 300;
+  background-color: #171f26;
+  border: none !important;
+  font-size: 12px !important;
+  font-weight: 300;
 }
 .chat-box-wrapper {
-    background-color: var(--input-background);
-    border: none !important;
-    padding: 20px !important;
+  background-color: var(--input-background);
+  border: none !important;
+  padding: 20px !important;
 }
 .formdesign .form-group .position-relative svg.lucide-paperclip {
-    width: 14px;
-    height: 14px;
+  width: 14px;
+  height: 14px;
 }
 
-
 .tableboxspain.badge {
-    color: var(--foreground);
-    border: 1px solid var(--border);
-    font-size: 11px;
-    font-weight: 400;
-    padding: 5px 9px;
-    text-transform: capitalize;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 400;
+  padding: 5px 9px;
+  text-transform: capitalize;
 }
 
 .offercustomrow .col-12 {
-    width: 100%;
+  width: 100%;
 }
-
 
 .ck.ck-balloon-panel {
-    z-index: 1060 !important; /* Bootstrap modal = 1055 */
+  z-index: 1060 !important; /* Bootstrap modal = 1055 */
 }
+
+.leadsviewmobile .nav-tabs {
+  border: none;
+  justify-content: space-between;
+  background: #1b2632;
+  margin-top: 15px;
+  padding: 4px;
+  border-radius: 7px !important;
+}
+.leadsviewmobile {
+  display: none;
+}
+
+.leadsviewmobile .nav-tabs .nav-item {
+  width: 33.33%;
+}
+.leadsviewmobile .nav-tabs .nav-item .nav-link svg {
+  width: 14px;
+  height: 14px;
+  margin: -3px 8px 0px 0px;
+}
+.leadsviewmobile .nav-tabs .nav-item .nav-link.active {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+.leadsviewmobile .nav-tabs .nav-item .nav-link {
+  width: 100%;
+  text-align: center;
+  border: none !important;
+  border-radius: 7px !important;
+  color: var(--card-foreground);
+  font-size: 14px;
+}
+
+  .leadsviewrow.tab-content .tab-pane {
+    display: block !important;
+    opacity: 1 !important;
+  }

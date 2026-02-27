@@ -247,6 +247,9 @@
   },
   "leadViewPage": {
     "backToLeads": "Tilbage til Leads",
+    "infoTab": "Info",
+    "mapTab": "Kort",
+    "quoteTab": "Tilbud",
     "leadInformationTitle": "Leadinformation",
     "contactSubheading": "Kontakt",
     "Status": "Status",
@@ -449,6 +452,8 @@
   },
   "emailSmsPage": {
     "title": "E-mail & SMS",
+    "emailTab": "E-mail",
+    "smsTab": "SMS",
     "description": "Administrer e-mail- og SMS-skabeloner samt kampagner",
     "emailTemplatesTitle": "E-mailskabeloner",
     "emailTemplatesDescription": "Opret og administrer genanvendelige e-mailskabeloner",

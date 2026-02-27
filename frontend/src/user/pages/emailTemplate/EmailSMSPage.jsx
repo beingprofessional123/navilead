@@ -818,7 +818,7 @@ const EmailSMSPage = () => {
                                                 <div className="inputselect">
                                                     <div className="dropdown leaddropdown sendemaidropdown">
                                                         <button type="button" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check w-4 h-4 text-primary" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>{defaultSMSTemplate ? defaultSMSTemplate.templateName || defaultSMSTemplate.templateName : translate("emailSmsPage.defaultSMSTemplateName")}</span>
+                                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check w-4 h-4 text-primary" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>{defaultSMSTemplate ? defaultSMSTemplate.templateName || defaultSMSTemplate.templateName : translate("emailSmsPage.defaultSmsTemplateName")}</span>
                                                         </button>
                                                         <ul className="dropdown-menu">
                                                             {smsTemplates && smsTemplates.length > 0 ? (

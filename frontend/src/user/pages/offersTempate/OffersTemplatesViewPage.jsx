@@ -143,7 +143,7 @@ const OffersTemplatesViewPage = () => {
                                     <div className="newoffertemplate-previewmain">
                                         <div className="newoffertemplate-preview" style={{ display: 'flex', justifyContent: 'center', overflow: 'scroll' }}>
                                             <div className="carddesign emailcard cardfixdevice p-4" style={{ backgroundColor: template.mainBgColor }}>
-                                                <section className="navpublic" style={{ width: iframeWidth }}>
+                                                <section className={`navpublic ${iframeWidth === "100%" ? "desktopmobile" : ""}`} style={{ width: iframeWidth }}>
 
                                                     <div className="container">
                                                         <div className="row">

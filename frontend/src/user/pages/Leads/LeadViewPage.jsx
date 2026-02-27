@@ -782,12 +782,39 @@ const LeadViewPage = () => {
     return <FullPageLoader />;
   }
 
+
+
   if (error) {
-    return <p className="text-danger">{error}</p>;
+    return (
+      <div
+        className="text-danger"
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+        }}
+      >
+        <p>{error}</p>
+      </div>
+    );
   }
 
   if (!lead) {
-    return <p>{translate('leadViewPage.leadNotFoundDisplay')}</p>; // Translated
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+        }}
+      >
+        <p>{translate('leadViewPage.leadNotFoundDisplay')}</p>
+      </div>
+    );
   }
 
   let displayTags = [];
@@ -850,12 +877,25 @@ const LeadViewPage = () => {
           <div className="status">{lead.status?.name || translate('leadViewPage.na')}</div>
 
         </div>
+        <div class="leadsviewmobile" >
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" data-bs-toggle="tab" href="#infoLeft-bar"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user" aria-hidden="true" data-fg-kua511=":393.2066:/components/LeadDetailPage.tsx:1583:15:61184:33:e:User::::::wpV"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>{translate('leadViewPage.infoTab')}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="tab" href="#mapCenter-bar"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image" aria-hidden="true" data-fg-kua514=":393.2066:/components/LeadDetailPage.tsx:1592:15:61510:34:e:Image::::::CO8z"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>{translate('leadViewPage.mapTab')}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="tab" href="#quoteRight-bar"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text" aria-hidden="true" data-fg-kua517=":393.2066:/components/LeadDetailPage.tsx:1601:15:61831:37:e:FileText::::::B1i5"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>{translate('leadViewPage.quoteTab')}</a>
+            </li>
+          </ul>
+        </div>
       </div>
 
       {/* Main Content Area: Leads Left Bar, Leads Center Bar, Leads Right Bar */}
-      <div className="leadsviewrow">
+      <div className="leadsviewrow tab-content">
         {/* Leads Left Bar */}
-        <div className="leadsleft-bar">
+        <div className="leadsleft-bar tab-pane active" id='infoLeft-bar'>
           <div className="carddesign">
             <h2 className="card-title">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -1296,7 +1336,7 @@ const LeadViewPage = () => {
         </div>
 
         {/* Leads Center Bar */}
-        <div className="leadscenter-bar">
+        <div className="leadscenter-bar tab-pane fade" id='mapCenter-bar'>
           <div className="carddesign">
             <h2 className="card-title">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -1365,7 +1405,7 @@ const LeadViewPage = () => {
         </div>
 
         {/* Leads Right Bar */}
-        <div className="leadsright-bar">
+        <div className="leadsright-bar tab-pane fade" id='quoteRight-bar'>
           <div className="carddesign leadssliderbox">
             <div className="leadsslider">
               <button className="btn btn-add" onClick={prevLead}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left m-0" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
