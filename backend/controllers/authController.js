@@ -405,7 +405,7 @@ exports.login = async (req, res) => {
       stripeCustomerId: stripeCustomerId,
     };
 
-    const existingTemplate = await OfferTemplate.findOne({ where: { userId: user.id, status: 'active' } });
+    const existingTemplate = await OfferTemplate.findOne({ where: { userId: user.id, type: 'Default' } });
     if (!existingTemplate) {
       await OfferTemplate.create({
         userId: user.id,
@@ -429,7 +429,6 @@ exports.login = async (req, res) => {
 
 
     res.status(200).json({ message: 'api.login.success', token, user: userData, userPlan: userPlanWithDetails });
-
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'api.login.serverError', error: error.message });
