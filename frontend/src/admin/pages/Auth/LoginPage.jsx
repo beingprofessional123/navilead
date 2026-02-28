@@ -62,7 +62,7 @@ const LoginPage = () => {
       </div>
 
       <div className="carddesign">
-        <h1>{t("login.title")}</h1>
+        <h1>{t("login.title")} for admin</h1>
         <div className="formdesign">
           <form onSubmit={handleLogin}>
             <div className="form-group">
